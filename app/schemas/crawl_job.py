@@ -26,6 +26,19 @@ class CrawlJobResponse(BaseModel):
     stats_json: dict[str, Any]
 
 
+class CrawlJobListItemResponse(BaseModel):
+    id: int
+    status: str
+    root_url: str | None
+    created_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+    total_pages: int
+    total_internal_links: int
+    total_external_links: int
+    total_errors: int
+
+
 class CrawlJobSummaryCounts(BaseModel):
     total_pages: int
     total_links: int

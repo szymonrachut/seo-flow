@@ -1,13 +1,36 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from typing import Literal
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.schemas.crawl_job import CrawlJobCreateRequest, CrawlJobDetailResponse, CrawlJobResponse
+from app.schemas.crawl_job import (
+    CrawlJobCreateRequest,
+    CrawlJobDetailResponse,
+    CrawlJobListItemResponse,
+    CrawlJobResponse,
+)
 from app.services import crawl_job_service
 
 router = APIRouter(prefix="/crawl-jobs", tags=["crawl-jobs"])
+
+
+@router.get("", response_model=list[CrawlJobListItemResponse])
+def list_crawl_jobs(
+    sort_by: Literal["id", "created_at"] = Query(default="id"),
+    sort_order: Literal["asc", "desc"] = Query(default="desc"),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_db),
+) -> list[CrawlJobListItemResponse]:
+    jobs = crawl_job_service.list_crawl_jobs(
+        session,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        limit=limit,
+    )
+    return [CrawlJobListItemResponse.model_validate(item) for item in jobs]
 
 
 @router.post("", response_model=CrawlJobResponse, status_code=status.HTTP_201_CREATED)

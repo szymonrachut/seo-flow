@@ -1,0 +1,13 @@
+interface EmptyStateProps {
+  title: string
+  description: string
+}
+
+export function EmptyState({ title, description }: EmptyStateProps) {
+  return (
+    <div className="rounded-3xl border border-dashed border-stone-300 bg-white/70 px-6 py-10 text-center shadow-sm">
+      <p className="text-lg font-semibold text-stone-800">{title}</p>
+      <p className="mt-2 text-sm text-stone-600">{description}</p>
+    </div>
+  )
+}

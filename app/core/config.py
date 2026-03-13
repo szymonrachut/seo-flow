@@ -8,6 +8,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/seo_crawler"
     log_level: str = "INFO"
+    frontend_dev_origins: tuple[str, ...] = (
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    )
 
     scrapy_user_agent: str = "seo-crawler/0.1 (+local)"
     scrapy_concurrent_requests: int = 8

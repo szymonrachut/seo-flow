@@ -167,6 +167,45 @@ def get_crawl_job(session: Session, crawl_job_id: int) -> CrawlJob | None:
     return session.get(CrawlJob, crawl_job_id)
 
 
+def list_crawl_jobs(
+    session: Session,
+    *,
+    sort_by: str = "id",
+    sort_order: str = "desc",
+    limit: int = 100,
+) -> list[dict[str, Any]]:
+    sort_column = CrawlJob.id if sort_by == "id" else CrawlJob.created_at
+    stmt = select(CrawlJob, Site).join(Site, Site.id == CrawlJob.site_id)
+    stmt = _apply_sort(stmt, sort_column=sort_column, sort_order=sort_order, tie_breaker_column=CrawlJob.id)
+    stmt = stmt.limit(limit)
+
+    jobs: list[dict[str, Any]] = []
+    for crawl_job, site in session.execute(stmt).all():
+        stats = get_crawl_job_stats(session, crawl_job.id)
+        root_url = None
+        if isinstance(crawl_job.settings_json, dict):
+            root_url = crawl_job.settings_json.get("start_url")
+        if not root_url:
+            root_url = site.root_url
+
+        jobs.append(
+            {
+                "id": crawl_job.id,
+                "status": crawl_job.status.value if isinstance(crawl_job.status, CrawlJobStatus) else str(crawl_job.status),
+                "root_url": root_url,
+                "created_at": crawl_job.created_at,
+                "started_at": crawl_job.started_at,
+                "finished_at": crawl_job.finished_at,
+                "total_pages": stats["total_pages"],
+                "total_internal_links": stats["total_internal_links"],
+                "total_external_links": stats["total_external_links"],
+                "total_errors": stats["total_errors"],
+            }
+        )
+
+    return jobs
+
+
 def get_pages_for_job(
     session: Session,
     crawl_job_id: int,
