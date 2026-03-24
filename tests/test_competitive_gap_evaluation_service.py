@@ -1,0 +1,187 @@
+from __future__ import annotations
+
+from types import SimpleNamespace
+
+from app.services import competitive_gap_evaluation_service, competitive_gap_service
+from app.services.competitive_gap_semantic_card_service import build_semantic_card
+
+
+def test_competitive_gap_quality_benchmark_covers_v2_regression_cases() -> None:
+    own_page = competitive_gap_service.OwnPageTopicProfile(
+        page_id=11,
+        url="https://example.com/local-seo",
+        normalized_url="https://example.com/local-seo",
+        title="Local SEO Services",
+        h1="Local SEO Services",
+        meta_description="Local SEO services and Google Business Profile support.",
+        page_type="service",
+        page_bucket="commercial",
+        priority_score=56,
+        impressions=170,
+        clicks=9,
+        word_count=540,
+        semantic_input_hash="own-local-seo",
+        semantic_card=build_semantic_card(
+            primary_topic="Google Business Profile Optimization",
+            topic_labels=["Google Business Profile Optimization"],
+            core_problem="GBP optimization for local businesses.",
+            dominant_intent="commercial",
+            secondary_intents=[],
+            page_role="money_page",
+            content_format="service_page",
+            what_this_page_is_about="GBP optimization for local businesses.",
+            what_this_page_is_not_about="Not another topic.",
+            commerciality="high",
+            evidence_snippets=["Google Business Profile"],
+            confidence=0.74,
+        ),
+        dominant_intent="commercial",
+        page_role="money_page",
+        content_format="service_page",
+        geo_scope=None,
+        entities=[],
+        supporting_subtopics=[],
+        topic_key="google-business-profile",
+        topic_tokens={"google", "business", "profile"},
+    )
+
+    benchmark = competitive_gap_evaluation_service.run_competitive_gap_quality_benchmark(
+        topic_cases=[
+            competitive_gap_evaluation_service.TopicQualityBenchmarkCase(
+                name="noindex_competitor_page",
+                page=SimpleNamespace(
+                    status_code=200,
+                    normalized_url="https://competitor.com/local-seo",
+                    final_url="https://competitor.com/local-seo",
+                    title="Local SEO Services",
+                    h1="Local SEO Services",
+                    meta_description="Local SEO support.",
+                    visible_text="Local SEO support for growing businesses.",
+                    robots_meta="noindex,follow",
+                    x_robots_tag=None,
+                    page_type="service",
+                ),
+                expected_exclusion_reason="non_indexable",
+                expected_topic_key="local-seo",
+            ),
+            competitive_gap_evaluation_service.TopicQualityBenchmarkCase(
+                name="weak_about_page",
+                page=SimpleNamespace(
+                    status_code=200,
+                    normalized_url="https://competitor.com/about",
+                    final_url="https://competitor.com/about",
+                    title="About Us",
+                    h1="About Us",
+                    meta_description="Learn about our team.",
+                    visible_text=("Meet the team, company story, leadership background and consulting approach. " * 12),
+                    robots_meta=None,
+                    x_robots_tag=None,
+                    page_type="about",
+                ),
+                expected_exclusion_reason="weak_about",
+            ),
+            competitive_gap_evaluation_service.TopicQualityBenchmarkCase(
+                name="boilerplate_contamination_still_keeps_dominant_topic",
+                page=SimpleNamespace(
+                    status_code=200,
+                    normalized_url="https://competitor.com/local-seo",
+                    final_url="https://competitor.com/local-seo",
+                    title="Local SEO Services",
+                    h1="Local SEO Services",
+                    meta_description="Local SEO services for multi-location clinics.",
+                    visible_text=(
+                        "Sidebar appointments clinic team contact gallery " * 14
+                        + "Local SEO services for multi-location clinics and GBP optimization."
+                    ),
+                    robots_meta=None,
+                    x_robots_tag=None,
+                    page_type="service",
+                ),
+                expected_exclusion_reason=None,
+                expected_topic_key="local-seo",
+            ),
+        ],
+        coverage_cases=[
+            competitive_gap_evaluation_service.CoverageBenchmarkCase(
+                name="false_negative_coverage_guard",
+                cluster_card=build_semantic_card(
+                    primary_topic="Local SEO",
+                    topic_labels=["Local SEO"],
+                    core_problem="Local SEO support for growing businesses.",
+                    dominant_intent="commercial",
+                    secondary_intents=[],
+                    page_role="money_page",
+                    content_format="service_page",
+                    what_this_page_is_about="Local SEO support for growing businesses.",
+                    what_this_page_is_not_about="Not another topic.",
+                    commerciality="high",
+                    evidence_snippets=["Local SEO"],
+                    confidence=0.82,
+                ),
+                cluster_members=[SimpleNamespace(page_type="service")],
+                own_pages=[own_page],
+                allowed_coverage_types={"partial_coverage", "strong_semantic_coverage"},
+            ),
+        ],
+        dedupe_cases=[
+            competitive_gap_evaluation_service.DedupeBenchmarkCase(
+                name="duplicate_recommendations_merge",
+                rows=[
+                    {
+                        "gap_key": "gap-a",
+                        "semantic_cluster_key": "sg:a",
+                        "gap_type": "EXPAND_EXISTING_TOPIC",
+                        "gap_detail_type": "EXPAND_EXISTING_PAGE",
+                        "coverage_type": "strong_semantic_coverage",
+                        "canonical_topic_label": "Local SEO",
+                        "topic_label": "Local SEO Services",
+                        "topic_key": "local-seo-services",
+                        "target_page_id": 11,
+                        "cluster_intent_profile": "commercial",
+                        "cluster_role_summary": {"money_page": 2},
+                        "competitor_ids": [1],
+                        "competitor_urls": ["https://competitor-a.com/local-seo"],
+                        "coverage_best_own_urls": ["https://example.com/local-seo"],
+                        "supporting_evidence": ["Local SEO services"],
+                        "cluster_entities": ["GBP"],
+                        "priority_score": 74,
+                        "competitor_count": 1,
+                        "merged_topic_count": 1,
+                        "cluster_member_count": 1,
+                        "coverage_confidence": 0.81,
+                        "cluster_confidence": 0.77,
+                        "signals": {"semantic": {"source_candidate_ids": [101], "source_topic_keys": ["local-seo-services"]}},
+                    },
+                    {
+                        "gap_key": "gap-b",
+                        "semantic_cluster_key": "sg:b",
+                        "gap_type": "EXPAND_EXISTING_TOPIC",
+                        "gap_detail_type": "EXPAND_EXISTING_PAGE",
+                        "coverage_type": "strong_semantic_coverage",
+                        "canonical_topic_label": "Local SEO",
+                        "topic_label": "Local SEO",
+                        "topic_key": "local-seo",
+                        "target_page_id": 11,
+                        "cluster_intent_profile": "commercial",
+                        "cluster_role_summary": {"money_page": 2},
+                        "competitor_ids": [2],
+                        "competitor_urls": ["https://competitor-b.com/local-seo"],
+                        "coverage_best_own_urls": ["https://example.com/local-seo"],
+                        "supporting_evidence": ["Local SEO"],
+                        "cluster_entities": ["GBP"],
+                        "priority_score": 72,
+                        "competitor_count": 1,
+                        "merged_topic_count": 1,
+                        "cluster_member_count": 1,
+                        "coverage_confidence": 0.79,
+                        "cluster_confidence": 0.75,
+                        "signals": {"semantic": {"source_candidate_ids": [202], "source_topic_keys": ["local-seo"]}},
+                    },
+                ],
+                expected_row_count=1,
+            ),
+        ],
+    )
+
+    assert benchmark["summary"]["cases_total"] == 5
+    assert benchmark["summary"]["cases_failed"] == 0

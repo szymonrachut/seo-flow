@@ -17,7 +17,7 @@ from app.crawler.scrapy_project import settings as scrapy_project_settings
 from app.crawler.scrapy_project.spiders.site_spider import SiteSpider
 from app.db.models import CrawlJob, CrawlJobStatus
 from app.db.session import SessionLocal
-from app.services import crawl_job_service, export_service
+from app.services import crawl_job_service, export_service, page_taxonomy_service
 
 logger = logging.getLogger(__name__)
 EXPORT_COMMANDS = {"export-pages", "export-links", "export-audit"}
@@ -31,12 +31,24 @@ def parse_crawl_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-urls", type=int, default=app_settings.crawl_default_max_urls)
     parser.add_argument("--max-depth", type=int, default=app_settings.crawl_default_max_depth)
     parser.add_argument("--delay", type=float, default=app_settings.crawl_default_request_delay)
+    parser.add_argument("--render-mode", choices=["never", "auto", "always"], default=app_settings.crawl_default_render_mode)
+    parser.add_argument("--render-timeout-ms", type=int, default=app_settings.crawl_default_render_timeout_ms)
+    parser.add_argument(
+        "--max-rendered-pages",
+        type=int,
+        default=app_settings.crawl_default_max_rendered_pages_per_job,
+    )
     parser.add_argument("--job-id", type=int, default=None, help="Existing crawl job ID to execute.")
     args = parser.parse_args(argv)
     crawl_job_service.validate_crawl_limits(
         max_urls=args.max_urls,
         max_depth=args.max_depth,
         delay=args.delay,
+    )
+    crawl_job_service.validate_render_settings(
+        render_mode=args.render_mode,
+        render_timeout_ms=args.render_timeout_ms,
+        max_rendered_pages_per_job=args.max_rendered_pages,
     )
     return args
 
@@ -49,7 +61,7 @@ def parse_export_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def build_scrapy_settings(delay: float, max_depth: int) -> ScrapySettings:
+def build_scrapy_settings(delay: float, max_depth: int, *, render_mode: str) -> ScrapySettings:
     scrapy_settings = ScrapySettings()
     for key in dir(scrapy_project_settings):
         if key.isupper():
@@ -57,10 +69,12 @@ def build_scrapy_settings(delay: float, max_depth: int) -> ScrapySettings:
 
     scrapy_settings.set("DOWNLOAD_DELAY", delay, priority="cmdline")
     scrapy_settings.set("DEPTH_LIMIT", max_depth, priority="cmdline")
+    scrapy_project_settings.configure_playwright(scrapy_settings, render_mode=render_mode)
     return scrapy_settings
 
 
 def update_job_stats(session: Session, crawl_job: CrawlJob) -> dict[str, Any]:
+    page_taxonomy_service.ensure_page_taxonomy_for_job(session, crawl_job.id)
     stats = crawl_job_service.get_crawl_job_stats(session, crawl_job.id)
     crawl_job.stats_json = stats
     return stats
@@ -74,8 +88,11 @@ def _execute_spider(
     max_urls: int,
     max_depth: int,
     delay: float,
+    render_mode: str,
+    render_timeout_ms: int,
+    max_rendered_pages_per_job: int,
 ) -> None:
-    process = CrawlerProcess(settings=build_scrapy_settings(delay=delay, max_depth=max_depth))
+    process = CrawlerProcess(settings=build_scrapy_settings(delay=delay, max_depth=max_depth, render_mode=render_mode))
     process.crawl(
         SiteSpider,
         start_url=start_url,
@@ -83,6 +100,9 @@ def _execute_spider(
         max_urls=max_urls,
         max_depth=max_depth,
         request_delay=delay,
+        render_mode=render_mode,
+        render_timeout_ms=render_timeout_ms,
+        max_rendered_pages_per_job=max_rendered_pages_per_job,
         site_registered_domain=registered_domain,
     )
     process.start()
@@ -96,6 +116,9 @@ def _run_crawl_job(
     max_urls: int,
     max_depth: int,
     delay: float,
+    render_mode: str,
+    render_timeout_ms: int,
+    max_rendered_pages_per_job: int,
 ) -> int:
     logger.info("Starting crawl_job_id=%s for %s", crawl_job_id, start_url)
 
@@ -114,12 +137,15 @@ def _run_crawl_job(
                 return crawl_job_id
             crawl_job.status = CrawlJobStatus.RUNNING
             crawl_job.started_at = datetime.now(timezone.utc)
-            crawl_job.settings_json = {
-                "start_url": start_url,
-                "max_urls": max_urls,
-                "max_depth": max_depth,
-                "request_delay": delay,
-            }
+            crawl_job.settings_json = crawl_job_service.build_crawl_settings(
+                start_url=start_url,
+                max_urls=max_urls,
+                max_depth=max_depth,
+                delay=delay,
+                render_mode=render_mode,
+                render_timeout_ms=render_timeout_ms,
+                max_rendered_pages_per_job=max_rendered_pages_per_job,
+            )
             session.commit()
 
         _execute_spider(
@@ -129,6 +155,9 @@ def _run_crawl_job(
             max_urls=max_urls,
             max_depth=max_depth,
             delay=delay,
+            render_mode=render_mode,
+            render_timeout_ms=render_timeout_ms,
+            max_rendered_pages_per_job=max_rendered_pages_per_job,
         )
     except Exception as exc:
         failed_error = str(exc)
@@ -162,9 +191,17 @@ def run_crawl(
     max_urls: int,
     max_depth: int,
     delay: float,
+    render_mode: str,
+    render_timeout_ms: int,
+    max_rendered_pages_per_job: int,
     existing_job_id: int | None = None,
 ) -> int:
     normalized_start_url, registered_domain = crawl_job_service.normalize_start_url_or_raise(start_url)
+    crawl_job_service.validate_render_settings(
+        render_mode=render_mode,
+        render_timeout_ms=render_timeout_ms,
+        max_rendered_pages_per_job=max_rendered_pages_per_job,
+    )
 
     if existing_job_id is None:
         with SessionLocal() as session:
@@ -174,6 +211,9 @@ def run_crawl(
                 max_urls=max_urls,
                 max_depth=max_depth,
                 delay=delay,
+                render_mode=render_mode,
+                render_timeout_ms=render_timeout_ms,
+                max_rendered_pages_per_job=max_rendered_pages_per_job,
             )
             session.commit()
             crawl_job_id = crawl_job.id
@@ -186,6 +226,9 @@ def run_crawl(
                 max_urls=max_urls,
                 max_depth=max_depth,
                 delay=delay,
+                render_mode=render_mode,
+                render_timeout_ms=render_timeout_ms,
+                max_rendered_pages_per_job=max_rendered_pages_per_job,
             )
             session.commit()
             crawl_job_id = crawl_job.id
@@ -197,6 +240,9 @@ def run_crawl(
         max_urls=max_urls,
         max_depth=max_depth,
         delay=delay,
+        render_mode=render_mode,
+        render_timeout_ms=render_timeout_ms,
+        max_rendered_pages_per_job=max_rendered_pages_per_job,
     )
 
 
@@ -237,6 +283,9 @@ def main() -> None:
         max_urls=args.max_urls,
         max_depth=args.max_depth,
         delay=args.delay,
+        render_mode=args.render_mode,
+        render_timeout_ms=args.render_timeout_ms,
+        max_rendered_pages_per_job=args.max_rendered_pages,
         existing_job_id=args.job_id,
     )
 

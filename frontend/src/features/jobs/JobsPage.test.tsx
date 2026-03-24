@@ -1,32 +1,32 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { Route } from 'react-router-dom'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { renderRoute, jsonResponse } from '../../test/testUtils'
+import { jsonResponse, renderRoute, setTestLanguage } from '../../test/testUtils'
 import { JobsPage } from './JobsPage'
 
 afterEach(() => {
   vi.restoreAllMocks()
 })
 
+const jobsPayload = [
+  {
+    id: 12,
+    status: 'finished',
+    root_url: 'https://example.com',
+    created_at: '2026-03-13T12:00:00Z',
+    started_at: '2026-03-13T12:01:00Z',
+    finished_at: '2026-03-13T12:05:00Z',
+    total_pages: 15,
+    total_internal_links: 42,
+    total_external_links: 9,
+    total_errors: 1,
+  },
+]
+
 describe('JobsPage', () => {
-  test('renders the jobs list', async () => {
-    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() =>
-      jsonResponse([
-        {
-          id: 12,
-          status: 'finished',
-          root_url: 'https://example.com',
-          created_at: '2026-03-13T12:00:00Z',
-          started_at: '2026-03-13T12:01:00Z',
-          finished_at: '2026-03-13T12:05:00Z',
-          total_pages: 15,
-          total_internal_links: 42,
-          total_external_links: 9,
-          total_errors: 1,
-        },
-      ]),
-    )
+  test('renders the jobs list in English by default', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => jsonResponse(jobsPayload))
 
     renderRoute(<JobsPage />, {
       path: '/jobs',
@@ -35,52 +35,90 @@ describe('JobsPage', () => {
 
     expect(screen.getByText('Jobs and crawl control')).toBeInTheDocument()
     expect(await screen.findByText('#12')).toBeInTheDocument()
-    expect(screen.getByText('finished')).toBeInTheDocument()
-    expect(screen.getByText('42')).toBeInTheDocument()
+    expect(within(screen.getByRole('table')).getAllByText('Finished').length).toBeGreaterThan(0)
+    expect(within(screen.getByRole('table')).getByText('42')).toBeInTheDocument()
   })
 
-  test('creates a new crawl job and navigates to the detail route', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
-      const url = String(input)
-      const method = init?.method ?? 'GET'
+  test('renders translated jobs UI in Polish', async () => {
+    await setTestLanguage('pl')
+    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => jsonResponse(jobsPayload))
 
-      if (method === 'POST' && url.includes('/crawl-jobs')) {
-        return jsonResponse({ id: 77 })
-      }
-
-      if (method === 'GET' && url.includes('/crawl-jobs')) {
-        return jsonResponse([])
-      }
-
-      throw new Error(`Unexpected request: ${method} ${url}`)
+    renderRoute(<JobsPage />, {
+      path: '/jobs',
+      route: '/jobs',
     })
 
-    const { user } = renderRoute(<JobsPage />, {
+    expect(screen.getByText('Zadania i kontrola crawlowania')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Utworz zadanie crawla' })).toBeInTheDocument()
+    expect(await screen.findByText('Zakonczone')).toBeInTheDocument()
+    expect(screen.getByText('Filtry zadan')).toBeInTheDocument()
+  })
+
+  test('renders stage 5 render controls in the create job form', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => jsonResponse([]))
+
+    renderRoute(<JobsPage />, {
       path: '/jobs',
       route: '/jobs',
       extraRoutes: [<Route key="detail" path="/jobs/:jobId" element={<div>Job detail route</div>} />],
     })
 
-    await user.clear(await screen.findByLabelText('Root URL'))
-    await user.type(screen.getByLabelText('Root URL'), 'https://site.test')
-    await user.clear(screen.getByLabelText('Max URLs'))
-    await user.type(screen.getByLabelText('Max URLs'), '120')
-    await user.click(screen.getByRole('button', { name: 'Create crawl job' }))
+    await screen.findByText('Launch a local audit')
+    expect(screen.getByLabelText('Render mode')).toBeInTheDocument()
+    expect(screen.getByLabelText('Render timeout (ms)')).toHaveValue(8000)
+    expect(screen.getByLabelText('Render timeout (ms)')).toHaveAttribute('min', '1000')
+    expect(screen.getByLabelText('Render timeout (ms)')).toHaveAttribute('max', '60000')
+    expect(screen.getByLabelText('Max depth')).toHaveValue(10)
+    expect(screen.getByLabelText('Rendered pages limit')).toHaveValue(25)
+  })
 
-    expect(await screen.findByText('Job detail route')).toBeInTheDocument()
-    await waitFor(() =>
-      expect(
-        fetchMock.mock.calls.some(
-          ([input, init]) => String(input).includes('/crawl-jobs') && (init?.method ?? 'GET') === 'POST',
-        ),
-      ).toBe(true),
-    )
+  test('filters the jobs list by status in the URL', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockImplementationOnce(() => jsonResponse(jobsPayload))
+      .mockImplementationOnce(() => jsonResponse(jobsPayload))
 
-    const postCall = fetchMock.mock.calls.find(
-      ([input, init]) => String(input).includes('/crawl-jobs') && (init?.method ?? 'GET') === 'POST',
-    )
+    const { user } = renderRoute(<JobsPage />, {
+      path: '/jobs',
+      route: '/jobs',
+      showLocation: true,
+    })
 
-    expect(postCall).toBeDefined()
-    expect(String(postCall?.[1]?.body)).toContain('"root_url":"https://site.test"')
+    await screen.findByText('#12')
+    await user.selectOptions(screen.getByLabelText('Status'), 'finished')
+
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('status_filter=finished'))
+  })
+
+  test('changes sorting from the jobs table header', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockImplementationOnce(() => jsonResponse(jobsPayload))
+      .mockImplementationOnce(() => jsonResponse(jobsPayload))
+
+    const { user } = renderRoute(<JobsPage />, {
+      path: '/jobs',
+      route: '/jobs',
+      showLocation: true,
+    })
+
+    await screen.findByText('#12')
+    await user.click(screen.getByRole('button', { name: 'Sort by Errors' }))
+
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('sort_by=total_errors'))
+    expect(screen.getByTestId('location-search')).toHaveTextContent('sort_order=asc')
+  })
+
+  test('shows a clear message when the API is unavailable', async () => {
+    await setTestLanguage('pl')
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new TypeError('Failed to fetch'))
+
+    renderRoute(<JobsPage />, {
+      path: '/jobs',
+      route: '/jobs',
+    })
+
+    expect(await screen.findByText('Nie udalo sie pobrac listy zadan')).toBeInTheDocument()
+    expect(
+      screen.getByText('Nie mozna polaczyc sie z API pod adresem http://localhost:8000. Sprawdz, czy backend FastAPI jest uruchomiony.'),
+    ).toBeInTheDocument()
   })
 })

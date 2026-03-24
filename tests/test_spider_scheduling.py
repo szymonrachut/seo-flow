@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+import pytest
 import scrapy
 from scrapy.http import HtmlResponse, Request
 
 from app.crawler.normalization.urls import normalize_url
 from app.crawler.scrapy_project.items import PageWithLinksItem
 from app.crawler.scrapy_project.spiders.site_spider import SiteSpider
+
+pytestmark = pytest.mark.slow
 
 
 def build_response(url: str, html: str, depth: int = 0) -> HtmlResponse:

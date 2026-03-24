@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16
+    container_name: seo-crawler-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      # Keep this stable. Changing it does not update an already initialized volume and
+      # local tests / migrations must not rotate the postgres role password for convenience.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-seo_crawler}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "PGPASSWORD=$$POSTGRES_PASSWORD psql -h host.docker.internal -p ${POSTGRES_PORT:-5432} -U $$POSTGRES_USER -d $$POSTGRES_DB -c 'select 1' >/dev/null 2>&1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -1,0 +1,3289 @@
+{
+  "app": {
+    "eyebrow": "Local SEO crawler",
+    "title": "Crawler Console"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "polish": "Polski",
+    "short": {
+      "en": "EN",
+      "pl": "PL"
+    }
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "nav": {
+    "sites": "Sites",
+    "jobs": "Operations",
+    "overview": "Overview",
+    "progress": "Progress",
+    "pages": "Pages",
+    "contentRecommendations": "Content Recommendations",
+    "competitiveGap": "Competitive Gap",
+    "links": "Links",
+    "internalLinking": "Internal Linking",
+    "cannibalization": "Cannibalization",
+    "audit": "Audit",
+    "opportunities": "SEO Opportunities",
+    "gsc": "GSC",
+    "trends": "Trends",
+    "crawls": "Crawls",
+    "crawlsHistory": "History",
+    "newCrawl": "New Crawl",
+    "changes": "Changes"
+  },
+  "common": {
+    "any": "Any",
+    "yes": "Yes",
+    "no": "No",
+    "reset": "Reset",
+    "open": "Open",
+    "copy": "Copy",
+    "copied": "Copied",
+    "search": "Search",
+    "status": "Status",
+    "created": "Created",
+    "started": "Started",
+    "finished": "Finished",
+    "rootUrl": "Root URL",
+    "prev": "Prev",
+    "next": "Next",
+    "pageSize": "Page size",
+    "sortBy": "Sort by {{column}}",
+    "unknownError": "Unknown error",
+    "length": "Length: {{count}}",
+    "operations": "Operations",
+    "export": "Export",
+    "showFilters": "Show filters",
+    "hideFilters": "Hide filters",
+    "showInPages": "Show in Pages",
+    "showInLinks": "Show in Links",
+    "showAllFilters": "Show all filters",
+    "hideExtraFilters": "Hide extra filters",
+    "soon": "Soon"
+  },
+  "errors": {
+    "networkUnavailable": "Unable to reach the API at {{apiBaseUrl}}. Check that the FastAPI backend is running."
+  },
+  "pagination": {
+    "summary": "Page {{page}} of {{totalPages}} | {{totalItems}} items"
+  },
+  "quickFilters": {
+    "description": "Click to toggle filters on or off, combine multiple filters, and use Reset to clear the quick-filter slice."
+  },
+  "sort": {
+    "title": "Sort",
+    "description": "Sorting is synchronized with the URL.",
+    "by": "By",
+    "order": "Order",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "routes": {
+    "notFound": {
+      "title": "Route not found",
+      "description": "This local console does not know the route you requested."
+    }
+  },
+  "documentTitle": {
+    "sites": "Sites",
+    "newSite": "Add site",
+    "siteOverview": "Site {{domain}}",
+    "siteProgress": "Site {{domain}} progress",
+    "siteChanges": "Site {{domain}} changes",
+    "siteCrawls": "Site {{domain}} crawls",
+    "siteNewCrawl": "Site {{domain}} new crawl",
+    "sitePages": "Site {{domain}} pages",
+    "sitePagesRecords": "Site {{domain}} page records",
+    "siteAudit": "Site {{domain}} audit",
+    "siteAuditSections": "Site {{domain}} audit sections",
+    "siteGsc": "Site {{domain}} GSC overview",
+    "siteGscSettings": "Site {{domain}} GSC settings",
+    "siteGscImport": "Site {{domain}} GSC import",
+    "siteContentRecommendations": "Site {{domain}} content recommendations overview",
+    "siteContentRecommendationsActive": "Site {{domain}} active content recommendations",
+    "siteContentRecommendationsImplemented": "Site {{domain}} implemented content recommendations",
+    "siteCompetitiveGap": "Site {{domain}} competitive gap",
+    "siteCompetitiveGapStrategy": "Site {{domain}} competitive gap strategy",
+    "siteCompetitiveGapCompetitors": "Site {{domain}} competitive gap competitors",
+    "siteCompetitiveGapSync": "Site {{domain}} competitive gap synchronization",
+    "siteCompetitiveGapResults": "Site {{domain}} competitive gap results",
+    "siteOpportunities": "Site {{domain}} SEO opportunities",
+    "siteOpportunitiesRecords": "Site {{domain}} opportunity records",
+    "siteInternalLinking": "Site {{domain}} internal linking",
+    "siteInternalLinkingIssues": "Site {{domain}} internal linking issues",
+    "pagesCompare": "Site {{domain}} page changes",
+    "auditCompare": "Site {{domain}} audit changes",
+    "opportunitiesCompare": "Site {{domain}} opportunity changes",
+    "internalLinkingCompare": "Site {{domain}} internal linking changes",
+    "jobs": "Jobs",
+    "job": "Job",
+    "jobDetail": "Job #{{jobId}}",
+    "pages": "Job #{{jobId}} pages",
+    "links": "Job #{{jobId}} links",
+    "internalLinking": "Job #{{jobId}} internal linking",
+    "cannibalization": "Job #{{jobId}} cannibalization",
+    "audit": "Job #{{jobId}} audit",
+    "opportunities": "Job #{{jobId}} opportunities",
+    "gsc": "Job #{{jobId}} GSC",
+    "trends": "Job #{{jobId}} trends"
+  },
+  "shell": {
+    "routeTitles": {
+      "sites": "All Sites",
+      "newSite": "Add Site",
+      "progress": "Progress",
+      "pages": "Pages",
+      "pagesRecords": "Pages Records",
+      "audit": "Audit",
+      "auditSections": "Audit Sections",
+      "opportunities": "SEO Opportunities",
+      "opportunitiesRecords": "Opportunity Records",
+      "internalLinking": "Internal Linking",
+      "internalLinkingIssues": "Internal Linking Issues",
+      "changes": "Changes",
+      "changesPages": "Pages Changes",
+      "changesAudit": "Audit Changes",
+      "changesOpportunities": "SEO Opportunities Changes",
+      "changesInternalLinking": "Internal Linking Changes",
+      "contentRecommendationsOverview": "Content Recommendations Overview",
+      "contentRecommendationsActive": "Active Content Recommendations",
+      "contentRecommendationsImplemented": "Implemented Content Recommendations",
+      "gscOverview": "GSC Overview",
+      "gscSettings": "GSC Settings",
+      "gscImport": "GSC Import",
+      "crawlsHistory": "Crawl History",
+      "crawlsNew": "New Crawl",
+      "operations": "Operations",
+      "jobDetail": "Job #{{jobId}}",
+      "jobPages": "Job #{{jobId}} pages",
+      "jobLinks": "Job #{{jobId}} links",
+      "jobInternalLinking": "Job #{{jobId}} internal linking",
+      "jobCannibalization": "Job #{{jobId}} cannibalization",
+      "jobAudit": "Job #{{jobId}} audit",
+      "jobOpportunities": "Job #{{jobId}} SEO opportunities",
+      "jobGsc": "Job #{{jobId}} GSC",
+      "jobTrends": "Job #{{jobId}} trends"
+    },
+    "actions": {
+      "systemSettings": "System settings",
+      "account": "Account"
+    },
+    "global": {
+      "sites": "All Sites",
+      "operations": "Operations",
+      "systemSettings": "System Settings",
+      "account": "Account"
+    },
+    "sidebar": {
+      "eyebrow": "Navigation",
+      "title": "Site workspace",
+      "siteSearch": "Quick site search",
+      "siteSearchPlaceholder": "example.com",
+      "siteSwitcher": "Site switcher",
+      "siteSwitcherPlaceholder": "Choose a site",
+      "addSite": "Add Site",
+      "sitesError": "Failed to load the sites list.",
+      "noSites": "No sites matched the current search.",
+      "currentSite": "Current site",
+      "siteNavigation": "Current site navigation",
+      "global": "Global section",
+      "globalNavigation": "Global navigation"
+    },
+    "site": {
+      "empty": "Pick a site to see its workspace status and navigation.",
+      "activeCrawlLabel": "Active crawl #{{id}}",
+      "noActiveCrawl": "No active crawl",
+      "lastCrawl": "Last crawl",
+      "gsc": "GSC status",
+      "gscConnected": "Connected",
+      "gscNotConnected": "Not connected"
+    }
+  },
+  "jobs": {
+    "status": {
+      "pending": "Pending",
+      "running": "Running",
+      "finished": "Finished",
+      "failed": "Failed",
+      "stopped": "Stopped"
+    },
+    "page": {
+      "eyebrow": "SEO crawler console",
+      "title": "Jobs and crawl control",
+      "description": "Run local crawls, monitor progress, duplicate proven configs and jump straight into pages, links or audit.",
+      "loading": "Loading crawl jobs..."
+    },
+    "filters": {
+      "title": "Job filters",
+      "description": "Filter by status or search by job id / root URL. Table headers control sorting.",
+      "searchPlaceholder": "job id or root URL"
+    },
+    "table": {
+      "job": "Job",
+      "status": "Status",
+      "started": "Started",
+      "finished": "Finished",
+      "pages": "Pages",
+      "internalLinks": "Internal links",
+      "externalLinks": "External links",
+      "errors": "Errors",
+      "open": "Open"
+    },
+    "empty": {
+      "title": "No crawl jobs matched the current view",
+      "description": "Adjust the filters or create a new crawl job."
+    },
+    "errors": {
+      "listTitle": "Jobs list failed"
+    },
+    "form": {
+      "eyebrow": "New crawl job",
+      "title": "Launch a local audit",
+      "description": "Keep frontend validation light. The backend still validates the payload.",
+      "rootUrl": "Root URL",
+      "rootUrlPlaceholder": "https://example.com",
+      "maxUrls": "Max URLs",
+      "maxDepth": "Max depth",
+      "delay": "Delay",
+      "renderMode": "Render mode",
+      "renderModeNever": "Never",
+      "renderModeAuto": "Auto",
+      "renderModeAlways": "Always",
+      "renderTimeout": "Render timeout (ms)",
+      "renderLimit": "Rendered pages limit",
+      "submit": "Create crawl job",
+      "submitting": "Creating job..."
+    },
+    "detail": {
+      "invalidIdTitle": "Invalid job id",
+      "invalidIdMessage": "The route does not contain a valid numeric job id.",
+      "loading": "Loading job #{{jobId}}...",
+      "errorTitle": "Job detail failed",
+      "emptyTitle": "Job not available",
+      "emptyDescription": "The backend returned an empty job response.",
+      "overviewEyebrow": "Job overview",
+      "title": "Crawl job #{{jobId}}",
+      "timeRange": "Started {{started}} | Finished {{finished}}",
+      "exportPages": "Export pages.csv",
+      "exportLinks": "Export links.csv",
+      "exportAudit": "Export audit.csv",
+      "openSiteWorkspace": "Open site workspace",
+      "duplicate": "Run again with same settings",
+      "duplicatePending": "Creating copy...",
+      "stop": "Stop job",
+      "stopPending": "Stopping...",
+      "stopErrorTitle": "Stop request failed",
+      "duplicateErrorTitle": "Duplicate job failed",
+      "summaryCards": {
+        "pages": "Pages",
+        "links": "Links",
+        "renderedPages": "Rendered pages",
+        "jsHeavyLike": "JS-heavy-like",
+        "renderErrors": "Render errors",
+        "schema": "Schema pages",
+        "gsc28d": "Pages with GSC 28d",
+        "gscOpportunities": "GSC opportunities",
+        "queuedUrls": "Queued URLs",
+        "visitedPages": "Visited pages",
+        "discoveredLinks": "Discovered links",
+        "errors": "Errors"
+      },
+      "summaryCountsTitle": "Summary counts",
+      "summaryCounts": {
+        "total_pages": "Total pages",
+        "total_links": "Total links",
+        "total_internal_links": "Total internal links",
+        "total_external_links": "Total external links",
+        "pages_missing_title": "Pages missing title",
+        "pages_missing_meta_description": "Pages missing meta description",
+        "pages_missing_h1": "Pages missing H1",
+        "pages_non_indexable_like": "Non-indexable-like pages",
+        "rendered_pages": "Rendered pages",
+        "js_heavy_like_pages": "JS-heavy-like pages",
+        "pages_with_render_errors": "Pages with render errors",
+        "pages_with_schema": "Pages with schema",
+        "pages_with_x_robots_tag": "Pages with X-Robots-Tag",
+        "pages_with_gsc_28d": "Pages with GSC 28d",
+        "pages_with_gsc_90d": "Pages with GSC 90d",
+        "gsc_opportunities_28d": "GSC opportunities 28d",
+        "gsc_opportunities_90d": "GSC opportunities 90d",
+        "broken_internal_links": "Broken internal links",
+        "redirecting_internal_links": "Redirecting internal links"
+      },
+      "runtimeTitle": "Settings and runtime",
+      "renderSettingsTitle": "Rendering settings",
+      "renderMode": "Render mode",
+      "renderTimeout": "Render timeout",
+      "renderLimit": "Render limit",
+      "nextStepsTitle": "Next steps",
+      "inspectPages": "Inspect pages",
+      "inspectLinks": "Inspect links",
+      "openAudit": "Open audit",
+      "openOpportunities": "Open opportunities",
+      "openGsc": "Open GSC",
+      "openTrends": "Open trends",
+      "waitingTitle": "Waiting for first results",
+      "waitingDescription": "This job has been created but no pages have been persisted yet. The overview polls automatically while the job is active."
+    }
+  },
+  "sites": {
+    "invalidIdTitle": "Invalid site id",
+    "invalidIdMessage": "The route does not contain a valid numeric site id.",
+    "page": {
+      "eyebrow": "Site workspace",
+      "title": "Sites and workspaces",
+      "description": "Treat each site as a durable workspace, keep crawls as time snapshots and jump into the active crawl when needed.",
+      "addSite": "Add site",
+      "loading": "Loading sites...",
+      "errorTitle": "Sites list failed",
+      "emptyTitle": "No sites available yet",
+      "emptyDescription": "Create the first crawl to open a site workspace."
+    },
+    "newPage": {
+      "eyebrow": "New site",
+      "title": "Add a site and launch the first crawl",
+      "description": "This is the quick entry point for a new workspace. The `/sites` list remains the main place for managing all site workspaces.",
+      "backToSites": "Back to sites",
+      "workspaceTitle": "What happens next",
+      "workspaceDescription": "The first crawl creates the durable site workspace, sets the active snapshot, and opens the new shell for that domain.",
+      "cards": {
+        "workspace": {
+          "label": "Workspace",
+          "description": "The site remains the durable workspace for future crawl snapshots."
+        },
+        "snapshot": {
+          "label": "Snapshot",
+          "description": "The first crawl creates the baseline snapshot without mixing multiple crawls inside the core tables."
+        },
+        "navigation": {
+          "label": "Navigation",
+          "description": "Once created, you land in the site workspace with the new sidebar, context bar, and site-centric routing."
+        }
+      }
+    },
+    "table": {
+      "site": "Site",
+      "latestCrawl": "Latest crawl",
+      "noCrawls": "No crawls",
+      "crawls": "Crawls",
+      "lastCrawlAt": "Last crawl",
+      "gscProperty": "GSC property",
+      "open": "Open"
+    },
+    "pages": {
+      "records": {
+        "navLabel": "Records"
+      }
+    },
+    "audit": {
+      "sectionsPage": {
+        "navLabel": "Sections"
+      }
+    },
+    "workspace": {
+      "loading": "Loading site workspace...",
+      "errorTitle": "Site workspace failed",
+      "emptyTitle": "Site workspace unavailable",
+      "emptyDescription": "The backend returned an empty site workspace response.",
+      "eyebrow": "Site workspace",
+      "lastCrawl": "Last crawl",
+      "gscProperty": "GSC property",
+      "gscStatus": "GSC status",
+      "gscConnected": "Connected",
+      "gscNotConnected": "Not connected",
+      "gscNotConnectedHint": "Select a GSC property for this site when you're ready.",
+      "activeCrawlHint": "Current working snapshot for the site workspace.",
+      "openActiveCrawl": "Open active crawl",
+      "openChanges": "Open Changes",
+      "activeCrawl": "Active crawl",
+      "baselineCrawl": "Baseline crawl",
+      "noActiveCrawl": "No active crawl",
+      "noBaseline": "No baseline",
+      "changesStatus": "Changes context",
+      "changesReady": "Changes are ready",
+      "changesWaiting": "Waiting for a baseline",
+      "changesReadyHint": "You already have an active and baseline crawl, so compare views remain available under Changes.",
+      "changesWaitingHint": "Pick another baseline crawl to activate compare views without making them dominate the whole shell.",
+      "changesHelper": "Comparison stays under Changes."
+    },
+    "progress": {
+      "eyebrow": "Progress",
+      "title": "Are we moving forward?",
+      "description": "Track progress for the selected site through the active crawl, supporting baseline context, and the most reliable site-level signals we already have.",
+      "emptyActiveTitle": "No active crawl selected",
+      "emptyActiveDescription": "Pick an active crawl in the workspace context or run a new snapshot to unlock the progress dashboard.",
+      "actions": {
+        "openCrawl": "Open crawl",
+        "openChanges": "Open Changes",
+        "openCrawls": "Open crawl history",
+        "openGsc": "Open GSC",
+        "openContentRecommendations": "Open Content Recommendations"
+      },
+      "loadingCompare": "Loading change signals for this site.",
+      "loadingImplementation": "Loading implementation progress.",
+      "compareErrorTitle": "Progress compare is unavailable",
+      "compareEmptyTitle": "Add another crawl to measure change",
+      "compareEmptyDescription": "The page still shows current-site signals, but improvement and regression lists need a supporting baseline snapshot.",
+      "status": {
+        "title": "Active crawl status",
+        "description": "The active crawl remains the working center of the site workspace.",
+        "pagesVisited": "Visited pages",
+        "queuedUrls": "Queued URLs",
+        "discoveredLinks": "Discovered links",
+        "errors": "Errors",
+        "crawlStarted": "Crawl started",
+        "crawlFinished": "Crawl finished",
+        "activeSnapshot": "Active snapshot",
+        "workingScope": "Working scope"
+      },
+      "context": {
+        "title": "Comparison context",
+        "readyDescription": "Baseline is available as supporting context, but it no longer dominates the screen.",
+        "waitingDescription": "Progress still works without a baseline, but the change sections stay lighter until another crawl is available.",
+        "compareReady": "Compare ready",
+        "baselineOnly": "Baseline helper",
+        "compareReadyDescription": "The active crawl can now be compared with baseline crawl #{{id}} under Changes and in the progress signals below.",
+        "baselineOnlyDescription": "Baseline crawl #{{id}} is selected, but compare stays secondary to the current active snapshot.",
+        "emptyTitle": "No baseline selected",
+        "emptyDescription": "Run another crawl or pick one from history to unlock the before/after sections."
+      },
+      "gsc": {
+        "title": "GSC snapshot",
+        "connectedDescription": "The active crawl already has imported GSC coverage for this workspace.",
+        "noDataDescription": "The property is connected, but this active crawl still has no imported GSC data.",
+        "notConnectedDescription": "Connect a site property to bring GSC signals into the progress view.",
+        "property": "Property",
+        "noProperty": "No property selected",
+        "rangeLabel": "Imported range",
+        "pagesWithImpressions": "Pages with impressions",
+        "lastImported": "Last import",
+        "noRange": "No imported range",
+        "ranges": {
+          "last_28_days": "Last 28 days",
+          "last_90_days": "Last 90 days"
+        }
+      },
+      "kpis": {
+        "title": "Trend KPIs",
+        "description": "These cards stay grounded in the current snapshot and only add change context when the data is already stable.",
+        "cards": {
+          "pagesCrawled": "Pages crawled",
+          "metadataIssues": "Metadata gaps",
+          "opportunityPages": "Pages with opportunities",
+          "internalLinkingIssues": "Internal linking issue pages",
+          "implementedRecommendations": "Implemented recommendations",
+          "gscPagesWithClicks": "GSC pages with clicks"
+        },
+        "valueUnavailable": "Unavailable",
+        "valueNoGsc": "No GSC",
+        "hints": {
+          "pagesCompared": "Compared with baseline: {{delta}} page(s).",
+          "pagesCurrent": "Current active snapshot size.",
+          "metadataCompared": "Compared with baseline: {{delta}} metadata issue(s).",
+          "metadataCurrent": "Missing title, meta description, or H1 in the active crawl.",
+          "opportunitiesCompared": "Resolved: {{resolved}} URL(s). New: {{newCount}} URL(s).",
+          "opportunitiesCurrent": "High priority: {{high}}. Critical: {{critical}}.",
+          "opportunitiesWaiting": "Opportunity data is still loading for the active crawl.",
+          "internalCompared": "Resolved orphan-like: {{resolved}}. Weak pages worsened: {{worsened}}.",
+          "internalCurrent": "Orphan-like: {{orphan}}. Weak important: {{weak}}.",
+          "internalWaiting": "Internal linking signals are still loading.",
+          "implemented": "Improved: {{improved}}. Too early: {{tooEarly}}. Active now: {{active}}.",
+          "implementedWaiting": "Implementation lifecycle data is still loading.",
+          "gscCoverage": "Pages with impressions: {{impressions}}. Last import: {{importedAt}}.",
+          "gscWaiting": "Import GSC data for the active crawl to unlock this KPI.",
+          "gscDisconnected": "Connect a site-level property first."
+        }
+      },
+      "improved": {
+        "title": "What improved",
+        "description": "Focused deltas that show where the active crawl is moving in the right direction.",
+        "emptyTitle": "No clear improvement detected yet",
+        "emptyDescription": "The current data does not show a strong positive delta against the baseline.",
+        "items": {
+          "auditResolvedTitle": "{{count}} audit issue(s) resolved",
+          "auditResolvedDescription": "Resolved across {{count}} audit section(s).",
+          "pagesImprovedTitle": "{{count}} URL(s) improved",
+          "pagesImprovedDescription": "Priority improved on {{priorityCount}} URL(s). Internal linking improved on {{internalCount}} URL(s).",
+          "opportunitiesResolvedTitle": "{{count}} opportunity URL(s) resolved",
+          "opportunitiesResolvedDescription": "{{count}} URL(s) left the actionable set.",
+          "internalLinkingTitle": "{{count}} internal linking signal(s) improved",
+          "internalLinkingDescription": "Orphan-like resolved: {{orphanCount}}. Link equity improved: {{equityCount}}.",
+          "implementedTitle": "{{count}} implemented recommendation(s) already improved",
+          "implementedDescription": "{{count}} implementation outcome(s) are already assessed."
+        }
+      },
+      "worsened": {
+        "title": "What worsened",
+        "description": "Concrete regressions to review before the next crawl or implementation cycle.",
+        "emptyTitle": "No strong regression detected",
+        "emptyDescription": "The baseline compare does not show major negative movement right now.",
+        "items": {
+          "auditNewTitle": "{{count}} new audit issue(s)",
+          "auditNewDescription": "New or worsened in {{count}} audit section(s).",
+          "pagesTitle": "{{count}} URL(s) worsened",
+          "pagesDescription": "Priority worsened on {{priorityCount}} URL(s). Content dropped on {{contentCount}} URL(s).",
+          "opportunitiesTitle": "{{count}} new opportunity URL(s)",
+          "opportunitiesDescription": "{{count}} URL(s) entered the actionable set.",
+          "internalLinkingTitle": "{{count}} internal linking regression(s)",
+          "internalLinkingDescription": "New orphan-like: {{orphanCount}}. Weak important worsened: {{weakCount}}.",
+          "implementedTitle": "{{count}} implemented recommendation(s) worsened",
+          "implementedDescription": "Review recent implementations whose tracked outcome now trends down."
+        }
+      },
+      "implementation": {
+        "title": "Implementation progress",
+        "description": "Recommendation lifecycle for the active workspace, evaluated with the {{window}} outcome window.",
+        "errorTitle": "Implementation progress is unavailable",
+        "cards": {
+          "active": "Active recommendations",
+          "implemented": "Implemented",
+          "tooEarly": "Too early to judge",
+          "assessed": "Assessed outcomes"
+        },
+        "hints": {
+          "active": "Recommendations currently open for the active crawl.",
+          "implemented": "Implemented recommendations tracked in the current scope.",
+          "tooEarly": "Still inside the {{window}} window.",
+          "assessed": "Improved, unchanged, limited, unavailable, or worsened."
+        },
+        "recentTitle": "Recently tracked implementations",
+        "implementedAt": "Implemented",
+        "emptyTitle": "No implementation lifecycle yet",
+        "emptyDescription": "Mark recommendations as done to start tracking rollout progress over time."
+      },
+      "timeline": {
+        "title": "Recent timeline",
+        "description": "A lightweight timeline of the latest crawl, GSC, and implementation events already available in the workspace.",
+        "emptyTitle": "No recent events yet",
+        "emptyDescription": "This site needs at least one crawl, import, or tracked implementation to build a timeline.",
+        "compareBadge": "Compare",
+        "events": {
+          "activeFinishedTitle": "Active crawl finished",
+          "activeRunningTitle": "Active crawl is running",
+          "activePendingTitle": "Active crawl is queued",
+          "activeSnapshotTitle": "Active snapshot updated",
+          "activeDescription": "Snapshot #{{id}} is the current working crawl for this workspace.",
+          "baselineTitle": "Baseline context updated",
+          "baselineDescription": "Baseline crawl #{{id}} is available as supporting compare context.",
+          "gscImportTitle": "GSC imported for {{range}}",
+          "gscImportDescription": "Pages with clicks: {{clicksPages}}. Pages with impressions: {{impressionsPages}}.",
+          "implementedTitle": "Recommendation marked done",
+          "implementedDescription": "Tracked implementation: {{target}}."
+        }
+      }
+    },
+    "changes": {
+      "eyebrow": "Changes",
+      "title": "What changed between crawls?",
+      "description": "Use this hub as the main entry point to compare the active crawl against the baseline crawl. It keeps the existing compare semantics, but gathers every compare view under one Changes section.",
+      "contextTitle": "Current changes context",
+      "contextDescription": "Active crawl: {{active}}. Baseline crawl: {{baseline}}.",
+      "compareTitle": "Compare entry points",
+      "compareDescription": "Open the exact area that changed without leaving the site workspace context.",
+      "summary": {
+        "activeHint": "Choose an active crawl to unlock compare context.",
+        "baselineHint": "Pick a baseline crawl to compare before and after states.",
+        "compareAreasLabel": "Compare areas ready",
+        "compareAreasReady": "All four compare views are available from this hub.",
+        "compareAreasWaiting": "Compare cards stay parked here until the workspace has a usable baseline."
+      },
+      "empty": {
+        "noActiveTitle": "Choose an active crawl first",
+        "noActiveDescription": "The Changes hub needs an active crawl before it can show what changed between snapshots.",
+        "noBaselineTitle": "Choose a baseline crawl to compare changes",
+        "noBaselineDescription": "Set a baseline crawl in the workspace context to unlock compare views and before/after deltas.",
+        "unavailableTitle": "Compare is not ready yet",
+        "unavailableDescription": "The current active and baseline context still cannot power compare for this site."
+      },
+      "card": {
+        "eyebrow": "Compare",
+        "open": "Open compare view",
+        "notReady": "Waiting for compare context",
+        "noSummary": "Summary becomes available here once compare is ready.",
+        "status": {
+          "ready": "Ready",
+          "loading": "Loading",
+          "error": "Needs retry",
+          "waiting": "Waiting"
+        }
+      },
+      "links": {
+        "pages": {
+          "title": "Pages changes",
+          "description": "Inspect which URLs are new, missing, improved, worsened or otherwise changed between the active and baseline crawl."
+        },
+        "audit": {
+          "title": "Audit changes",
+          "description": "See which audit sections were resolved, which ones regressed, and where new issues appeared."
+        },
+        "opportunities": {
+          "title": "SEO opportunities changes",
+          "description": "Track how opportunities, actionable URLs and priority shifts changed between both crawls."
+        },
+        "internalLinking": {
+          "title": "Internal linking changes",
+          "description": "Review structural regressions and improvements across orphan-like, weakly linked and link equity signals."
+        }
+      }
+    },
+    "overview": {
+      "summary": {
+        "totalCrawls": "Total crawls",
+        "runningCrawls": "Running",
+        "lastCrawl": "Last crawl",
+        "createdAt": "Workspace created"
+      },
+      "newCrawlTitle": "Create the next snapshot",
+      "newCrawlDescription": "Use the dedicated crawl flow to launch another snapshot for this site and keep the workspace context intact.",
+      "newCrawlCards": {
+        "snapshot": {
+          "label": "Snapshot first",
+          "description": "The next crawl creates a new time-based snapshot for this same site."
+        },
+        "workspace": {
+          "label": "Same workspace",
+          "description": "You stay in the same site workspace and keep its active, baseline and GSC context."
+        }
+      },
+      "activeEyebrow": "Active crawl",
+      "activeTitle": "Site state now",
+      "activeDescription": "The active crawl stays at the center of this workspace, while the baseline only adds supporting context.",
+      "emptyActiveTitle": "No active crawl selected",
+      "emptyActiveDescription": "Run a new crawl or pick a snapshot from history to build the current-first overview.",
+      "kpiTitle": "Active snapshot KPIs",
+      "kpiDescription": "These are the most important numbers from the currently selected crawl.",
+      "status": {
+        "title": "Active crawl status",
+        "description": "This snapshot is the working center of the site workspace.",
+        "pagesVisited": "Visited pages",
+        "queuedUrls": "Queued URLs",
+        "discoveredLinks": "Discovered links",
+        "errors": "Crawl errors",
+        "crawlStarted": "Crawl started",
+        "crawlFinished": "Crawl finished",
+        "crawlCreated": "Crawl created",
+        "workingScope": "Crawl scope"
+      },
+      "actions": {
+        "openCrawl": "Open crawl",
+        "openChanges": "Open Changes",
+        "openContentRecommendations": "Open content recommendations",
+        "openCompetitiveGap": "Open competitive gap",
+        "openGsc": "Open site GSC",
+        "openCrawls": "Open crawl history"
+      },
+      "kpi": {
+        "totalPages": "Pages",
+        "internalLinks": "Internal links",
+        "missingTitle": "Missing title",
+        "missingMeta": "Missing meta description",
+        "gsc28d": "Pages with GSC 28d",
+        "gscOpportunities": "GSC opportunities",
+        "brokenInternalLinks": "Broken internal links",
+        "redirectingInternalLinks": "Redirecting internal links"
+      },
+      "gsc": {
+        "title": "GSC status and summary",
+        "connectedDescription": "A GSC property is already attached to the site and can be reused for future crawls.",
+        "emptyDescription": "GSC is not connected yet, so the overview is still missing the full search context.",
+        "property": "Property",
+        "noProperty": "No property connected"
+      },
+      "signals": {
+        "title": "Key signals and next actions",
+        "description": "These cards answer what needs attention now inside the active snapshot.",
+        "noActiveTitle": "An active crawl comes first",
+        "noActiveDescription": "Without an active snapshot the overview cannot show current KPIs or actionable signals yet.",
+        "crawlRunningTitle": "The crawl is still running",
+        "crawlRunningDescription": "The active crawl is still collecting data. Treat the KPIs as a working state and come back as coverage grows.",
+        "crawlErrorsTitle": "The crawler reported errors",
+        "crawlErrorsDescription": "{{count}} crawl errors still need review in the active snapshot.",
+        "metadataTitle": "Metadata still needs work",
+        "metadataDescription": "{{titleCount}} pages are missing a title and {{metaCount}} are missing a meta description.",
+        "internalLinkingTitle": "Internal linking has technical issues",
+        "internalLinkingDescription": "{{brokenCount}} broken and {{redirectCount}} redirecting internal links are still visible.",
+        "gscMissingTitle": "Connect GSC for this site",
+        "gscMissingDescription": "A GSC property is not attached yet, so the current-first overview is missing search signals.",
+        "gscOpportunitiesTitle": "GSC is already surfacing opportunities",
+        "gscOpportunitiesDescription": "{{count}} pages already look like opportunities in the active snapshot.",
+        "readyTitle": "The snapshot is ready for the next step",
+        "readyDescription": "The active crawl already has the core technical context and can anchor your next SEO decisions."
+      },
+      "shortcuts": {
+        "title": "Workspace shortcuts",
+        "description": "Jump straight into the next work areas around the active snapshot.",
+        "contentRecommendationsDescription": "Turn the active snapshot into recommendations based on this site's own data.",
+        "competitiveGapDescription": "Inspect competitive gaps against the current snapshot and the competitor store.",
+        "gscDescription": "Manage the site property and import search data into the active crawl.",
+        "crawlsDescription": "Review crawl history and switch the active or baseline snapshot.",
+        "changesDescription": "Compare stays a supporting layer on top of the active and baseline crawl, grouped inside one hub."
+      },
+      "baselineTitle": "Baseline crawl",
+      "baselineDescription": "An older crawl remains a supporting reference point instead of dominating the overview.",
+      "baselineReady": "Compare ready",
+      "baselineReadyDescription": "Baseline crawl #{{id}} is selected and ready to support the Changes section.",
+      "baselineWaiting": "No baseline yet",
+      "baselineWaitingDescription": "Pick another crawl as the baseline when you want compare context without rebuilding the overview around it.",
+      "delta": {
+        "totalPages": "Delta pages",
+        "internalLinks": "Delta internal links",
+        "missingTitle": "Delta missing title"
+      },
+      "deltaHint": "Active {{active}} vs baseline {{baseline}}",
+      "historyTitle": "Recent crawl history",
+      "historyDescription": "Switch the workspace context or jump straight into a concrete snapshot.",
+      "emptyHistoryTitle": "No crawl history",
+      "emptyHistoryDescription": "This site does not have any crawl snapshots yet.",
+      "siteSummaryTitle": "Workspace at a glance",
+      "siteSummaryDescription": "Lightweight site management context next to the current-first overview.",
+      "reuseGscTitle": "This site already has a persistent GSC property",
+      "reuseGscDescription": "New crawls created from this workspace reuse the selected property automatically. Import still runs into the active crawl snapshot."
+    },
+    "crawls": {
+      "eyebrow": "Crawl history",
+      "loading": "Loading site crawls...",
+      "errorTitle": "Site crawls failed",
+      "emptyTitle": "No crawls for this site",
+      "emptyDescription": "Run a crawl to populate the site history.",
+      "title": "Site crawls",
+      "description": "Inspect the snapshot history for this site, pick the active crawl, set an optional baseline and launch the next snapshot from one dedicated section.",
+      "summary": {
+        "totalCrawls": "Total crawls",
+        "runningCrawls": "Running crawls",
+        "finishedCrawls": "Finished crawls",
+        "lastCrawl": "Last crawl"
+      },
+      "newPage": {
+        "eyebrow": "New crawl",
+        "title": "Launch another crawl snapshot",
+        "description": "Create the next snapshot for this existing site without leaving the current workspace.",
+        "backToHistory": "Back to history",
+        "siteContextTitle": "Current site context",
+        "siteContextDescription": "The new crawl stays inside the same site workspace and reuses its durable context.",
+        "siteContext": {
+          "domain": "Site",
+          "rootUrl": "Root URL",
+          "totalCrawls": "Snapshots so far",
+          "lastCrawl": "Last crawl"
+        },
+        "snapshotTitle": "What this action does",
+        "snapshotDescription": "You are creating a new snapshot for the same site, not a brand new workspace.",
+        "cards": {
+          "workspace": {
+            "label": "Same workspace",
+            "description": "The site remains the durable workspace and keeps its navigation, GSC property and history."
+          },
+          "snapshot": {
+            "label": "New snapshot",
+            "description": "A fresh crawl job becomes the next active snapshot after creation, while older crawls stay in history."
+          }
+        },
+        "gscTitle": "GSC property will be reused",
+        "gscDescription": "This site already has a selected Search Console property, so you can import data into the new crawl later without reconfiguring the integration."
+      },
+      "table": {
+        "crawl": "Crawl",
+        "status": "Status",
+        "created": "Created",
+        "started": "Started",
+        "finished": "Finished",
+        "pages": "Pages",
+        "internalLinks": "Internal links",
+        "externalLinks": "External links",
+        "errors": "Errors",
+        "actions": "Actions"
+      },
+      "actions": {
+        "active": "Active",
+        "useAsActive": "Use as active",
+        "useAsBaseline": "Use as baseline",
+        "open": "Open crawl",
+        "openPages": "Open pages"
+      }
+    },
+    "gsc": {
+      "loading": "Loading site GSC workspace...",
+      "errorTitle": "Site GSC workspace failed",
+      "emptyTitle": "Site GSC workspace unavailable",
+      "emptyDescription": "The backend returned an empty site GSC response.",
+      "nav": {
+        "settings": "Settings",
+        "import": "Import"
+      },
+      "actions": {
+        "openActiveCrawl": "Open active crawl",
+        "openSnapshotDetails": "Open snapshot GSC details",
+        "openSettings": "Open settings",
+        "openImport": "Open import",
+        "openPages": "Open pages",
+        "openOpportunities": "Open SEO opportunities",
+        "openWorkspace": "Open workspace overview",
+        "manageProperty": "Manage property",
+        "importData": "Import data"
+      },
+      "status": {
+        "connected": "Connected",
+        "imported": "Imported",
+        "notImported": "Not imported yet",
+        "missingProperty": "No property",
+        "awaitingSetup": "Setup needed",
+        "oauthConnected": "OAuth connected",
+        "oauthMissing": "OAuth not connected",
+        "readyToImport": "Ready",
+        "noProperty": "No property selected",
+        "noPropertyHint": "Choose a Search Console property for this site workspace.",
+        "noImportHint": "No import has been completed for this site yet.",
+        "noActiveCrawl": "No active crawl",
+        "noActiveCrawlHint": "Pick or run a crawl snapshot before importing data."
+      },
+      "overview": {
+        "eyebrow": "GSC overview",
+        "title": "Google Search Console status",
+        "description": "See the integration state for this site and whether the active crawl already has imported GSC data.",
+        "integrationTitle": "Property and connection",
+        "integrationDescription": "Property selection stays site-level and is reused across future snapshots for the same site.",
+        "propertyLabel": "Selected property",
+        "permissionLabel": "Permission",
+        "importStatusLabel": "Import status for active crawl",
+        "activeCrawlTitle": "Active crawl context",
+        "activeCrawlDescription": "Imports still go into the active crawl snapshot only.",
+        "noActiveCrawl": "There is no active crawl selected for this site yet.",
+        "summaryTitle": "{{range}} summary",
+        "summaryDescription": "Imported metrics already available for this site workspace.",
+        "shortcutsTitle": "Quick shortcuts",
+        "shortcutsDescription": "Jump into the next GSC step or continue analysis from the current site workspace.",
+        "rangeHint": "Imported pages: {{importedPages}}. Last import: {{lastImportedAt}}.",
+        "cards": {
+          "activeCrawlHint": "Current snapshot: #{{id}}.",
+          "noActiveCrawlHint": "Choose an active crawl to unlock imports.",
+          "rootUrlHint": "Site-level property matching stays anchored to the root URL."
+        }
+      },
+      "settings": {
+        "eyebrow": "GSC settings",
+        "title": "Configure site property",
+        "description": "Connect OAuth and choose the persistent Search Console property for this site workspace.",
+        "connectionTitle": "Site-level property setup",
+        "connectionDescription": "This setting belongs to the site and is reused by future crawl snapshots in the same workspace.",
+        "connectEmpty": "Connect Google Search Console before choosing the property for this site.",
+        "propertyLabel": "Property",
+        "saveProperty": "Save site property",
+        "reuseTitle": "Property reuse across future crawls",
+        "reuseDescription": "Once saved here, the same property is reused by later crawl snapshots. Import still happens separately for each active crawl.",
+        "connectionHint": "The OAuth connection only unlocks property selection. It does not import data yet.",
+        "rootUrlHint": "Use a property that best matches this site workspace root URL."
+      },
+      "import": {
+        "eyebrow": "GSC import",
+        "title": "Import data into the active crawl",
+        "description": "Choose the import window for the active crawl snapshot without changing the site-level property configuration.",
+        "activeCrawlTitle": "Import target",
+        "activeCrawlDescription": "This import always writes into the active crawl snapshot selected in the site workspace.",
+        "importStatusLabel": "Current import state",
+        "importRange": "Import range",
+        "importCurrentRange": "Import active crawl range",
+        "importAll": "Import 28d + 90d into active crawl",
+        "rangeSummaryTitle": "{{range}} import summary",
+        "lastImportHint": "Use the buttons below to refresh the imported data for the active crawl.",
+        "noPropertyTitle": "Choose a property before importing",
+        "noPropertyDescription": "Site-level property configuration is required before importing GSC data into the active crawl."
+      },
+      "noActiveCrawlTitle": "No active crawl selected",
+      "noActiveCrawlDescription": "Choose an active crawl in the site workspace before importing GSC data.",
+      "cards": {
+        "propertyStatus": "Property status",
+        "connectionStatus": "OAuth connection",
+        "activeCrawl": "Active crawl",
+        "activeCrawlImport": "Active crawl import",
+        "rootUrl": "Root URL",
+        "lastImport": "Last import"
+      },
+      "ranges": {
+        "last_28_days": "Last 28 days",
+        "last_90_days": "Last 90 days"
+      },
+      "rangeMetrics": {
+        "importedPages": "Imported pages",
+        "pagesWithImpressions": "Pages with impressions",
+        "pagesWithClicks": "Pages with clicks",
+        "pagesWithTopQueries": "Pages with top queries",
+        "topQueries": "Stored top queries",
+        "opportunities": "Issues + impressions",
+        "lastImported": "Last imported"
+      }
+    }
+  },
+  "contentRecommendations": {
+    "nav": {
+      "active": "Active",
+      "implemented": "Implemented"
+    },
+    "actions": {
+      "openActive": "Open active",
+      "openImplemented": "Open implemented",
+      "openPages": "Open pages",
+      "openCompetitiveGap": "Open Competitive Gap",
+      "export": "Export recommendations CSV"
+    },
+    "views": {
+      "eyebrow": "Site intelligence",
+      "overview": {
+        "title": "Content recommendations overview",
+        "description": "See how many recommendations are active now, how many have already been implemented, and where to continue the workflow."
+      },
+      "active": {
+        "title": "Active content recommendations",
+        "description": "Use this working queue to review current recommendations for the active site snapshot."
+      },
+      "implemented": {
+        "title": "Implemented content recommendations",
+        "description": "Review completed recommendations, lifecycle timing, and outcome status without changing backend semantics."
+      }
+    },
+    "overview": {
+      "lifecycleTitle": "Lifecycle status",
+      "lifecycleDescription": "The same site-level lifecycle is preserved here: active, implemented, too early, and evaluated outcomes when available.",
+      "shortcutsTitle": "Quick shortcuts",
+      "shortcutsDescription": "Jump straight into the active queue, implementation history, or related site-level analysis views.",
+      "activeNow": "Active recommendations now",
+      "activeNowDescription": "{{count}} active recommendation(s) are currently ready for review.",
+      "implementedNow": "Implemented recommendations now",
+      "implementedNowDescription": "{{count}} implemented recommendation(s) are in scope for lifecycle review."
+    },
+    "page": {
+      "eyebrow": "Site intelligence",
+      "title": "Content recommendations",
+      "description": "Own-data recommendations for {{active}}. Baseline context: {{baseline}}.",
+      "noBaseline": "none",
+      "loading": "Loading content recommendations...",
+      "openPages": "Open pages compare",
+      "export": "Export recommendations CSV"
+    },
+    "errorTitle": "Content recommendations request failed",
+    "emptyTitle": "No content recommendations matched the current view",
+    "emptyDescription": "Try a broader filter set, switch the active crawl, or reset the current view.",
+    "noActiveCrawlTitle": "Content recommendations need an active crawl",
+    "noActiveCrawlDescription": "Choose an active crawl in the site workspace before opening this module.",
+    "summary": {
+      "totalRecommendations": "Recommendations",
+      "implemented": "Implemented",
+      "highPriority": "High priority",
+      "clustersCovered": "Clusters covered",
+      "createNewPage": "Create new page",
+      "expandExistingPage": "Expand existing page",
+      "strengthenCluster": "Strengthen cluster",
+      "internalSupport": "Internal support",
+      "range": "GSC range"
+    },
+    "quickFilters": {
+      "title": "Recommendation presets",
+      "createNewPage": "Create new page",
+      "expandExisting": "Expand existing page",
+      "strengthenCluster": "Strengthen cluster",
+      "internalSupport": "Improve internal support",
+      "highPriority": "High priority"
+    },
+    "filters": {
+      "title": "Recommendation filters",
+      "description": "Keep the site context in the URL and slice the recommendation queue without changing the underlying heuristics.",
+      "dateRange": "Date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "recommendationType": "Recommendation type",
+      "segment": "Segment",
+      "pageType": "Suggested page type",
+      "cluster": "Cluster contains",
+      "clusterPlaceholder": "e.g. audit",
+      "confidenceMin": "Confidence min (%)",
+      "priorityMin": "Priority score min",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "sort": {
+        "priorityScore": "Priority score",
+        "confidence": "Confidence",
+        "impact": "Impact",
+        "effort": "Effort",
+        "cluster": "Cluster",
+        "type": "Recommendation type",
+        "pageType": "Suggested page type"
+      }
+    },
+    "mix": {
+      "title": "Recommendation mix",
+      "description": "Counts below come from the same site-scoped own-data heuristic payload as the list and export."
+    },
+    "active": {
+      "title": "Active recommendations",
+      "description": "The active queue is still calculated dynamically from the current site workspace and active snapshot.",
+      "visible": "Visible rows"
+    },
+    "segments": {
+      "create_new_page": "Create new page",
+      "expand_existing_page": "Expand existing page",
+      "strengthen_cluster": "Strengthen cluster",
+      "improve_internal_support": "Improve internal support"
+    },
+    "types": {
+      "MISSING_SUPPORTING_CONTENT": {
+        "title": "Missing supporting content",
+        "description": "The topic already has a hub or commercial page, but it still lacks supporting informational URLs."
+      },
+      "THIN_CLUSTER": {
+        "title": "Thin cluster",
+        "description": "The site touches a topic, but the cluster is still too shallow to support it properly."
+      },
+      "EXPAND_EXISTING_PAGE": {
+        "title": "Expand existing page",
+        "description": "An existing URL already shows demand, but content depth or supporting signals are still weak."
+      },
+      "MISSING_STRUCTURAL_PAGE_TYPE": {
+        "title": "Missing structural page type",
+        "description": "The topic has detail pages, but it still lacks a stronger structural hub."
+      },
+      "INTERNAL_LINKING_SUPPORT": {
+        "title": "Internal linking support",
+        "description": "The content exists, but the cluster needs better internal reinforcement before expanding further."
+      }
+    },
+    "card": {
+      "priority": "Priority",
+      "confidence": "Confidence",
+      "markDone": "Mark done",
+      "markingDone": "Marking done...",
+      "previouslyImplemented": "Previously implemented: {{date}}",
+      "openTarget": "Open target URL",
+      "openInPages": "Open in Pages",
+      "targetPage": "Target page",
+      "targetPageType": "Target page type",
+      "suggestedPageType": "Suggested page type",
+      "impactEffort": "Impact / effort",
+      "impact": "Impact",
+      "effort": "Effort",
+      "clusterScores": "Cluster scores",
+      "clusterStrength": "Cluster strength",
+      "coverageGap": "Coverage gap",
+      "internalSupport": "Internal support",
+      "cluster": "Cluster",
+      "clusterKey": "Cluster key",
+      "reasons": "Reasons",
+      "signals": "Signals",
+      "prerequisites": "Prerequisites",
+      "supportingUrls": "Supporting URLs",
+      "none": "None"
+    },
+    "helper": {
+      "title": "What else can be improved for this URL",
+      "openIssues": "Open issues",
+      "improvementActions": "Next actions",
+      "supportingSignals": "Supporting signals",
+      "gscContext": "GSC context",
+      "gscImpressions": "Impressions",
+      "gscClicks": "Clicks",
+      "gscCtr": "CTR",
+      "gscPosition": "Avg position",
+      "gscTopQueries": "Top queries",
+      "internalLinkingContext": "Internal linking context",
+      "internalScore": "Internal score",
+      "internalIssues": "Internal issues",
+      "internalLinks": "Internal links",
+      "internalLinkingPages": "Linking pages",
+      "linkEquity": "Link equity",
+      "anchorDiversity": "Anchor diversity",
+      "cannibalizationContext": "Cannibalization context",
+      "competingUrls": "Competing URLs",
+      "sharedQueries": "Shared queries",
+      "noCannibalization": "No active cannibalization signals for this URL in the active snapshot.",
+      "compareContext": "Compared with baseline",
+      "compareStatus": {
+        "improved": "Improved",
+        "worsened": "Worsened",
+        "unchanged": "Unchanged",
+        "new": "New",
+        "missing": "Missing"
+      }
+    },
+    "implemented": {
+      "title": "Implemented recommendations",
+      "description": "{{count}} implemented recommendation(s) tracked in the current scope for the active snapshot.",
+      "summaryTitle": "Implemented summary",
+      "summaryTotal": "In scope",
+      "summaryImproved": "Improved",
+      "summaryTooEarly": "Too early",
+      "visible": "Visible",
+      "filtersTitle": "Implemented filters",
+      "filtersDescription": "Change the evaluation window, filter tracked outcomes, or search a specific recommendation.",
+      "implementedAt": "Implemented",
+      "implementedAtLabel": "Implementation date",
+      "implementedCrawl": "Implementation crawl",
+      "baselineCrawl": "Implementation baseline",
+      "timesMarkedDone": "Times marked done",
+      "modeLabel": "Outcome mode",
+      "windowLabel": "Outcome window",
+      "statusFilterLabel": "Outcome status",
+      "modeFilterLabel": "Outcome mode",
+      "searchLabel": "Search implemented",
+      "searchPlaceholder": "Recommendation text, title, or URL",
+      "sortLabel": "Sort implemented",
+      "daysSinceImplemented": "Days since implementation",
+      "eligibleForWindow": "Eligible for window",
+      "windowApplied": "Evaluated with the {{window}} window. Days since implementation: {{days}}.",
+      "tooEarlyMessage": "Only {{days}} day(s) have passed since implementation, so the {{window}} window is still too early.",
+      "emptyFilteredTitle": "No implemented recommendations in scope",
+      "emptyFilteredDescription": "Try a broader window, mode, or search.",
+      "emptyStatusDrilldownTitle": "No implemented recommendations for this status",
+      "emptyStatusDrilldownDescription": "The summary still reflects the current window, mode, and search scope. Pick another status or clear the drilldown.",
+      "snapshot": "Implementation snapshot",
+      "snapshotOpenIssues": "Open issues at implementation",
+      "snapshotActions": "Planned follow-up actions",
+      "outcomeDetails": "Outcome details",
+      "before": "Before",
+      "after": "After",
+      "windows": {
+        "7d": "7d",
+        "30d": "30d",
+        "90d": "90d",
+        "all": "All available"
+      },
+      "mode": {
+        "gsc": "GSC",
+        "internal_linking": "Internal linking",
+        "cannibalization": "Cannibalization",
+        "issue_flags": "Issue flags",
+        "mixed": "Mixed",
+        "unknown": "Unknown"
+      },
+      "sort": {
+        "implementedAtDesc": "Implementation date: newest",
+        "implementedAtAsc": "Implementation date: oldest",
+        "outcome": "Outcome status",
+        "recommendationType": "Recommendation type",
+        "title": "Title / URL"
+      },
+      "status": {
+        "improved": "Improved",
+        "unchanged": "Unchanged",
+        "pending": "Pending",
+        "too_early": "Too early",
+        "limited": "Limited",
+        "unavailable": "Unavailable",
+        "worsened": "Worsened"
+      }
+    }
+  },
+  "competitiveGap": {
+    "nav": {
+      "sync": "Synchronization",
+      "strategy": "Strategy Brief",
+      "competitors": "Competitor Selection",
+      "results": "Results"
+    },
+    "views": {
+      "overview": {
+        "title": "Competitive Gap Overview",
+        "description": "A light status view of readiness, competitor coverage, and the latest result state for {{active}}."
+      },
+      "strategy": {
+        "title": "Competitive Gap Strategy",
+        "description": "Review and maintain the site-level strategy context that guides gap scoring."
+      },
+      "competitors": {
+        "title": "Competitive Gap Competitors",
+        "description": "Manage the competitor list, their readiness, and the basic site-level setup for this module."
+      },
+      "sync": {
+        "title": "Competitive Gap Synchronization",
+        "description": "Run and monitor competitor sync, semantic processing, and review-linked runtime status for {{active}}."
+      },
+      "results": {
+        "title": "Competitive Gap Results",
+        "description": "Work through current gap results, filters, and explanations for {{active}}."
+      }
+    },
+    "page": {
+      "eyebrow": "Competitive research",
+      "title": "Competitive gap",
+      "description": "Manual competitors distilled into focused recommendations for {{active}}.",
+      "loading": "Loading competitive gap...",
+      "refresh": "Refresh analysis",
+      "openPages": "Open pages compare",
+      "export": "Export gap CSV"
+    },
+    "sourceMode": {
+      "reviewed": "Reviewed",
+      "raw_candidates": "Raw candidates",
+      "legacy": "Legacy fallback"
+    },
+    "sourceModeBadge": "Source: {{mode}}",
+    "review": {
+      "runStatusBadge": "Review run: {{status}}",
+      "basisCrawlBadge": "Basis crawl #{{crawlId}}",
+      "outdatedTitle": "Review data is not current for the active crawl",
+      "outdatedMessage": "These reviewed or raw records were generated for crawl #{{basisCrawlId}}. The current view is using a safe fallback for active crawl #{{activeCrawlId}}.",
+      "action": {
+        "keep": "Keep",
+        "remove": "Remove",
+        "merge": "Merge",
+        "rewrite": "Rewrite"
+      },
+      "fitScoreBadge": "Fit {{score}}",
+      "reviewedPhraseLabel": "Reviewed phrase",
+      "removeReasonLabel": "Remove reason",
+      "mergeTargetLabel": "Merge target"
+    },
+    "reviewRuns": {
+      "title": "Content Gap review runs",
+      "description": "Light operator view for recent Content Gap review runs tied to the active snapshot.",
+      "loading": "Loading review runs...",
+      "empty": "No Content Gap review runs yet.",
+      "activeCrawlBadge": "Active crawl #{{crawlId}}",
+      "latestRunBadge": "Latest run #{{runId}}",
+      "runBadge": "Run #{{runId}}",
+      "statusBadge": "Status: {{status}}",
+      "stageBadge": "Stage: {{stage}}",
+      "snapshotBadge": "Snapshot #{{crawlId}}",
+      "retryOfBadge": "Retry of #{{runId}}",
+      "candidates": "Candidates: {{count}}",
+      "progress": "Batches: {{completed}} / {{total}}",
+      "startedAt": "Started: {{value}}",
+      "finishedAt": "Finished: {{value}}",
+      "outdatedRunHint": "This run belongs to crawl #{{crawlId}}, so retry stays disabled for the current active snapshot.",
+      "retry": "Retry review",
+      "retrying": "Retrying review..."
+    },
+    "overview": {
+      "topFiveTitle": "Top 5 content gap recommendations",
+      "topFiveDescription": "The strongest records from the current read model without the full workspace-heavy list.",
+      "openResults": "Open all results",
+      "shortcutsTitle": "Workspace shortcuts",
+      "shortcutsDescription": "Jump straight to the subview that matches the next step: strategy, competitors, sync, or results."
+    },
+    "semantic": {
+      "resume": "Resume semantic matching",
+      "resumePending": "Resuming semantic matching...",
+      "rerun": "Re-run semantic matching",
+      "rerunPending": "Re-running semantic matching...",
+      "title": "Semantic layer",
+      "noData": "Semantic layer not available yet.",
+      "canonicalTopicLabel": "Canonical topic: {{label}}",
+      "mergedTopics": "Merged topics: {{count}}",
+      "mergedHint": "Related competitor topics were merged into one semantic cluster.",
+      "status": {
+        "not_started": "Not started",
+        "queued": "Queued",
+        "running": "Running",
+        "completed": "Completed",
+        "ready": "Ready",
+        "partial": "Partial",
+        "failed": "Failed",
+        "stale": "Stale",
+        "cancelled": "Cancelled"
+      },
+      "matchStatus": {
+        "exact_match": "Exact match",
+        "semantic_match": "Semantic match",
+        "partial_coverage": "Partial coverage",
+        "no_meaningful_match": "No meaningful match"
+      },
+      "analysisMode": {
+        "not_started": "Not started",
+        "local_only": "Local analysis",
+        "llm_only": "LLM merge",
+        "mixed": "LLM + local fallback"
+      },
+      "stage": {
+        "queued": "Queued",
+        "prepare_candidates": "Preparing candidates",
+        "own_semantic_profiling": "Profiling own-site pages",
+        "merge_topics": "Merging competitor topics",
+        "canonicalization": "Resolving canonical topics",
+        "match_own_site": "Matching against your site",
+        "cluster_to_own_match": "Matching clusters against your site",
+        "cluster_build": "Building semantic clusters",
+        "finalize": "Finalizing",
+        "final_synthesis": "Synthesizing final output",
+        "completed": "Completed",
+        "failed": "Failed",
+        "stale": "Marked as stale",
+        "cancelled": "Cancelled"
+      }
+    },
+    "errorTitle": "Competitive gap request failed",
+    "emptyTitle": "No competitive gaps matched the current view",
+    "emptyDescription": "Try a broader filter set, add competitors, or reset the current view.",
+    "noActiveCrawlTitle": "Competitive gap needs an active crawl",
+    "noActiveCrawlDescription": "Choose an active crawl in the site workspace before opening this module.",
+    "summary": {
+      "totalGaps": "Gap rows",
+      "highPriority": "High priority",
+      "topicsCovered": "Topics covered",
+      "competitors": "Competitors",
+      "strategyStatus": "Strategy status",
+      "range": "GSC range",
+      "activeCrawl": "Active crawl",
+      "visibleRecommendations": "Visible rows"
+    },
+    "readiness": {
+      "title": "Data readiness",
+      "ready": "The input data is ready for recommendations. If the list is empty, there may simply be no strong gap in the current dataset.",
+      "notReady": "The model is still waiting for a fuller competitor dataset or a valid active crawl.",
+      "strategyMissing": "The strategy is optional, but adding it helps explain why a recommendation matches the business direction.",
+      "readyBadge": "Ready",
+      "needsInputBadge": "More data needed",
+      "strategyOptionalBadge": "Strategy optional",
+      "activeCrawl": "Active crawl",
+      "strategy": "Strategy",
+      "competitors": "Active competitors",
+      "pages": "Stored competitor pages",
+      "extractions": "Analyzed competitor pages",
+      "readyShort": "Ready",
+      "missingShort": "Missing",
+      "optionalShort": "Optional",
+      "semanticDebug": {
+        "title": "Semantic merge debug",
+        "readyHeadline": "The semantic layer is ready",
+        "runningHeadline": "The semantic layer is still processing",
+        "failedHeadline": "The semantic layer needs attention",
+        "partialHeadline": "The semantic layer is partially ready",
+        "notStartedHeadline": "The semantic layer has not started yet",
+        "notStartedMessage": "No semantic run has completed yet for the active competitors, so the current state only reflects the local inputs.",
+        "llmMessage": "Similar competitor topics were merged by the LLM. Competitor URLs included in those merges: {{count}}.",
+        "mixedMessage": "The semantic layer currently mixes LLM decisions with local fallback logic. Competitor URLs merged by the LLM: {{count}}.",
+        "localMessage": "The current semantic state comes from local analysis and fallback logic, without a finished LLM merge.",
+        "runtimeHintWorking": "Semantic matching is still working. If the heartbeat keeps moving, it is safe to wait a bit longer.",
+        "runtimeHintQueued": "Semantic matching is queued and waiting for execution.",
+        "runtimeHintStopped": "The last semantic run stopped before finishing. Resume the run to continue from pending work.",
+        "runtimeHintStoppedWithError": "The last semantic run stopped before finishing. Check the last error and use Resume to continue from pending work.",
+        "runtimeStatus": "Runtime status",
+        "currentStage": "Current stage",
+        "activeRuns": "Active runs",
+        "currentBatch": "Current batch",
+        "lastRunStarted": "Last semantic run started",
+        "lastRunFinished": "Last semantic run finished",
+        "lastHeartbeat": "Last heartbeat",
+        "leaseExpires": "Lease expires",
+        "mergedUrls": "Competitor URLs merged by the LLM",
+        "mergedUrlsBadge": "LLM merged {{count}} URLs",
+        "candidates": "Candidates",
+        "resolved": "Resolved",
+        "progress": "Semantic matching progress",
+        "progressBadge": "Progress {{percent}}%",
+        "llmJobs": "LLM jobs",
+        "cacheHits": "Cache hits",
+        "fallbackCount": "Fallback count",
+        "model": "Model",
+        "promptVersion": "Prompt version",
+        "lastError": "Last semantic error",
+        "runtimeState": {
+          "working": "Working",
+          "queued": "Queued",
+          "stopped": "Stopped",
+          "idle": "No active run"
+        }
+      }
+    },
+    "strategy": {
+      "title": "Strategy brief",
+      "description": "Write the business context in plain language. The backend can normalize it for scoring hints, but the gap model stays deterministic.",
+      "inputLabel": "Strategy notes",
+      "placeholder": "Describe goals, audience, offers, priorities and any constraints.",
+      "save": "Save strategy",
+      "saving": "Saving strategy...",
+      "rerun": "Normalize again",
+      "rerunning": "Normalizing again...",
+      "remove": "Remove strategy",
+      "removing": "Removing strategy...",
+      "normalizedTitle": "Normalized hints",
+      "lastNormalized": "Last normalized: {{date}}",
+      "emptyTitle": "No strategy saved yet",
+      "emptyDescription": "Add a short brief to improve strategy-fit context. The gap model still works without it.",
+      "notReadyTitle": "The strategy is saved, but hints are not ready yet",
+      "notReadyHint": "No normalized strategy is available yet. The gap model still works without it.",
+      "noStrategy": "No saved strategy",
+      "debug": {
+        "title": "Normalization debug",
+        "readyHeadline": "Strategy normalization completed successfully",
+        "failedHeadline": "Strategy normalization failed",
+        "notProcessedHeadline": "The strategy is saved, but normalization was not available",
+        "status": "Status",
+        "lastAttempt": "Last attempt",
+        "fallbackUsed": "Fallback used",
+        "fallbackUsedYes": "Fallback used",
+        "fallbackUsedNo": "Fallback not used",
+        "provider": "Provider",
+        "model": "Model",
+        "promptVersion": "Prompt version",
+        "code": "Debug code",
+        "message": "Debug message",
+        "notAvailable": "Not available"
+      },
+      "status": {
+        "not_started": "Not saved",
+        "not_processed": "Not processed",
+        "ready": "Ready",
+        "failed": "Failed"
+      }
+    },
+    "competitors": {
+      "title": "Manual competitors",
+      "description": "Keep this light. Add only the domains you want included in the recommendation read model.",
+      "count": "Competitors: {{count}}",
+      "openSync": "Open synchronization",
+      "form": {
+        "rootUrl": "Competitor root URL",
+        "label": "Competitor label",
+        "notes": "Notes",
+        "active": "Active",
+        "labelPlaceholder": "e.g. Regional agency",
+        "notesPlaceholder": "Optional context for the team",
+        "adding": "Adding competitor...",
+        "add": "Add competitor"
+      },
+      "emptyTitle": "No competitors added yet",
+      "emptyDescription": "Add at least one manual competitor to start seeing competitor-backed recommendations.",
+      "saving": "Saving competitor...",
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "active": "Active",
+      "inactive": "Inactive",
+      "sync": "Sync",
+      "syncing": "Syncing...",
+      "retrySync": "Retry sync",
+      "retryingSync": "Retrying...",
+      "syncQueued": "Queued",
+      "syncRunning": "Sync in progress",
+      "resetSync": "Reset runtime",
+      "resettingSync": "Resetting...",
+      "syncAll": "Sync all",
+      "syncAllRunning": "Syncing all...",
+      "syncAllSkipped": "{{count}} competitors were already queued or running and were skipped.",
+      "review": {
+        "title": "Accepted / rejected URL review",
+        "description": "Detailed pre-semantic gate decisions for this competitor's stored URLs.",
+        "show": "Show URL review",
+        "hide": "Hide URL review",
+        "loading": "Loading URL review...",
+        "empty": "No records match this review filter.",
+        "showing": "Showing {{shown}} of {{total}} records.",
+        "acceptedCount": "Accepted: {{count}}",
+        "rejectedCount": "Rejected: {{count}}",
+        "extractedCount": "With extraction: {{count}}",
+        "currentExtractionReady": "Current extraction ready",
+        "currentExtractionTopic": "Current extraction topic: {{topic}}",
+        "filter": {
+          "all": "All",
+          "accepted": "Accepted",
+          "rejected": "Rejected"
+        }
+      },
+      "lastRun": "Last run",
+      "lastRunValue": "run #{{runId}}",
+      "lastStatus": "Last run status",
+      "lastStarted": "Last started",
+      "lastFinished": "Last finished",
+      "lastHeartbeat": "Last heartbeat",
+      "lastErrorCode": "Error code",
+      "progressLabel": "Progress",
+      "noRunYet": "No run yet",
+      "semantic": {
+        "title": "Semantic layer",
+        "lastRunStarted": "Last semantic run started",
+        "lastRunFinished": "Last semantic run finished",
+        "candidates": "Candidates",
+        "resolved": "Resolved",
+        "llmJobs": "LLM jobs",
+        "cacheHits": "Cache hits",
+        "fallbackCount": "Fallback count",
+        "lastError": "Last semantic error",
+        "noData": "Semantic layer not available yet."
+      },
+      "syncStatus": {
+        "idle": "Idle",
+        "queued": "Queued",
+        "running": "Running",
+        "done": "Done",
+        "failed": "Failed"
+      },
+      "syncStage": {
+        "idle": "Idle",
+        "queued": "Queued",
+        "crawling": "Crawling",
+        "persisting": "Saving pages",
+        "extracting": "Extracting",
+        "finalizing": "Finalizing",
+        "done": "Done",
+        "failed": "Failed",
+        "stale": "Recovered as stale",
+        "cancelled": "Cancelled"
+      },
+      "runStatus": {
+        "idle": "No run yet",
+        "queued": "Queued",
+        "running": "Running",
+        "done": "Done",
+        "failed": "Failed",
+        "stale": "Stale after restart",
+        "cancelled": "Cancelled"
+      },
+      "runStage": {
+        "queued": "Queued",
+        "crawling": "Crawling",
+        "persisting": "Saving pages",
+        "extracting": "Extracting",
+        "finalizing": "Finalizing",
+        "done": "Done",
+        "failed": "Failed",
+        "stale": "Marked stale",
+        "cancelled": "Cancelled"
+      },
+      "runTrigger": {
+        "manual_single": "Manual sync",
+        "manual_all": "Sync all",
+        "retry": "Retry"
+      },
+      "progressCrawling": "Crawl progress: {{current}} / {{total}}",
+      "progressExtracting": "Analyzing pages: {{current}} / {{total}}",
+      "partialDataHint": "Anything already stored and analyzed still feeds the competitive gap recommendations.",
+      "coverage": "Pages: {{pages}} | analyzed: {{extracted}}",
+      "syncHeadlineIdle": "This competitor is waiting for its first sync.",
+      "syncHeadlineQueued": "The sync has been queued and is waiting to start.",
+      "syncHeadlineRunning": "Sync is running. {{visited}} URLs visited, {{stored}} pages stored so far.",
+      "syncHeadlineDone": "{{visited}} URLs visited, {{stored}} pages stored, {{extracted}} pages analyzed.",
+      "syncHeadlineFailed": "The sync stopped after visiting {{visited}} URLs. Any stored pages and analyzed results still remain available.",
+      "syncHeadlineStale": "The last sync was recovered as stale after a restart. {{stored}} stored pages and {{extracted}} analyzed pages are still available.",
+      "syncHeadlineCancelled": "Runtime state was reset. Stored pages and analyzed results remain available.",
+      "summaryIdle": "No sync history yet",
+      "summaryInProgress": "Sync in progress",
+      "summaryDone": "Latest sync finished",
+      "summaryFailed": "Latest sync needs attention",
+      "summaryPartial": "Partial data is already available",
+      "summaryStale": "Latest run was recovered as stale",
+      "summaryCancelled": "Runtime state was reset",
+      "inProgressBadge": "In progress",
+      "partialDataBadge": "Partial data",
+      "retryQueuedBadge": "Retry queued",
+      "summary": {
+        "visited": "Visited URLs",
+        "stored": "Stored pages",
+        "extracted": "Analyzed pages",
+        "skipped": "Skipped URLs"
+      },
+      "rejectionsTitle": "Most common skipped URLs",
+      "rejectionReasons": {
+        "filtered": "Filtered or utility: {{count}}",
+        "lowValue": "Low-value page: {{count}}",
+        "nonHtml": "Non-HTML: {{count}}",
+        "outOfScope": "Out of scope: {{count}}",
+        "duplicate": "Duplicates: {{count}}",
+        "fetchError": "Fetch errors: {{count}}"
+      },
+      "lastErrorTitle": "Latest sync error",
+      "recentRunsTitle": "Recent runs",
+      "recentRunsDescription": "Operator history for this competitor stays lightweight and loads only when expanded.",
+      "showRecentRuns": "Show recent runs",
+      "hideRecentRuns": "Hide recent runs",
+      "recentRunsLoading": "Loading recent runs...",
+      "recentRunsEmpty": "No sync runs are available yet.",
+      "retryOf": "Retry of run #{{runId}}",
+      "errors": {
+        "alreadyRunning": "This competitor is already queued or currently syncing."
+      },
+      "edit": "Edit",
+      "removing": "Removing...",
+      "remove": "Remove"
+    },
+    "emptyStates": {
+      "noCompetitorsTitle": "Add competitors first",
+      "noCompetitorsDescription": "Competitive gap cannot calculate recommendations until at least one active competitor is added.",
+      "noCompetitorPagesTitle": "Competitors are added, but they have not been synced yet",
+      "noCompetitorPagesDescription": "Click Sync on a competitor or use Sync all to store competitor pages for analysis.",
+      "noCompetitorExtractionsTitle": "Competitor pages are stored, but topic analysis is not ready yet",
+      "noCompetitorExtractionsDescription": "Wait for page analysis to finish or rerun sync if the previous run ended with an error.",
+      "noOwnPagesTitle": "The active crawl has no usable site pages to compare against",
+      "noOwnPagesDescription": "Choose an active crawl with stored site pages before calculating the gap.",
+      "filtersExcludedTitle": "Current filters hide all recommendations",
+      "filtersExcludedDescription": "Widen the filters or reset the current view to see the available gap rows.",
+      "noRealGapsTitle": "No strong gaps are visible after the latest sync",
+      "noRealGapsDescription": "Competitor data has already been analyzed, but the current site state and scoring do not surface a recommendation yet.",
+      "resetFilters": "Reset filters"
+    },
+    "quickFilters": {
+      "title": "Recommendation presets",
+      "newTopic": "New topic",
+      "expandExisting": "Expand existing",
+      "supportCluster": "Support cluster",
+      "highPriority": "High priority",
+      "highConsensus": "High consensus"
+    },
+    "filters": {
+      "title": "Gap filters",
+      "description": "These filters stay in the URL and reuse the same deterministic payload as the list and CSV export.",
+      "dateRange": "Date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "gapType": "Gap type",
+      "segment": "Segment",
+      "pageType": "Recommended page type",
+      "ownMatchStatus": "Own match status",
+      "topic": "Topic contains",
+      "topicPlaceholder": "e.g. local seo",
+      "priorityMin": "Priority score min",
+      "consensusMin": "Consensus min",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "sort": {
+        "priorityScore": "Priority score",
+        "consensus": "Consensus",
+        "competitorCount": "Competitor count",
+        "competitorCoverage": "Competitor coverage",
+        "ownCoverage": "Own coverage",
+        "strategyAlignment": "Strategy alignment",
+        "businessValue": "Business value",
+        "mergedTopics": "Merged topics",
+        "confidence": "Confidence",
+        "topic": "Topic",
+        "gapType": "Gap type",
+        "pageType": "Recommended page type"
+      }
+    },
+    "sync": {
+      "title": "Synchronization",
+      "description": "Operational view for sync runs, semantic runtime, retries, and the latest competitor processing state."
+    },
+    "mix": {
+      "title": "Recommendation mix",
+      "description": "Counts below come from the same competitive gap read model that powers the list and the export."
+    },
+    "types": {
+      "NEW_TOPIC": { "title": "New topic" },
+      "EXPAND_EXISTING_TOPIC": { "title": "Expand existing topic" },
+      "MISSING_SUPPORTING_PAGE": { "title": "Missing supporting page" }
+    },
+    "segments": {
+      "create_new_page": "Create new page",
+      "expand_existing_page": "Expand existing page",
+      "strengthen_cluster": "Strengthen cluster"
+    },
+    "card": {
+      "priority": "Priority",
+      "consensus": "Consensus",
+      "showExplanation": "Explain",
+      "hideExplanation": "Hide explanation",
+      "openTarget": "Open target",
+      "openInPages": "Open in Pages",
+      "recommendedMove": "Recommended move",
+      "targetPage": "Target page",
+      "newPage": "Create a new page",
+      "scoreMix": "Score mix",
+      "competitorCoverage": "Competitor coverage",
+      "ownCoverage": "Own coverage",
+      "businessValue": "Business value",
+      "competitorSignal": "Competitor signal",
+      "competitorsCount": "{{count}} competitors",
+      "confidence": "Confidence",
+      "strategyFit": "Strategy fit",
+      "topicKey": "Topic key"
+    },
+    "explanation": {
+      "title": "Explanation",
+      "llm": "LLM",
+      "fallback": "Fallback",
+      "fallbackUsed": "Fallback used",
+      "loading": "Loading explanation...",
+      "semanticDebugTitle": "Semantic debug",
+      "semanticClusterKey": "Cluster key",
+      "canonicalTopicLabel": "Canonical topic label",
+      "mergedTopicCount": "Merged topics",
+      "ownMatchStatus": "Own-match status",
+      "ownMatchSource": "Own-match source"
+    }
+  },
+  "pages": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Pages",
+      "title": "Crawled pages for job #{{jobId}}",
+      "description": "Click column headers to sort, keep filters in the URL, and export either the full job or the active slice.",
+      "exportFull": "Export full CSV",
+      "exportCurrentView": "Export current view CSV",
+      "loading": "Loading pages..."
+    },
+    "quickFilters": {
+      "title": "Quick page filters",
+      "highPriority": "High priority",
+      "quickWins": "Quick wins",
+      "trafficTechnical": "Traffic + technical",
+      "highImpressionsLowCtrOpportunity": "High impressions / low CTR",
+      "lowHangingFruit": "Low-hanging fruit",
+      "underlinked": "Underlinked",
+      "highRiskPages": "High risk",
+      "titleTooShort": "Title too short",
+      "titleTooLong": "Title too long",
+      "metaTooShort": "Meta too short",
+      "metaTooLong": "Meta too long",
+      "multipleH1": "Multiple H1",
+      "missingH2": "Missing H2",
+      "canonicalToOther": "Canonical to other",
+      "noindexLike": "Noindex-like",
+      "thinContent": "Thin content",
+      "duplicateContent": "Duplicate content",
+      "missingAlt": "Missing alt",
+      "oversized": "Oversized pages",
+      "rendered": "Rendered",
+      "jsHeavyLike": "JS-heavy-like",
+      "renderErrors": "Render errors",
+      "schemaPresent": "Schema present",
+      "xRobots": "X-Robots",
+      "impressionsWithIssue": "Impressions + issue",
+      "clicksWithIssue": "Clicks + issue",
+      "lowCtrHighImpressions": "Low CTR / high impressions",
+      "highImpressionsWeakPosition": "High impressions / weak position"
+    },
+    "filters": {
+      "title": "Filters",
+      "description": "The visible state survives refresh and deep-links cleanly from the audit report.",
+      "statusCode": "HTTP status",
+      "pageType": "Page type",
+      "pageBucket": "Page bucket",
+      "urlContains": "URL contains",
+      "urlContainsPlaceholder": "https://example.com/path",
+      "titleContains": "Title contains",
+      "titleContainsPlaceholder": "Search inside page titles",
+      "hasTitle": "Has title",
+      "hasMetaDescription": "Has meta description",
+      "titleTooShort": "Title too short",
+      "titleTooLong": "Title too long",
+      "metaTooShort": "Meta too short",
+      "metaTooLong": "Meta too long",
+      "hasH1": "Has H1",
+      "multipleH1": "Multiple H1",
+      "missingH2": "Missing H2",
+      "canonicalMissing": "Canonical missing",
+      "canonicalToOther": "Canonical to other URL",
+      "robotsMetaContains": "Robots meta contains",
+      "robotsMetaPlaceholder": "noindex",
+      "noindexLike": "Noindex-like",
+      "nonIndexableLike": "Non-indexable like",
+      "thinContent": "Thin content",
+      "duplicateContent": "Duplicate content",
+      "missingAltImages": "Missing alt images",
+      "oversized": "Oversized pages",
+      "wasRendered": "Was rendered",
+      "jsHeavyLike": "JS-heavy-like",
+      "schemaPresent": "Schema present",
+      "schemaType": "Schema type",
+      "schemaTypePlaceholder": "Article",
+      "hasRenderError": "Has render error",
+      "hasXRobotsTag": "Has X-Robots-Tag",
+      "hasTechnicalIssue": "Has technical issue",
+      "hasGscData": "Has GSC data",
+      "hasCannibalization": "Has cannibalization",
+      "priorityLevel": "Priority level",
+      "opportunityType": "Opportunity type",
+      "pageTypeConfidenceMin": "Taxonomy confidence min (%)",
+      "pageTypeConfidenceMax": "Taxonomy confidence max (%)",
+      "priorityScoreMin": "Priority score min",
+      "priorityScoreMax": "Priority score max",
+      "gscMinImpressions": "GSC impressions min",
+      "gscMinClicks": "GSC clicks min",
+      "gscMaxCtr": "GSC CTR max (%)",
+      "gscMinPosition": "GSC position min",
+      "gscMinTopQueries": "Top queries min",
+      "statusCodeMin": "Status code min",
+      "statusCodeMinPlaceholder": "200",
+      "statusCodeMax": "Status code max",
+      "statusCodeMaxPlaceholder": "299",
+      "exactTitle": "Exact title",
+      "exactTitlePlaceholder": "Used by duplicate-title deep links",
+      "exactMetaDescription": "Exact meta description",
+      "exactMetaDescriptionPlaceholder": "Used by duplicate-meta deep links"
+    },
+    "table": {
+      "url": "URL",
+      "status": "Status",
+      "taxonomy": "Taxonomy",
+      "title": "Title",
+      "titleLength": "Title length",
+      "length": "Length",
+      "metaDescription": "Meta description",
+      "metaDescriptionLength": "Meta length",
+      "headings": "Headings",
+      "h1Length": "H1 length",
+      "canonical": "Canonical",
+      "robotsLabel": "Robots",
+      "xRobotsLabel": "X-Robots",
+      "schemaLabel": "Schema",
+      "depthLabel": "Depth: {{count}}",
+      "metrics": "On-page",
+      "gsc": "GSC",
+      "priority": "Priority",
+      "signals": "Signals",
+      "responseTime": "Response time",
+      "fetchedAt": "Fetched at",
+      "openTopQueries": "Open top queries",
+      "openOpportunity": "Open opportunity view"
+    },
+    "metrics": {
+      "words": "Words",
+      "images": "Images",
+      "missingAlt": "Missing alt",
+      "htmlSize": "HTML size"
+    },
+    "taxonomy": {
+      "confidence": "Confidence",
+      "version": "Version",
+      "pageTypes": {
+        "home": "Home",
+        "category": "Category",
+        "product": "Product",
+        "service": "Service",
+        "blog_article": "Blog article",
+        "blog_index": "Blog index",
+        "contact": "Contact",
+        "about": "About",
+        "faq": "FAQ",
+        "location": "Location",
+        "legal": "Legal",
+        "utility": "Utility",
+        "other": "Other"
+      },
+      "pageBuckets": {
+        "commercial": "Commercial",
+        "informational": "Informational",
+        "utility": "Utility",
+        "trust": "Trust",
+        "other": "Other"
+      }
+    },
+    "summary": {
+      "taxonomyTitle": "Page taxonomy",
+      "taxonomyDescription": "Deterministic page-type counts based on schema, URL patterns, title and H1 signals.",
+      "versionHint": "Classifier version {{version}}",
+      "totalPages": "Total pages",
+      "commercial": "Commercial",
+      "informational": "Informational",
+      "utility": "Utility",
+      "trust": "Trust",
+      "category": "Category pages",
+      "product": "Product pages",
+      "blogArticle": "Blog articles"
+    },
+    "cannibalization": {
+      "label": "Cannibalization",
+      "competingUrls": "Competing URLs",
+      "overlapStrength": "Overlap strength",
+      "strongestCompetitor": "Strongest competitor",
+      "openDetails": "Open cannibalization"
+    },
+    "signals": {
+      "missingTitle": "Title missing",
+      "titleTooShort": "Title too short",
+      "titleTooLong": "Title too long",
+      "missingMeta": "Meta missing",
+      "metaTooShort": "Meta too short",
+      "metaTooLong": "Meta too long",
+      "missingH1": "H1 missing",
+      "multipleH1": "Multiple H1",
+      "missingH2": "Missing H2",
+      "missingCanonical": "Canonical missing",
+      "canonicalToOther": "Canonical to other",
+      "canonicalToNon200": "Canonical to non-200",
+      "canonicalToRedirect": "Canonical to redirect",
+      "nonIndexable": "Non-indexable-like",
+      "thinContent": "Thin content",
+      "duplicateContent": "Duplicate content",
+      "missingAlt": "Missing alt",
+      "noImages": "No images",
+      "oversized": "Oversized",
+      "rendered": "Rendered",
+      "jsHeavyLike": "JS-heavy-like",
+      "schemaPresent": "Schema",
+      "xRobots": "X-Robots",
+      "renderError": "Render error"
+    },
+    "errors": {
+      "requestTitle": "Pages request failed"
+    },
+    "empty": {
+      "title": "No pages matched the current filters",
+      "description": "Try a broader preset, clear one or more filters, or return to the overview."
+    },
+    "gsc": {
+      "title": "GSC columns",
+      "description": "Switch between 28d and 90d metrics without widening the table beyond usability.",
+      "last28Days": "Use 28d",
+      "last90Days": "Use 90d",
+      "openSection": "Open GSC section",
+      "openOpportunities": "Open opportunities",
+      "clicks": "Clicks",
+      "impressions": "Impressions",
+      "ctr": "CTR",
+      "position": "Position",
+      "topQueries": "Top queries"
+    },
+    "priority": {
+      "scoreBadge": "Score {{score}}",
+      "trafficComponent": "Traffic",
+      "issueComponent": "Issues",
+      "opportunityComponent": "Opportunity",
+      "internalLinkingComponent": "Internal links",
+      "opportunityCount": "Opportunity count",
+      "internalLinks": "Internal support",
+      "level": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    }
+  },
+  "opportunities": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Priority score and opportunities",
+      "title": "Opportunities for job #{{jobId}}",
+      "description": "Work from priority score, impact and effort instead of browsing raw issue lists.",
+      "loading": "Loading opportunities...",
+      "exportPages": "Export pages with priority",
+      "exportOpportunities": "Export opportunities CSV"
+    },
+    "quickFilters": {
+      "title": "Opportunity presets",
+      "highPriority": "High priority",
+      "quickWins": "Quick wins",
+      "trafficTechnical": "Traffic + technical",
+      "highImpressionsLowCtr": "High impressions / low CTR",
+      "lowHangingFruit": "Low-hanging fruit",
+      "underlinked": "Underlinked"
+    },
+    "filters": {
+      "title": "Opportunity filters",
+      "description": "Keep the state in query params and move straight into the matching pages slice.",
+      "dateRange": "Date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "priorityLevel": "Priority level",
+      "opportunityType": "Opportunity type",
+      "priorityMin": "Priority score min",
+      "priorityMax": "Priority score max",
+      "sortBy": "Sort groups by",
+      "sortOrder": "Sort order",
+      "topPagesLimit": "Top URLs per group",
+      "sort": {
+        "count": "Group size",
+        "topPriority": "Top priority score",
+        "topOpportunity": "Top opportunity score",
+        "type": "Type"
+      }
+    },
+    "summary": {
+      "totalPages": "Total pages",
+      "pagesWithOpportunities": "Pages with opportunities",
+      "highPriorityPages": "High priority pages",
+      "criticalPriorityPages": "Critical priority pages",
+      "groups": "Groups",
+      "range": "Range"
+    },
+    "topPriority": {
+      "title": "Top priority URLs",
+      "description": "Highest-priority pages after combining traffic, issue severity and internal support."
+    },
+    "table": {
+      "url": "URL",
+      "priority": "Priority",
+      "traffic": "Traffic",
+      "rationale": "Rationale",
+      "impact": "Impact / effort",
+      "primaryOpportunity": "Primary opportunity",
+      "opportunityScore": "Opportunity score",
+      "impactLevel": "Impact",
+      "effortLevel": "Effort"
+    },
+    "metrics": {
+      "clicks": "Clicks",
+      "impressions": "Impressions",
+      "ctr": "CTR",
+      "position": "Position",
+      "internalLinks": "Internal links / linking pages"
+    },
+    "priorityLevel": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "impactLevel": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "effortLevel": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "types": {
+      "QUICK_WINS": {
+        "title": "Quick wins",
+        "description": "Pages already ranking in the 4-15 range with traffic potential and fixable snippet or on-page issues."
+      },
+      "HIGH_IMPRESSIONS_LOW_CTR": {
+        "title": "High impressions, low CTR",
+        "description": "Pages with strong visibility but weak snippet performance."
+      },
+      "TRAFFIC_WITH_TECHNICAL_ISSUES": {
+        "title": "Traffic with technical issues",
+        "description": "Pages already driving demand while still carrying technical debt."
+      },
+      "IMPORTANT_BUT_WEAK": {
+        "title": "Important but weak",
+        "description": "Search-visible pages with thin quality signals, content gaps or weak snippet quality."
+      },
+      "LOW_HANGING_FRUIT": {
+        "title": "Low-hanging fruit",
+        "description": "Relatively cheap fixes with practical upside."
+      },
+      "HIGH_RISK_PAGES": {
+        "title": "High-risk pages",
+        "description": "Visible pages exposed to noindex, canonical or indexability risk."
+      },
+      "UNDERLINKED_OPPORTUNITIES": {
+        "title": "Underlinked opportunities",
+        "description": "Promising pages that lack internal linking support."
+      }
+    },
+    "groupCount": "{{count}} pages",
+    "errors": {
+      "requestTitle": "Opportunities request failed"
+    },
+    "empty": {
+      "topPriorityTitle": "No priority URLs matched the current view",
+      "topPriorityDescription": "Broaden the filters or switch the GSC range.",
+      "groupsTitle": "No opportunities matched the current view",
+      "groupsDescription": "Relax one or more filters to widen the current opportunity slice."
+    }
+  },
+  "siteOpportunities": {
+    "title": "SEO Opportunities",
+    "description": "Use the active crawl as the current-state source of truth for the most important SEO opportunities right now.",
+    "recordsTitle": "Opportunity Records",
+    "recordsDescription": "Review the surfaced opportunity URLs from the active crawl in the site workspace.",
+    "loading": "Loading current-state SEO opportunities...",
+    "errorTitle": "Current-state SEO opportunities failed",
+    "emptyTitle": "No SEO opportunities matched the current view",
+    "emptyDescription": "Widen the filters or switch the active crawl to inspect another current-state slice.",
+    "noActiveCrawlTitle": "Pick an active crawl to inspect SEO opportunities",
+    "noActiveCrawlDescription": "The current-state opportunities view reads from the active crawl in the site workspace.",
+    "compareReady": "Compare ready",
+    "compareWaiting": "Waiting for baseline",
+    "openRecords": "Open records",
+    "openOverview": "Open overview",
+    "openChanges": "Open Changes",
+    "openActiveCrawl": "Open active crawl",
+    "openInActivePages": "Open in active pages",
+    "exportPages": "Export pages with priority",
+    "exportOpportunities": "Export opportunities CSV",
+    "quickFiltersTitle": "Current-state opportunity quick filters",
+    "filtersDescription": "Filter the active opportunity snapshot without moving into compare.",
+    "recordsPerGroup": "Records per group",
+    "visibleRecords": "Visible records",
+    "topRecordsTitle": "Top opportunity records",
+    "topRecordsDescription": "The highest-signal opportunity URLs surfaced by the active crawl right now.",
+    "groupsTitle": "Opportunity groups",
+    "groupsDescription": "Use the grouped view to understand which opportunity lanes dominate the active snapshot.",
+    "groupsEmptyTitle": "No opportunity groups matched the current view",
+    "groupsEmptyDescription": "Reset one or more filters to widen the current-state opportunity slice.",
+    "recordsTableTitle": "Opportunity records",
+    "recordsTableDescription": "Review the currently surfaced URLs, keep the active crawl central and jump to compare only when needed.",
+    "detailsTitle": "Selected record",
+    "detailsEmpty": "Pick a record to inspect its current-state traffic, priority and rationale.",
+    "inspectRecord": "Inspect",
+    "navRecords": "Records"
+  },
+  "sitePages": {
+    "description": "Inspect the current pages snapshot for {{domain}}.",
+    "loading": "Loading active crawl pages...",
+    "actions": {
+      "openChanges": "Open Changes",
+      "openActiveCrawl": "Open active crawl",
+      "openInJobPages": "Open in job pages"
+    },
+    "context": {
+      "active": "Active",
+      "status": "Status"
+    },
+    "summary": {
+      "activePages": "Active crawl pages",
+      "matchingRows": "Matching rows",
+      "metadataGaps": "Metadata gaps",
+      "renderIssues": "Render / JS",
+      "gscCoverage": "GSC coverage",
+      "taxonomyCoverage": "Taxonomy coverage"
+    },
+    "summaryHints": {
+      "activePages": "Snapshot pages in crawl #{{crawlId}}.",
+      "matchingRows": "Rows matching the current filters and sort.",
+      "metadataGaps": "{{missingTitle}} missing title, {{missingMeta}} missing meta, {{missingH1}} missing H1.",
+      "renderIssues": "{{rendered}} rendered, {{jsHeavy}} JS-heavy-like.",
+      "gscCoverage": "{{count}} GSC opportunities in the active crawl.",
+      "taxonomyCoverageReady": "Classifier {{version}}.",
+      "taxonomyCoverageWaiting": "Waiting for taxonomy summary."
+    },
+    "quickFiltersTitle": "Quick filters",
+    "filters": {
+      "title": "Current-state filters",
+      "description": "Filter the active crawl pages without leaving the current snapshot.",
+      "expandedState": "Current-state filters expanded",
+      "compactState": "Current-state filters compact"
+    },
+    "inspectRecord": "Inspect",
+    "details": {
+      "title": "Page details",
+      "responseTime": "Response",
+      "clicks": "clicks",
+      "impressions": "impressions"
+    },
+    "empty": {
+      "noActiveTitle": "Choose an active crawl to inspect pages",
+      "noActiveDescription": "The current-state pages view reads from the active crawl in the site workspace.",
+      "unavailableTitle": "Pages unavailable",
+      "unavailableDescription": "The active crawl did not return a pages payload.",
+      "filteredTitle": "No pages matched the current filters",
+      "filteredDescription": "Clear one or more filters to widen the active snapshot slice.",
+      "detailsTitle": "Open a page to inspect details",
+      "detailsDescription": "The detail panel follows the current selection in the active crawl slice."
+    },
+    "errors": {
+      "requestTitle": "Pages request failed"
+    }
+  },
+  "siteAudit": {
+    "description": "Inspect the current audit state from the active crawl.",
+    "loading": "Loading site audit...",
+    "actions": {
+      "openChanges": "Open Changes",
+      "openActiveCrawl": "Open active crawl",
+      "exportAudit": "Export audit.csv",
+      "openLinks": "Open Links",
+      "openPages": "Open Pages"
+    },
+    "context": {
+      "active": "Active",
+      "notSelected": "not selected"
+    },
+    "quickFilters": {
+      "title": "Audit groups"
+    },
+    "summary": {
+      "auditedPages": "Audited pages",
+      "openSections": "Open sections",
+      "problemRows": "Problem rows",
+      "pagesIssues": "Pages issues",
+      "linksIssues": "Links issues",
+      "technicalIssues": "Technical issues"
+    },
+    "filters": {
+      "title": "Audit filters",
+      "description": "Filter the current audit sections without losing the active crawl context.",
+      "searchLabel": "Search sections",
+      "searchPlaceholder": "title, links, schema...",
+      "minimumCount": "Minimum count",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "pageSize": "Page size",
+      "openOnly": "Open only",
+      "showAllState": "Showing open and empty sections",
+      "showOpenOnlyState": "Showing open sections only",
+      "sort": {
+        "count": "Count",
+        "label": "Label"
+      }
+    },
+    "empty": {
+      "noActiveTitle": "Choose an active crawl to inspect the audit",
+      "noActiveDescription": "The audit view is driven by the current active crawl. Once a crawl is selected, the summary cards and section drilldowns will appear here.",
+      "unavailableTitle": "Audit unavailable",
+      "unavailableDescription": "The backend returned an empty audit response.",
+      "filteredTitle": "No audit sections matched the current filters",
+      "filteredDescription": "Clear one or more filters or widen the page size to inspect a broader slice of the current audit."
+    },
+    "errors": {
+      "requestTitle": "Audit request failed"
+    }
+  },
+  "internalLinking": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Internal linking intelligence",
+      "title": "Internal linking for job #{{jobId}}",
+      "description": "Inspect orphan-like URLs, weakly linked important pages, anchor risks and lightweight link equity proxies from the current crawl graph.",
+      "loadingOverview": "Loading internal linking overview...",
+      "loadingIssues": "Loading internal linking issues...",
+      "export": "Export internal linking CSV"
+    },
+    "common": {
+      "openPages": "Open pages",
+      "openOpportunities": "Open opportunities"
+    },
+    "quickFilters": {
+      "title": "Internal linking presets",
+      "orphanLike": "Orphan-like",
+      "weaklyLinkedImportant": "Weak important pages",
+      "anchorDiversity": "Low anchor diversity",
+      "exactMatch": "Exact-match concentration",
+      "boilerplateDominated": "Boilerplate dominated",
+      "lowLinkEquity": "Low link equity"
+    },
+    "filters": {
+      "title": "Internal linking filters",
+      "description": "Keep the selected issue slice, sort and query in the URL.",
+      "dateRange": "GSC / priority range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "issueType": "Issue type",
+      "priorityLevel": "Priority level",
+      "opportunityType": "Opportunity type",
+      "urlContains": "URL contains",
+      "urlContainsPlaceholder": "https://example.com/path",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "sort": {
+        "internalLinkingScore": "Internal linking score",
+        "priorityScore": "Priority score",
+        "linkEquity": "Link equity",
+        "followLinks": "Follow links",
+        "anchorDiversity": "Anchor diversity",
+        "exactMatchRatio": "Exact-match ratio",
+        "issueCount": "Issue count",
+        "url": "URL"
+      }
+    },
+    "summary": {
+      "issuePages": "Issue pages",
+      "orphanLike": "Orphan-like",
+      "weaklyLinkedImportant": "Weak important",
+      "anchorDiversity": "Low anchor diversity",
+      "exactMatch": "Exact-match concentration",
+      "boilerplateDominated": "Boilerplate dominated",
+      "lowLinkEquity": "Low link equity",
+      "medianLinkEquity": "Median link equity"
+    },
+    "table": {
+      "url": "URL",
+      "importance": "Importance",
+      "internalSupport": "Internal support",
+      "anchors": "Anchors",
+      "rationale": "Rationale"
+    },
+    "metrics": {
+      "followLinks": "Follow links / linking pages",
+      "bodyLike": "Body-like links / pages",
+      "boilerplateLike": "Boilerplate-like links / pages",
+      "nofollow": "Nofollow links",
+      "linkEquity": "Link equity",
+      "anchorDiversity": "Anchor diversity",
+      "uniqueAnchors": "Unique anchors",
+      "exactMatchRatio": "Exact-match ratio"
+    },
+    "issueTypes": {
+      "ORPHAN_LIKE": {
+        "title": "Orphan-like",
+        "description": "URLs with no followed internal support from crawled pages."
+      },
+      "WEAKLY_LINKED_IMPORTANT": {
+        "title": "Weak important pages",
+        "description": "Important URLs with too little internal support."
+      },
+      "LOW_ANCHOR_DIVERSITY": {
+        "title": "Low anchor diversity",
+        "description": "Incoming anchors are too repetitive for the page."
+      },
+      "EXACT_MATCH_ANCHOR_CONCENTRATION": {
+        "title": "Exact-match concentration",
+        "description": "Too much incoming anchor text looks exact-match."
+      },
+      "BOILERPLATE_DOMINATED": {
+        "title": "Boilerplate dominated",
+        "description": "Internal support is dominated by likely nav/footer-style links."
+      },
+      "LOW_LINK_EQUITY": {
+        "title": "Low link equity",
+        "description": "Important URLs sit low in the structural link equity proxy."
+      }
+    },
+    "errors": {
+      "overviewTitle": "Internal linking overview failed",
+      "issuesTitle": "Internal linking issues request failed"
+    },
+    "empty": {
+      "title": "No internal linking issues matched the current view",
+      "description": "Relax one or more filters to widen the current internal linking slice."
+    }
+  },
+  "siteInternalLinking": {
+    "title": "Internal Linking",
+    "description": "Use the active crawl to inspect the current internal linking state.",
+    "issuesTitle": "Internal Linking Issues",
+    "issuesDescription": "Review the current issue rows from the active crawl in the site workspace.",
+    "loading": "Loading current-state internal linking...",
+    "errorTitle": "Current-state internal linking failed",
+    "emptyTitle": "No internal linking issues matched the current view",
+    "emptyDescription": "Relax one or more filters to widen the current internal linking slice.",
+    "noActiveCrawlTitle": "Pick an active crawl to inspect internal linking",
+    "noActiveCrawlDescription": "The current-state internal linking view reads from the active crawl in the site workspace.",
+    "compareReady": "Compare ready",
+    "compareWaiting": "Waiting for baseline",
+    "openIssues": "Open issues",
+    "openOverview": "Open overview",
+    "openChanges": "Open Changes",
+    "openActiveCrawl": "Open active crawl",
+    "openInActiveSnapshot": "Open in active snapshot",
+    "export": "Export internal linking CSV",
+    "quickFiltersTitle": "Current-state internal linking quick filters",
+    "filtersDescription": "Filter the active internal linking snapshot without moving into compare.",
+    "visibleIssues": "Visible issues",
+    "previewTitle": "Current issue preview",
+    "previewDescription": "The most relevant issue rows from the active crawl right now.",
+    "issuesTableTitle": "Internal linking issues",
+    "issuesTableDescription": "Review current issue rows and use Changes only when you want delta context.",
+    "detailsTitle": "Selected issue",
+    "detailsEmpty": "Pick an issue row to inspect the current internal linking context.",
+    "inspectIssue": "Inspect",
+    "navIssues": "Issues"
+  },
+  "cannibalization": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Cannibalization and query overlap",
+      "title": "Cannibalization for job #{{jobId}}",
+      "description": "Inspect clusters of URLs that overlap on the same GSC queries, identify a dominant URL or the lack of one, and move into the matching pages.",
+      "loading": "Loading cannibalization clusters...",
+      "loadingDetails": "Loading overlap details...",
+      "export": "Export cannibalization CSV"
+    },
+    "quickFilters": {
+      "title": "Cannibalization presets",
+      "highImpact": "High impact",
+      "mergeCandidate": "Merge candidate",
+      "splitIntent": "Split intent",
+      "noPrimary": "No clear primary"
+    },
+    "filters": {
+      "title": "Cannibalization filters",
+      "description": "Keep the selected cluster slice, filters and sort state in the URL.",
+      "dateRange": "GSC range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "severity": "Severity",
+      "impactLevel": "Impact level",
+      "recommendationType": "Recommendation",
+      "clearPrimary": "Primary URL",
+      "hasPrimary": "Clear primary",
+      "noPrimary": "No clear primary",
+      "urlContains": "URL or query contains",
+      "urlContainsPlaceholder": "https://example.com/path or shared query",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order"
+    },
+    "summary": {
+      "clusters": "Clusters",
+      "pagesInConflicts": "Pages in conflicts",
+      "highSeverity": "High severity",
+      "highImpact": "High impact",
+      "noPrimary": "No clear primary",
+      "mergeCandidates": "Merge candidates",
+      "splitIntent": "Split intent",
+      "averageOverlap": "Average overlap"
+    },
+    "actions": {
+      "openPage": "Open page",
+      "inspectOverlap": "Inspect overlap",
+      "openInPages": "Open in pages",
+      "openCompetitor": "Open competitor",
+      "focusCompetitor": "Focus competitor"
+    },
+    "badges": {
+      "primary": "Primary",
+      "clickShare": "{{value}} clicks",
+      "impressionShare": "{{value}} impressions",
+      "currentUrlLeads": "Current URL leads",
+      "competitorLeads": "Competitor leads",
+      "noClearLeader": "No clear leader",
+      "overlap": "{{value}} overlap"
+    },
+    "metrics": {
+      "candidateQueries": "{{queryCount}} queries / {{sharedCount}} shared / {{exclusiveCount}} exclusive",
+      "candidateTraffic": "{{impressions}} impressions / {{clicks}} clicks / {{position}}",
+      "competingUrls": "{{count}} competing URLs",
+      "strongestOverlap": "{{value}} strongest overlap",
+      "strongestSharedQueries": "{{count}} shared queries with the strongest competitor",
+      "overlapTraffic": "{{sharedCount}} shared queries / {{impressions}} impressions / {{clicks}} clicks",
+      "clusterSummary": "{{urlsCount}} URLs / {{sharedQueriesCount}} shared queries",
+      "clusterTraffic": "{{impressions}} impressions / {{clicks}} clicks",
+      "clusterOverlap": "{{value}} overlap"
+    },
+    "details": {
+      "focusedOverlap": "Focused overlap",
+      "notInCluster": "This URL does not currently belong to a cannibalization cluster.",
+      "noOverlapsTitle": "No overlaps",
+      "noOverlapsDescription": "This URL has GSC data, but no overlap passed the relevance thresholds."
+    },
+    "table": {
+      "cluster": "Cluster",
+      "dominantUrl": "Dominant URL",
+      "noPrimary": "No clear primary URL",
+      "primaryConfidenceLabel": "Primary confidence",
+      "sampleQueries": "Sample queries",
+      "competingUrls": "Competing URLs",
+      "rationale": "Rationale"
+    },
+    "sort": {
+      "severity": "Severity",
+      "impact": "Impact",
+      "overlap": "Weighted overlap",
+      "sharedQueries": "Shared queries",
+      "sharedImpressions": "Shared impressions",
+      "sharedClicks": "Shared clicks",
+      "urlsCount": "URLs in cluster",
+      "primaryConfidence": "Primary confidence",
+      "recommendation": "Recommendation"
+    },
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "recommendations": {
+      "MERGE_CANDIDATE": "Merge candidate",
+      "SPLIT_INTENT_CANDIDATE": "Split intent candidate",
+      "REINFORCE_PRIMARY_URL": "Reinforce primary URL",
+      "QUERY_CLUSTER_WITHOUT_CLEAR_PRIMARY": "Cluster without clear primary",
+      "LOW_VALUE_OVERLAP": "Low-value overlap",
+      "HIGH_IMPACT_CANNIBALIZATION": "High-impact cannibalization"
+    },
+    "errors": {
+      "requestTitle": "Cannibalization request failed",
+      "detailsTitle": "Cannibalization details failed"
+    },
+    "empty": {
+      "title": "No cannibalization clusters matched the current view",
+      "description": "Relax one or more filters to widen the current overlap slice."
+    }
+  },
+  "trends": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Snapshots and trends",
+      "title": "Trends for job #{{jobId}}",
+      "description": "Compare crawl jobs for the same site and contrast imported GSC ranges without leaving the current job context.",
+      "loadingOverview": "Loading comparison options...",
+      "exportCrawlCompare": "Export crawl compare CSV",
+      "exportGscCompare": "Export GSC compare CSV"
+    },
+    "common": {
+      "openPages": "Open pages",
+      "openOpportunities": "Open opportunities",
+      "openGsc": "Open GSC",
+      "openTopQueries": "Open top queries"
+    },
+    "errors": {
+      "overviewTitle": "Trends overview failed",
+      "crawlTitle": "Crawl compare failed",
+      "gscTitle": "GSC compare failed"
+    },
+    "crawl": {
+      "title": "Crawl compare",
+      "description": "Compare the current crawl against an older baseline for the same site and inspect deterministic change deltas per URL.",
+      "siteLabel": "Site",
+      "loading": "Loading crawl compare...",
+      "emptyBaselineTitle": "No baseline crawl job available",
+      "emptyBaselineDescription": "Run at least one earlier crawl for the same site to unlock job-to-job comparisons.",
+      "emptyTitle": "No crawl changes matched the current filters",
+      "emptyDescription": "Relax one or more compare filters or switch to a different baseline job.",
+      "summary": {
+        "shared": "Shared URLs",
+        "new": "New URLs",
+        "missing": "Missing URLs",
+        "improved": "Improved URLs",
+        "worsened": "Worsened URLs",
+        "unchanged": "Unchanged URLs",
+        "resolvedIssues": "Resolved issues",
+        "addedIssues": "Added issues"
+      },
+      "quickFilters": {
+        "title": "Crawl compare presets",
+        "improved": "Improved",
+        "worsened": "Worsened",
+        "new": "New",
+        "missing": "Missing",
+        "resolvedIssues": "Resolved issues",
+        "newIssues": "New issues",
+        "priorityGain": "Priority gain",
+        "priorityDrop": "Priority drop"
+      },
+      "filters": {
+        "title": "Crawl compare filters",
+        "description": "Keep the baseline job, compare range and change filters in the query string.",
+        "baselineJob": "Baseline job",
+        "gscRange": "Priority/GSC range",
+        "last28Days": "Last 28 days",
+        "last90Days": "Last 90 days",
+        "changeType": "Change type",
+        "resolvedIssuesMin": "Resolved issues min",
+        "addedIssuesMin": "Added issues min",
+        "urlContains": "URL contains"
+      },
+      "changeType": {
+        "improved": "Improved",
+        "worsened": "Worsened",
+        "unchanged": "Unchanged",
+        "new": "New",
+        "missing": "Missing"
+      },
+      "table": {
+        "url": "URL",
+        "change": "Change",
+        "issues": "Issues",
+        "priority": "Priority",
+        "content": "Content / render",
+        "internalLinking": "Internal linking",
+        "resolved": "Resolved",
+        "added": "Added",
+        "delta": "Delta",
+        "wordCount": "Word count",
+        "schemaCount": "Schema count",
+        "responseTime": "Response time",
+        "links": "Links",
+        "linkingPages": "Linking pages"
+      }
+    },
+    "gsc": {
+      "title": "GSC compare",
+      "description": "Compare imported Search Console ranges for the current job and inspect metric deltas per URL.",
+      "loading": "Loading GSC compare...",
+      "emptyTitle": "No GSC compare rows matched the current filters",
+      "emptyDescription": "Loosen one or more trend filters or import the missing range first.",
+      "summary": {
+        "clicksDelta": "Clicks delta",
+        "impressionsDelta": "Impressions delta",
+        "ctrDelta": "CTR delta",
+        "positionDelta": "Position delta",
+        "topQueriesDelta": "Top queries delta",
+        "improved": "Improved URLs",
+        "worsened": "Worsened URLs",
+        "flat": "Flat URLs"
+      },
+      "quickFilters": {
+        "title": "GSC compare presets",
+        "clicksUp": "Clicks up",
+        "clicksDown": "Clicks down",
+        "impressionsUp": "Impressions up",
+        "ctrDown": "CTR down",
+        "positionImproved": "Position improved",
+        "positionWorsened": "Position worsened"
+      },
+      "filters": {
+        "title": "GSC compare filters",
+        "description": "Keep both ranges and trend filters in the URL for deep-linking.",
+        "baselineRange": "Baseline range",
+        "targetRange": "Target range",
+        "last28Days": "Last 28 days",
+        "last90Days": "Last 90 days",
+        "overallTrend": "Overall trend",
+        "urlContains": "URL contains",
+        "sortBy": "Sort by",
+        "sortOrder": "Sort order",
+        "sort": {
+          "clicksDelta": "Clicks delta",
+          "impressionsDelta": "Impressions delta",
+          "ctrDelta": "CTR delta",
+          "positionDelta": "Position delta",
+          "topQueriesDelta": "Top queries delta",
+          "overallTrend": "Overall trend",
+          "url": "URL"
+        }
+      },
+      "trend": {
+        "improved": "Improved",
+        "worsened": "Worsened",
+        "flat": "Flat"
+      },
+      "table": {
+        "url": "URL",
+        "trend": "Trend",
+        "clicks": "Clicks",
+        "impressions": "Impressions",
+        "ctr": "CTR",
+        "position": "Position"
+      }
+    }
+  },
+  "gsc": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Google Search Console",
+      "title": "GSC opportunities for job #{{jobId}}",
+      "description": "Connect one property, import Search Analytics for crawled URLs and work on technical issues next to real query demand.",
+      "loading": "Loading Google Search Console data...",
+      "loadingOpportunities": "Loading GSC opportunities...",
+      "exportPages": "Export pages with GSC",
+      "exportQueries": "Export top queries"
+    },
+    "connection": {
+      "title": "Connection and import",
+      "description": "This local flow connects one Search Console property for the current site and keeps tokens on disk for development.",
+      "selectedProperty": "Selected property",
+      "connect": "Connect GSC",
+      "saveProperty": "Save property",
+      "saving": "Saving property...",
+      "siteWorkspaceHint": "Need the site-level flow?",
+      "openSiteWorkspace": "Open site GSC workspace",
+      "topQueriesLimit": "Max top queries / URL",
+      "topQueriesLimitTooltip": "Caps how many query rows are stored for each matched URL during import. It does not increase the number of URLs with queries.",
+      "topQueriesLimitHint": "Example: 1 keeps only the strongest query for each matched URL. Leave empty to use the backend default.",
+      "importCurrentRange": "Import active range",
+      "importAll": "Import 28d + 90d",
+      "importing": "Importing...",
+      "oauthSuccess": "OAuth completed. Choose the matching property and import data.",
+      "lastImport": "Last import finished at {{date}}",
+      "rangeSummary": "Range {{range}}",
+      "pagesWithTopQueries": "Pages with top queries: {{count}}",
+      "storedTopQueries": "Stored top queries: {{count}}",
+      "failedPages": "Failed pages: {{count}}",
+      "importErrors": "Import errors: {{count}}",
+      "matchingNote": "If GSC shows more URLs than the panel, this view only stores crawled internal pages and matches query data by URL variant. Differences such as trailing slash, protocol, query params, or import failures can exclude a page."
+    },
+    "summary": {
+      "importedPages": "Imported pages",
+      "activeRange": "Active range: {{range}}",
+      "pagesWithImpressions": "Pages with impressions",
+      "pagesWithClicks": "Pages with clicks",
+      "totalTopQueries": "Total top queries",
+      "opportunitiesImpressions": "Issues + impressions",
+      "opportunitiesClicks": "Issues + clicks",
+      "pagesWithTopQueries": "Pages with top queries",
+      "lastImportedAt": "Last imported"
+    },
+    "quickFilters": {
+      "title": "GSC opportunity presets",
+      "impressionsWithIssue": "Impressions + issue",
+      "clicksWithIssue": "Clicks + issue",
+      "lowCtrHighImpressions": "Low CTR / high impressions",
+      "highImpressionsWeakPosition": "High impressions / weak position"
+    },
+    "filters": {
+      "title": "Opportunity filters",
+      "description": "Keep the current range in the URL, combine technical state with GSC thresholds and move straight into top queries.",
+      "dateRange": "Date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "hasTechnicalIssue": "Has technical issue",
+      "hasGscData": "Has GSC data",
+      "minImpressions": "Min impressions",
+      "minClicks": "Min clicks",
+      "maxCtr": "Max CTR (%)",
+      "minPosition": "Min position",
+      "minTopQueries": "Min top queries"
+    },
+    "table": {
+      "url": "URL",
+      "technical": "Technical state",
+      "clicks": "Clicks",
+      "impressions": "Impressions",
+      "ctr": "CTR",
+      "position": "Position",
+      "topQueriesCount": "Top queries",
+      "technicalCount": "{{count}} technical issues"
+    },
+    "topQueries": {
+      "title": "Top queries per URL",
+      "description": "Pick a URL from the opportunities table to inspect the exact search demand behind that page.",
+      "openPages": "Open pages view",
+      "filtersTitle": "Top queries filters",
+      "filtersDescription": "Filter and sort the imported query rows for the selected URL.",
+      "queryContains": "Query contains",
+      "queryExcludes": "Exclude phrase",
+      "queryPlaceholder": "brand term",
+      "minImpressions": "Min impressions",
+      "minClicks": "Min clicks",
+      "maxCtr": "Max CTR (%)",
+      "minPosition": "Min position",
+      "loading": "Loading top queries...",
+      "close": "Close top queries",
+      "summaryClicks": "Clicks",
+      "summaryImpressions": "Impressions",
+      "summaryCtr": "CTR",
+      "summaryPosition": "Position",
+      "summaryIssues": "Technical issues",
+      "table": {
+        "query": "Query",
+        "clicks": "Clicks",
+        "impressions": "Impressions",
+        "ctr": "CTR",
+        "position": "Position"
+      }
+    },
+    "errors": {
+      "summaryTitle": "GSC summary failed",
+      "propertyTitle": "Property selection failed",
+      "importTitle": "GSC import failed",
+      "opportunitiesTitle": "GSC opportunities failed",
+      "topQueriesTitle": "Top queries request failed"
+    },
+    "empty": {
+      "opportunitiesTitle": "No URLs matched the current GSC filters",
+      "opportunitiesDescription": "Broaden one or more thresholds or switch the active GSC range.",
+      "topQueriesTitle": "Select a URL to inspect top queries",
+      "topQueriesDescription": "Use the opportunities table above to jump from a technical issue into its Search Console demand.",
+      "topQueriesNoRowsTitle": "No top queries for the selected URL",
+      "topQueriesNoRowsDescription": "Import a wider range or loosen one of the active query filters."
+    }
+  },
+  "links": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "page": {
+      "eyebrow": "Links",
+      "title": "Link graph for job #{{jobId}}",
+      "description": "Move between internal, external and issue-focused slices without losing state on refresh.",
+      "exportFull": "Export full CSV",
+      "exportCurrentView": "Export current view CSV",
+      "loading": "Loading links..."
+    },
+    "quickFilters": {
+      "title": "Quick link filters",
+      "external": "External",
+      "internal": "Internal",
+      "nofollow": "Nofollow",
+      "missingAnchor": "No anchor text",
+      "brokenInternal": "Broken internal",
+      "redirectingInternal": "Redirecting internal",
+      "unresolvedInternal": "Unresolved internal",
+      "toNoindexLike": "To noindex-like",
+      "toCanonicalized": "To canonicalized",
+      "redirectChain": "Redirect chain"
+    },
+    "filters": {
+      "title": "Filters",
+      "description": "These map directly to backend filters, including audit deep-link states.",
+      "isInternal": "Is internal",
+      "isNofollow": "Is nofollow",
+      "targetDomain": "Target domain",
+      "targetDomainPlaceholder": "example.com",
+      "hasAnchor": "Has anchor",
+      "brokenInternal": "Broken internal",
+      "redirectingInternal": "Redirecting internal",
+      "unresolvedInternal": "Unresolved internal",
+      "toNoindexLike": "To noindex-like",
+      "toCanonicalized": "To canonicalized",
+      "redirectChain": "Redirect chain"
+    },
+    "table": {
+      "sourceUrl": "Source URL",
+      "targetUrl": "Target URL",
+      "targetDomain": "Target domain",
+      "anchorText": "Anchor text",
+      "targetStatus": "Target status",
+      "redirectHops": "Redirect hops",
+      "finalUrl": "Final URL",
+      "internal": "Internal",
+      "nofollow": "Nofollow",
+      "signals": "Signals"
+    },
+    "signals": {
+      "brokenInternal": "Broken internal",
+      "redirectingInternal": "Redirecting internal",
+      "unresolvedInternal": "Unresolved internal",
+      "toNoindexLike": "To noindex-like",
+      "toCanonicalized": "To canonicalized",
+      "redirectChain": "Redirect chain",
+      "noAnchor": "No anchor"
+    },
+    "urlActions": {
+      "openSource": "Open source",
+      "copySource": "Copy source",
+      "openTarget": "Open target",
+      "copyTarget": "Copy target"
+    },
+    "errors": {
+      "requestTitle": "Links request failed"
+    },
+    "empty": {
+      "title": "No links matched the current filters",
+      "description": "Clear one or more filters to widen the current link slice."
+    }
+  },
+  "audit": {
+    "invalidIdTitle": "Invalid job id",
+    "invalidIdMessage": "The route does not contain a valid numeric job id.",
+    "loading": "Loading audit for job #{{jobId}}...",
+    "errors": {
+      "requestTitle": "Audit request failed"
+    },
+    "empty": {
+      "title": "Audit unavailable",
+      "description": "The backend returned an empty audit response."
+    },
+    "page": {
+      "eyebrow": "Audit",
+      "title": "Technical audit for job #{{jobId}}",
+      "description": "Summary counts on top, issue sections below, and direct links into the matching pages or links tables.",
+      "export": "Export audit.csv"
+    },
+    "sectionRecords": "{{count}} records",
+    "sectionEmpty": {
+      "title": "No records",
+      "description": "This section is currently empty for the selected job."
+    },
+    "summary": {
+      "total_pages": "Total pages",
+      "titleMetaIssues": "Title / meta issues",
+      "headingIssues": "Heading issues",
+      "renderInsights": "Render insights",
+      "schemaInsights": "Schema insights",
+      "xRobots": "X-Robots pages",
+      "canonicalIndexabilityIssues": "Canonical / indexability",
+      "broken_internal_links": "Broken internal links",
+      "contentIssues": "Content issues",
+      "mediaIssues": "Media issues",
+      "redirecting_internal_links": "Redirecting links"
+    },
+    "sections": {
+      "pages_missing_title": "Pages missing title",
+      "pages_title_too_short": "Pages with short title",
+      "pages_title_too_long": "Pages with long title",
+      "pages_missing_meta_description": "Pages missing meta description",
+      "pages_meta_description_too_short": "Pages with short meta description",
+      "pages_meta_description_too_long": "Pages with long meta description",
+      "pages_missing_h1": "Pages missing H1",
+      "pages_multiple_h1": "Pages with multiple H1",
+      "pages_missing_h2": "Pages missing H2",
+      "pages_duplicate_title": "Duplicate titles",
+      "pages_duplicate_meta_description": "Duplicate meta descriptions",
+      "pages_missing_canonical": "Pages missing canonical",
+      "pages_self_canonical": "Pages with self canonical",
+      "pages_canonical_to_other_url": "Pages canonicalized to other URL",
+      "pages_canonical_to_non_200": "Pages canonicalized to non-200",
+      "pages_canonical_to_redirect": "Pages canonicalized to redirect",
+      "pages_noindex_like": "Pages marked noindex-like",
+      "pages_non_indexable_like": "Pages marked non-indexable-like",
+      "broken_internal_links": "Broken internal links",
+      "unresolved_internal_targets": "Unresolved internal targets",
+      "redirecting_internal_links": "Redirecting internal links",
+      "internal_links_to_noindex_like_pages": "Internal links to noindex-like pages",
+      "internal_links_to_canonicalized_pages": "Internal links to canonicalized pages",
+      "redirect_chains_internal": "Internal redirect chains",
+      "pages_thin_content": "Pages with thin content",
+      "pages_duplicate_content": "Duplicate content groups",
+      "js_heavy_like_pages": "JS-heavy-like pages",
+      "rendered_pages": "Rendered pages",
+      "pages_with_render_errors": "Pages with render errors",
+      "pages_with_schema": "Pages with schema",
+      "pages_missing_schema": "Pages missing schema",
+      "pages_with_x_robots_tag": "Pages with X-Robots-Tag",
+      "pages_with_schema_types_summary": "Schema type summary",
+      "pages_with_missing_alt_images": "Pages with missing alt images",
+      "pages_with_no_images": "Pages with no images",
+      "oversized_pages": "Oversized pages"
+    },
+    "table": {
+      "url": "URL",
+      "status": "Status",
+      "title": "Title",
+      "details": "Details",
+      "value": "Value",
+      "count": "Count",
+      "pages": "Pages",
+      "open": "Open",
+      "sourceUrl": "Source URL",
+      "targetUrl": "Target URL",
+      "targetStatus": "Target status",
+      "redirectHops": "Redirect hops",
+      "finalUrl": "Final URL",
+      "signals": "Signals",
+      "robotsMeta": "Robots meta"
+    },
+    "details": {
+      "titleLength": "Title length: {{count}}",
+      "metaLength": "Meta length: {{count}}",
+      "h1Count": "H1 count: {{count}}",
+      "h2Count": "H2 count: {{count}}",
+      "wordCount": "Word count: {{count}}",
+      "missingAlt": "Missing alt images: {{count}}",
+      "htmlSize": "HTML size: {{size}}",
+      "canonical": "Canonical: {{value}}",
+      "canonicalTargetStatus": "Canonical target status: {{count}}",
+      "xRobots": "X-Robots: {{value}}",
+      "rendered": "Rendered via Playwright",
+      "jsHeavyLike": "Marked as JS-heavy-like",
+      "renderError": "Render error: {{value}}",
+      "schemaTypes": "Schema types: {{value}}"
+    }
+  },
+  "pagesCompare": {
+    "loading": "Loading pages compare...",
+    "errorTitle": "Pages compare failed",
+    "emptyTitle": "No URLs matched the compare view",
+    "emptyDescription": "Adjust filters or change the baseline crawl to inspect another delta slice.",
+    "compareUnavailableTitle": "Pages compare is unavailable",
+    "compareUnavailableDescription": "Choose a different baseline crawl to compare the active snapshot.",
+    "eyebrow": "Snapshot compare",
+    "title": "Pages Changes",
+    "description": "Active crawl from {{active}} compared with baseline crawl from {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Open current-state pages",
+      "openActiveCrawl": "Open active crawl"
+    },
+    "summary": {
+      "activeUrls": "Active URLs",
+      "newUrls": "New URLs",
+      "missingUrls": "Missing URLs",
+      "changedUrls": "Changed URLs",
+      "improvedUrls": "Improved URLs",
+      "worsenedUrls": "Worsened URLs",
+      "statusChanged": "Status changed",
+      "priorityDown": "Priority worsened"
+    },
+    "quickFilters": {
+      "title": "Quick compare filters",
+      "newUrls": "New URLs",
+      "missingUrls": "Missing URLs",
+      "changed": "Changed",
+      "statusChanged": "Status changed",
+      "titleChanged": "Title changed",
+      "h1Changed": "H1 changed",
+      "canonicalChanged": "Canonical changed",
+      "noindexChanged": "Noindex changed",
+      "priorityUp": "Priority up",
+      "priorityDown": "Priority down",
+      "linksUp": "Links up",
+      "linksDown": "Links down",
+      "contentUp": "Content up",
+      "contentDown": "Content down"
+    },
+    "filters": {
+      "title": "Compare filters",
+      "description": "Keep the active snapshot as the base table and layer deltas on top of it.",
+      "dateRange": "GSC date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "changeType": "Change type",
+      "urlContains": "URL contains",
+      "statusChanged": "Status changed",
+      "titleChanged": "Title changed",
+      "metaDescriptionChanged": "Meta description changed",
+      "h1Changed": "H1 changed",
+      "canonicalChanged": "Canonical changed",
+      "noindexChanged": "Noindex changed",
+      "priorityTrend": "Priority trend",
+      "internalLinkingTrend": "Internal linking trend",
+      "contentTrend": "Content length trend",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "sort": {
+        "changeType": "Change type",
+        "priorityDelta": "Priority delta",
+        "wordCountDelta": "Word count delta",
+        "responseTimeDelta": "Response time delta",
+        "internalLinksDelta": "Internal links delta",
+        "url": "URL"
+      }
+    },
+    "changeType": {
+      "new": "New in active crawl",
+      "missing": "Missing vs baseline",
+      "improved": "Improved",
+      "worsened": "Worsened",
+      "unchanged": "Unchanged"
+    },
+    "trend": {
+      "improved": "Improved",
+      "worsened": "Worsened",
+      "flat": "Flat"
+    },
+    "changedFields": {
+      "status_code": "Status",
+      "title": "Title",
+      "meta_description": "Meta description",
+      "h1": "H1",
+      "canonical_url": "Canonical",
+      "noindex_like": "Noindex",
+      "word_count": "Word count",
+      "response_time_ms": "Response time",
+      "incoming_internal_links": "Internal links",
+      "incoming_internal_linking_pages": "Linking pages",
+      "priority_score": "Priority"
+    },
+    "table": {
+      "url": "URL",
+      "openActivePages": "Open active pages",
+      "openOpportunitiesCompare": "Open opportunities compare",
+      "active": "Active crawl",
+      "baseline": "Baseline crawl",
+      "status": "Status",
+      "titleLabel": "Title",
+      "h1Label": "H1",
+      "canonicalLabel": "Canonical",
+      "noindexLabel": "Noindex-like",
+      "delta": "Delta",
+      "priorityDelta": "Priority",
+      "wordCountDelta": "Word count",
+      "responseTimeDelta": "Response time",
+      "internalLinksDelta": "Internal links",
+      "linkingPagesDelta": "Linking pages",
+      "rationale": "Why it changed",
+      "responseTime": "Active response time"
+    }
+  },
+  "auditCompare": {
+    "loading": "Loading audit compare...",
+    "errorTitle": "Audit compare failed",
+    "emptyTitle": "No audit sections matched the compare view",
+    "emptyDescription": "Try another compare status or pick a different baseline crawl.",
+    "compareUnavailableTitle": "Audit compare is unavailable",
+    "compareUnavailableDescription": "Choose a baseline crawl to compare the active audit against it.",
+    "eyebrow": "Snapshot compare",
+    "title": "Audit Changes",
+    "description": "Resolved, new and changed issue areas between the active crawl from {{active}} and the baseline crawl from {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Open current-state audit",
+      "openActiveCrawl": "Open active crawl"
+    },
+    "summary": {
+      "resolvedSections": "Resolved sections",
+      "newSections": "New sections",
+      "improvedSections": "Improved sections",
+      "worsenedSections": "Worsened sections",
+      "resolvedIssues": "Resolved issues",
+      "newIssues": "New issues",
+      "activeIssues": "Active issues",
+      "baselineIssues": "Baseline issues"
+    },
+    "quickFilters": {
+      "title": "Quick audit filters",
+      "resolved": "Resolved",
+      "new": "New",
+      "improved": "Improved",
+      "worsened": "Worsened",
+      "unchanged": "Unchanged"
+    },
+    "filters": {
+      "title": "Audit compare filters",
+      "description": "Filter compare sections without losing the site workspace context.",
+      "status": "Section status"
+    },
+    "area": {
+      "pages": "Pages",
+      "links": "Links",
+      "duplicates": "Duplicates"
+    },
+    "status": {
+      "resolved": "Resolved",
+      "new": "New",
+      "improved": "Improved",
+      "worsened": "Worsened",
+      "unchanged": "Unchanged"
+    },
+    "table": {
+      "section": "Section",
+      "status": "Status",
+      "counts": "Counts",
+      "changes": "Changes",
+      "active": "Active",
+      "baseline": "Baseline",
+      "delta": "Delta",
+      "resolvedItems": "Resolved items",
+      "newItems": "New items",
+      "sampleResolved": "Examples resolved",
+      "sampleNew": "Examples new"
+    }
+  },
+  "opportunitiesCompare": {
+    "loading": "Loading opportunities compare...",
+    "errorTitle": "Opportunities compare failed",
+    "emptyTitle": "No opportunity changes matched the current view",
+    "emptyDescription": "Adjust filters or switch the baseline crawl to inspect another working set.",
+    "compareUnavailableTitle": "Opportunities compare is unavailable",
+    "compareUnavailableDescription": "Choose a baseline crawl to compare opportunity shifts.",
+    "eyebrow": "Snapshot compare",
+    "title": "SEO Opportunities Changes",
+    "description": "See which priority opportunities appeared, disappeared or moved between the active crawl from {{active}} and the baseline crawl from {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Open current-state opportunities",
+      "openActiveCrawl": "Open active crawl"
+    },
+    "summary": {
+      "activeUrls": "URLs with opportunities",
+      "actionableUrls": "Actionable URLs",
+      "newOpportunities": "New opportunities",
+      "resolvedOpportunities": "Resolved opportunities",
+      "priorityUp": "Priority up",
+      "priorityDown": "Priority down",
+      "enteredActionable": "Entered actionable",
+      "leftActionable": "Left actionable"
+    },
+    "quickFilters": {
+      "title": "Quick opportunity filters",
+      "newOpportunities": "New opportunities",
+      "resolvedOpportunities": "Resolved opportunities",
+      "priorityUp": "Priority up",
+      "priorityDown": "Priority down",
+      "enteredActionable": "Entered actionable",
+      "leftActionable": "Left actionable"
+    },
+    "filters": {
+      "title": "Opportunities compare filters",
+      "description": "Focus on the URLs whose priority moved enough to change the action queue.",
+      "dateRange": "GSC date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "changeKind": "Change highlight",
+      "opportunityType": "Opportunity type",
+      "urlContains": "URL contains",
+      "urlContainsPlaceholder": "https://example.com/path",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "sort": {
+        "priorityDelta": "Priority delta",
+        "activePriority": "Active priority",
+        "activeOpportunityCount": "Active opportunity count",
+        "changeType": "Change type",
+        "url": "URL"
+      }
+    },
+    "highlights": {
+      "NEW_URL": "New URL",
+      "MISSING_URL": "Missing URL",
+      "NEW_OPPORTUNITY": "New opportunity",
+      "RESOLVED_OPPORTUNITY": "Resolved opportunity",
+      "PRIORITY_UP": "Priority up",
+      "PRIORITY_DOWN": "Priority down",
+      "ENTERED_ACTIONABLE": "Entered actionable",
+      "LEFT_ACTIONABLE": "Left actionable"
+    },
+    "actionable": {
+      "entered": "Entered actionable band",
+      "left": "Left actionable band",
+      "steady": "Stayed in the same band"
+    },
+    "table": {
+      "url": "URL",
+      "openPagesCompare": "Open pages compare",
+      "openActivePages": "Open active pages",
+      "priority": "Priority",
+      "active": "Active",
+      "baseline": "Baseline",
+      "delta": "Delta",
+      "activeLevel": "Active level",
+      "baselineLevel": "Baseline level",
+      "opportunities": "Opportunities",
+      "activeCount": "Active count",
+      "baselineCount": "Baseline count",
+      "newTypes": "New types",
+      "resolvedTypes": "Resolved types",
+      "rationale": "Why it changed",
+      "actionable": "Actionable status"
+    }
+  },
+  "internalLinkingCompare": {
+    "loading": "Loading internal linking compare...",
+    "errorTitle": "Internal linking compare failed",
+    "emptyTitle": "No internal linking changes matched the current view",
+    "emptyDescription": "Adjust compare filters or choose another baseline crawl.",
+    "compareUnavailableTitle": "Internal linking compare is unavailable",
+    "compareUnavailableDescription": "Choose a baseline crawl to compare structural changes.",
+    "eyebrow": "Snapshot compare",
+    "title": "Internal Linking Changes",
+    "description": "Track structural improvements and regressions between the active crawl from {{active}} and the baseline crawl from {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Open current-state internal linking",
+      "openActiveCrawl": "Open active crawl"
+    },
+    "summary": {
+      "issueUrls": "Issue URLs",
+      "newOrphanLike": "New orphan-like",
+      "resolvedOrphanLike": "Resolved orphan-like",
+      "weaklyLinkedImproved": "Weak important improved",
+      "weaklyLinkedWorsened": "Weak important worsened",
+      "linkingPagesUp": "Linking pages up",
+      "anchorImproved": "Anchor diversity improved",
+      "boilerplateWorsened": "Boilerplate worsened"
+    },
+    "quickFilters": {
+      "title": "Quick internal linking filters",
+      "newOrphanLike": "New orphan-like",
+      "resolvedOrphanLike": "Resolved orphan-like",
+      "weaklyLinkedImproved": "Weak important improved",
+      "weaklyLinkedWorsened": "Weak important worsened",
+      "linkingPagesUp": "Linking pages up",
+      "linkingPagesDown": "Linking pages down"
+    },
+    "filters": {
+      "title": "Internal linking compare filters",
+      "description": "Compare issue types and structural signals without leaving the active site workspace.",
+      "dateRange": "GSC date range",
+      "last28Days": "Last 28 days",
+      "last90Days": "Last 90 days",
+      "changeType": "Change type",
+      "compareKind": "Compare highlight",
+      "issueType": "Issue type",
+      "urlContains": "URL contains",
+      "urlContainsPlaceholder": "https://example.com/path",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "sort": {
+        "internalLinkingDelta": "Internal linking delta",
+        "linkEquityDelta": "Link equity delta",
+        "linkingPagesDelta": "Linking pages delta",
+        "anchorDiversityDelta": "Anchor diversity delta",
+        "boilerplateDelta": "Boilerplate delta",
+        "changeType": "Change type",
+        "url": "URL"
+      }
+    },
+    "highlights": {
+      "NEW_ORPHAN_LIKE": "New orphan-like",
+      "RESOLVED_ORPHAN_LIKE": "Resolved orphan-like",
+      "WEAKLY_LINKED_IMPROVED": "Weak important improved",
+      "WEAKLY_LINKED_WORSENED": "Weak important worsened",
+      "LINK_EQUITY_IMPROVED": "Link equity improved",
+      "LINK_EQUITY_WORSENED": "Link equity worsened",
+      "LINKING_PAGES_UP": "Linking pages up",
+      "LINKING_PAGES_DOWN": "Linking pages down",
+      "ANCHOR_DIVERSITY_IMPROVED": "Anchor diversity improved",
+      "ANCHOR_DIVERSITY_WORSENED": "Anchor diversity worsened",
+      "BOILERPLATE_IMPROVED": "Boilerplate improved",
+      "BOILERPLATE_WORSENED": "Boilerplate worsened"
+    },
+    "table": {
+      "url": "URL",
+      "openPagesCompare": "Open pages compare",
+      "openActiveInternalLinking": "Open active internal linking",
+      "issues": "Issues",
+      "activeIssues": "Active issues",
+      "baselineIssues": "Baseline issues",
+      "newIssues": "New issues",
+      "resolvedIssues": "Resolved issues",
+      "delta": "Delta",
+      "internalLinkingDelta": "Internal linking",
+      "linkEquityDelta": "Link equity",
+      "linkingPagesDelta": "Linking pages",
+      "anchorDelta": "Anchor diversity",
+      "boilerplateDelta": "Boilerplate share",
+      "rationale": "Why it changed",
+      "currentBoilerplate": "Active boilerplate share"
+    }
+  }
+}

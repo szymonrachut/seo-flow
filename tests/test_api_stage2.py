@@ -155,6 +155,9 @@ def test_post_crawl_job_endpoint_smoke(api_client, sqlite_session_factory, monke
         max_urls: int,
         max_depth: int,
         delay: float,
+        render_mode: str,
+        render_timeout_ms: int,
+        max_rendered_pages_per_job: int,
     ) -> None:
         calls.append(crawl_job_id)
 

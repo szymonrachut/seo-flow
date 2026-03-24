@@ -1,0 +1,11 @@
+﻿checkpoint_name=Po_11.2_Rekomendacje
+timestamp=2026-03-16_01-50-21
+repo_root=C:/Users/szymo/Desktop/Olinet Scraper/seo_crawler
+git_branch=main
+git_commit=65512ce7434d35fcf54ef2b29e3ab53b64a123db
+git_tag=Po_11.2_Rekomendacje
+db_container=seo-crawler-db
+db_name=seo_crawler
+db_user=postgres
+zip_enabled=True
+backup_root=C:\Users\szymo\Desktop\Olinet Scraper\seo_crawler\backups\Po_11.2_Rekomendacje

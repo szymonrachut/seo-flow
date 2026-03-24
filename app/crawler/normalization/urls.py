@@ -6,7 +6,9 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import tldextract
 
-_DOMAIN_EXTRACTOR = tldextract.TLDExtract(suffix_list_urls=None)
+# Use the bundled snapshot without touching the shared site-packages cache.
+# This avoids flaky file-lock contention during local/API tests.
+_DOMAIN_EXTRACTOR = tldextract.TLDExtract(cache_dir=None, suffix_list_urls=None)
 _SKIP_SCHEMES = ("mailto:", "tel:", "javascript:", "data:")
 
 

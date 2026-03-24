@@ -1,8 +1,21 @@
-.env
-.pytest_cache/
+# Python
 .venv/
 __pycache__/
-*.py[cod]
+.pytest_cache/
+*.pyc
+
+# Node / frontend
 frontend/node_modules/
 frontend/dist/
+dist/
+coverage/
+
+# Local env / secrets
+.env
 frontend/.env.local
+.local/
+
+# VS Code / OS
+.vscode/
+Thumbs.db
+.DS_Store

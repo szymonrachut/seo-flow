@@ -4,10 +4,12 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, Enum, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, Enum, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import event
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.text_processing import prepare_visible_text
 from app.db.base import Base
 
 
@@ -41,6 +43,33 @@ class Site(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
 
     crawl_jobs: Mapped[list["CrawlJob"]] = relationship(back_populates="site", cascade="all, delete-orphan")
+    gsc_property: Mapped["GscProperty | None"] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    content_strategy: Mapped["SiteContentStrategy | None"] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    content_recommendation_states: Mapped[list["SiteContentRecommendationState"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    content_gap_candidates: Mapped[list["SiteContentGapCandidate"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    content_gap_review_runs: Mapped[list["SiteContentGapReviewRun"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    content_gap_items: Mapped[list["SiteContentGapItem"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    competitors: Mapped[list["SiteCompetitor"]] = relationship(back_populates="site", cascade="all, delete-orphan")
 
 
 class CrawlJob(Base):
@@ -62,6 +91,30 @@ class CrawlJob(Base):
     site: Mapped[Site] = relationship(back_populates="crawl_jobs")
     pages: Mapped[list["Page"]] = relationship(back_populates="crawl_job", cascade="all, delete-orphan")
     links: Mapped[list["Link"]] = relationship(back_populates="crawl_job", cascade="all, delete-orphan")
+    gsc_url_metrics: Mapped[list["GscUrlMetric"]] = relationship(
+        back_populates="crawl_job",
+        cascade="all, delete-orphan",
+    )
+    gsc_top_queries: Mapped[list["GscTopQuery"]] = relationship(
+        back_populates="crawl_job",
+        cascade="all, delete-orphan",
+    )
+    semantic_profiles: Mapped[list["CrawlPageSemanticProfile"]] = relationship(
+        back_populates="crawl_job",
+        cascade="all, delete-orphan",
+    )
+    content_gap_candidates: Mapped[list["SiteContentGapCandidate"]] = relationship(
+        back_populates="basis_crawl_job",
+        cascade="all, delete-orphan",
+    )
+    content_gap_review_runs: Mapped[list["SiteContentGapReviewRun"]] = relationship(
+        back_populates="basis_crawl_job",
+        cascade="all, delete-orphan",
+    )
+    content_gap_items: Mapped[list["SiteContentGapItem"]] = relationship(
+        back_populates="basis_crawl_job",
+        cascade="all, delete-orphan",
+    )
 
 
 class Page(Base):
@@ -72,6 +125,8 @@ class Page(Base):
         Index("ix_pages_status_code", "status_code"),
         Index("ix_pages_is_internal", "is_internal"),
         Index("ix_pages_depth", "depth"),
+        Index("ix_pages_page_type", "page_type"),
+        Index("ix_pages_page_bucket", "page_bucket"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -81,11 +136,35 @@ class Page(Base):
     final_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     status_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    title_length: Mapped[int | None] = mapped_column(Integer, nullable=True)
     meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    meta_description_length: Mapped[int | None] = mapped_column(Integer, nullable=True)
     h1: Mapped[str | None] = mapped_column(Text, nullable=True)
+    h1_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    h2_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     canonical_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     robots_meta: Mapped[str | None] = mapped_column(Text, nullable=True)
+    x_robots_tag: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    word_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    content_text_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    images_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    images_missing_alt_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    html_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    was_rendered: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    render_attempted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    fetch_mode_used: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    js_heavy_like: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    render_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    render_error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    schema_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    schema_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    schema_types_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    page_type: Mapped[str] = mapped_column(String(64), nullable=False, default="other")
+    page_bucket: Mapped[str] = mapped_column(String(64), nullable=False, default="other")
+    page_type_confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    page_type_version: Mapped[str] = mapped_column(String(64), nullable=False, default="unclassified")
+    page_type_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
     response_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_internal: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     depth: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -95,6 +174,12 @@ class Page(Base):
 
     crawl_job: Mapped[CrawlJob] = relationship(back_populates="pages")
     outgoing_links: Mapped[list["Link"]] = relationship(back_populates="source_page", cascade="all, delete-orphan")
+    gsc_url_metrics: Mapped[list["GscUrlMetric"]] = relationship(back_populates="page")
+    gsc_top_queries: Mapped[list["GscTopQuery"]] = relationship(back_populates="page")
+    semantic_profiles: Mapped[list["CrawlPageSemanticProfile"]] = relationship(
+        back_populates="page",
+        cascade="all, delete-orphan",
+    )
 
 
 class Link(Base):
@@ -121,3 +206,967 @@ class Link(Base):
 
     crawl_job: Mapped[CrawlJob] = relationship(back_populates="links")
     source_page: Mapped[Page] = relationship(back_populates="outgoing_links")
+
+
+class SiteContentRecommendationState(Base):
+    __tablename__ = "site_content_recommendation_states"
+    __table_args__ = (
+        UniqueConstraint("site_id", "recommendation_key", name="uq_site_content_recommendation_states_site_id_key"),
+        Index("ix_site_content_recommendation_states_site_id", "site_id"),
+        Index("ix_site_content_recommendation_states_site_id_impl_at", "site_id", "implemented_at"),
+        Index("ix_site_content_recommendation_states_site_id_impl_crawl", "site_id", "implemented_crawl_job_id"),
+        Index("ix_site_content_recommendation_states_normalized_target_url", "normalized_target_url"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    recommendation_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    recommendation_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    segment: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    target_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    normalized_target_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    target_title_snapshot: Mapped[str | None] = mapped_column(Text, nullable=True)
+    suggested_page_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    cluster_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    cluster_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    recommendation_text: Mapped[str] = mapped_column(Text, nullable=False)
+    signals_snapshot_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    helper_snapshot_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    primary_outcome_kind: Mapped[str] = mapped_column(String(32), nullable=False, default="unknown")
+    implemented_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    implemented_crawl_job_id: Mapped[int | None] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    implemented_baseline_crawl_job_id: Mapped[int | None] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    times_marked_done: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="content_recommendation_states")
+
+
+class SiteContentStrategy(Base):
+    __tablename__ = "site_content_strategies"
+    __table_args__ = (
+        UniqueConstraint("site_id", name="uq_site_content_strategies_site_id"),
+        Index("ix_site_content_strategies_site_id", "site_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    raw_user_input: Mapped[str] = mapped_column(Text, nullable=False)
+    normalized_strategy_json: Mapped[dict[str, Any] | None] = mapped_column(MutableDict.as_mutable(JSON), nullable=True)
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    normalization_status: Mapped[str] = mapped_column(String(32), nullable=False, default="not_processed")
+    last_normalization_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    normalization_fallback_used: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    normalization_debug_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    normalization_debug_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    normalized_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="content_strategy")
+
+
+class SiteCompetitor(Base):
+    __tablename__ = "site_competitors"
+    __table_args__ = (
+        UniqueConstraint("site_id", "domain", name="uq_site_competitors_site_id_domain"),
+        Index("ix_site_competitors_site_id", "site_id"),
+        Index("ix_site_competitors_domain", "domain"),
+        Index("ix_site_competitors_site_id_is_active", "site_id", "is_active"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    label: Mapped[str] = mapped_column(String(255), nullable=False)
+    root_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    domain: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_sync_run_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_sync_status: Mapped[str] = mapped_column(String(32), nullable=False, default="idle")
+    last_sync_stage: Mapped[str] = mapped_column(String(32), nullable=False, default="idle")
+    last_sync_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_sync_finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_sync_error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    last_sync_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_sync_processed_urls: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_sync_url_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=400)
+    last_sync_processed_extraction_pages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_sync_total_extractable_pages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_sync_summary_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="competitors")
+    sync_runs: Mapped[list["SiteCompetitorSyncRun"]] = relationship(
+        back_populates="competitor",
+        cascade="all, delete-orphan",
+    )
+    pages: Mapped[list["SiteCompetitorPage"]] = relationship(back_populates="competitor", cascade="all, delete-orphan")
+    extractions: Mapped[list["SiteCompetitorPageExtraction"]] = relationship(
+        back_populates="competitor",
+        cascade="all, delete-orphan",
+    )
+    semantic_candidates: Mapped[list["SiteCompetitorSemanticCandidate"]] = relationship(
+        back_populates="competitor",
+        cascade="all, delete-orphan",
+    )
+    semantic_runs: Mapped[list["SiteCompetitorSemanticRun"]] = relationship(
+        back_populates="competitor",
+        cascade="all, delete-orphan",
+    )
+    semantic_decisions: Mapped[list["SiteCompetitorSemanticDecision"]] = relationship(
+        back_populates="source_competitor",
+        cascade="all, delete-orphan",
+        foreign_keys="SiteCompetitorSemanticDecision.source_competitor_id",
+    )
+
+
+class SiteCompetitorSyncRun(Base):
+    __tablename__ = "site_competitor_sync_runs"
+    __table_args__ = (
+        UniqueConstraint("competitor_id", "run_id", name="uq_site_competitor_sync_runs_competitor_id_run_id"),
+        Index("ix_site_competitor_sync_runs_site_id", "site_id"),
+        Index("ix_site_competitor_sync_runs_competitor_id", "competitor_id"),
+        Index("ix_site_competitor_sync_runs_status", "status"),
+        Index("ix_site_competitor_sync_runs_lease_expires_at", "lease_expires_at"),
+        Index("ix_site_competitor_sync_runs_competitor_id_created_at", "competitor_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("site_competitors.id", ondelete="CASCADE"), nullable=False)
+    run_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    stage: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    trigger_source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual_single")
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message_safe: Mapped[str | None] = mapped_column(Text, nullable=True)
+    summary_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    retry_of_run_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    processed_urls: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    url_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    processed_extraction_pages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_extractable_pages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    competitor: Mapped[SiteCompetitor] = relationship(back_populates="sync_runs")
+
+
+class SiteCompetitorPage(Base):
+    __tablename__ = "site_competitor_pages"
+    __table_args__ = (
+        UniqueConstraint("competitor_id", "normalized_url", name="uq_site_competitor_pages_competitor_id_normalized_url"),
+        Index("ix_site_competitor_pages_site_id", "site_id"),
+        Index("ix_site_competitor_pages_competitor_id", "competitor_id"),
+        Index("ix_site_competitor_pages_normalized_url", "normalized_url"),
+        Index("ix_site_competitor_pages_content_text_hash", "content_text_hash"),
+        Index("ix_site_competitor_pages_competitor_id_semantic_eligible", "competitor_id", "semantic_eligible"),
+        Index("ix_site_competitor_pages_semantic_input_hash", "semantic_input_hash"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("site_competitors.id", ondelete="CASCADE"), nullable=False)
+    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    normalized_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    final_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    status_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    h1: Mapped[str | None] = mapped_column(Text, nullable=True)
+    canonical_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    content_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    content_text_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    visible_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    page_type: Mapped[str] = mapped_column(String(64), nullable=False, default="other")
+    page_bucket: Mapped[str] = mapped_column(String(64), nullable=False, default="other")
+    page_type_confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    fetch_diagnostics_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    semantic_eligible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    semantic_exclusion_reason: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    semantic_input_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    semantic_last_evaluated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    competitor: Mapped[SiteCompetitor] = relationship(back_populates="pages")
+    extractions: Mapped[list["SiteCompetitorPageExtraction"]] = relationship(
+        back_populates="competitor_page",
+        cascade="all, delete-orphan",
+    )
+    semantic_candidates: Mapped[list["SiteCompetitorSemanticCandidate"]] = relationship(
+        back_populates="competitor_page",
+        cascade="all, delete-orphan",
+    )
+
+
+class SiteCompetitorSemanticCandidate(Base):
+    __tablename__ = "site_competitor_semantic_candidates"
+    __table_args__ = (
+        UniqueConstraint(
+            "competitor_page_id",
+            "semantic_input_hash",
+            name="uq_site_competitor_semantic_candidates_page_id_hash",
+        ),
+        Index("ix_site_competitor_semantic_candidates_site_id", "site_id"),
+        Index("ix_site_competitor_semantic_candidates_competitor_id", "competitor_id"),
+        Index("ix_site_competitor_semantic_candidates_competitor_page_id", "competitor_page_id"),
+        Index("ix_site_competitor_semantic_candidates_site_id_current", "site_id", "current"),
+        Index("ix_site_competitor_semantic_candidates_raw_topic_key", "raw_topic_key"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("site_competitors.id", ondelete="CASCADE"), nullable=False)
+    competitor_page_id: Mapped[int] = mapped_column(
+        ForeignKey("site_competitor_pages.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    semantic_input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    raw_topic_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    raw_topic_label: Mapped[str] = mapped_column(String(255), nullable=False)
+    normalized_terms_json: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    page_type: Mapped[str] = mapped_column(String(64), nullable=False, default="other")
+    page_bucket: Mapped[str] = mapped_column(String(64), nullable=False, default="other")
+    quality_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    current: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    competitor: Mapped[SiteCompetitor] = relationship(back_populates="semantic_candidates")
+    competitor_page: Mapped[SiteCompetitorPage] = relationship(back_populates="semantic_candidates")
+    source_semantic_decisions: Mapped[list["SiteCompetitorSemanticDecision"]] = relationship(
+        back_populates="source_candidate",
+        cascade="all, delete-orphan",
+        foreign_keys="SiteCompetitorSemanticDecision.source_candidate_id",
+    )
+    target_semantic_decisions: Mapped[list["SiteCompetitorSemanticDecision"]] = relationship(
+        back_populates="target_candidate",
+        foreign_keys="SiteCompetitorSemanticDecision.target_candidate_id",
+    )
+
+
+class SiteCompetitorSemanticRun(Base):
+    __tablename__ = "site_competitor_semantic_runs"
+    __table_args__ = (
+        UniqueConstraint(
+            "competitor_id",
+            "run_id",
+            name="uq_site_competitor_semantic_runs_competitor_id_run_id",
+        ),
+        Index("ix_site_competitor_semantic_runs_site_id", "site_id"),
+        Index("ix_site_competitor_semantic_runs_competitor_id", "competitor_id"),
+        Index("ix_site_competitor_semantic_runs_status", "status"),
+        Index("ix_site_competitor_semantic_runs_lease_expires_at", "lease_expires_at"),
+        Index(
+            "ix_site_competitor_semantic_runs_competitor_id_created_at",
+            "competitor_id",
+            "created_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("site_competitors.id", ondelete="CASCADE"), nullable=False)
+    run_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    stage: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    trigger_source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual_incremental")
+    mode: Mapped[str] = mapped_column(String(16), nullable=False, default="incremental")
+    active_crawl_id: Mapped[int | None] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message_safe: Mapped[str | None] = mapped_column(Text, nullable=True)
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    source_candidate_ids_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    summary_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    competitor: Mapped[SiteCompetitor] = relationship(back_populates="semantic_runs")
+
+
+class SiteCompetitorSemanticDecision(Base):
+    __tablename__ = "site_competitor_semantic_decisions"
+    __table_args__ = (
+        UniqueConstraint(
+            "decision_key",
+            name="uq_site_competitor_semantic_decisions_decision_key",
+        ),
+        Index("ix_site_competitor_semantic_decisions_site_id", "site_id"),
+        Index(
+            "ix_site_competitor_semantic_decisions_source_competitor_id",
+            "source_competitor_id",
+        ),
+        Index(
+            "ix_site_competitor_semantic_decisions_source_candidate_id",
+            "source_candidate_id",
+        ),
+        Index(
+            "ix_site_competitor_semantic_decisions_target_candidate_id",
+            "target_candidate_id",
+        ),
+        Index(
+            "ix_site_competitor_semantic_decisions_decision_type",
+            "decision_type",
+        ),
+        Index(
+            "ix_site_competitor_semantic_decisions_active_crawl_id",
+            "active_crawl_id",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    source_competitor_id: Mapped[int] = mapped_column(
+        ForeignKey("site_competitors.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    source_candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("site_competitor_semantic_candidates.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    decision_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    decision_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_semantic_input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    target_competitor_id: Mapped[int | None] = mapped_column(
+        ForeignKey("site_competitors.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    target_candidate_id: Mapped[int | None] = mapped_column(
+        ForeignKey("site_competitor_semantic_candidates.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    target_semantic_input_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    own_page_id: Mapped[int | None] = mapped_column(
+        ForeignKey("pages.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    active_crawl_id: Mapped[int | None] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    own_page_semantic_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    candidate_rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    candidate_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    decision_label: Mapped[str] = mapped_column(String(64), nullable=False)
+    canonical_topic_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    decision_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    fallback_used: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    fallback_reason: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    debug_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    debug_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    source_competitor: Mapped[SiteCompetitor] = relationship(
+        back_populates="semantic_decisions",
+        foreign_keys=[source_competitor_id],
+    )
+    source_candidate: Mapped[SiteCompetitorSemanticCandidate] = relationship(
+        back_populates="source_semantic_decisions",
+        foreign_keys=[source_candidate_id],
+    )
+    target_candidate: Mapped[SiteCompetitorSemanticCandidate | None] = relationship(
+        back_populates="target_semantic_decisions",
+        foreign_keys=[target_candidate_id],
+    )
+
+
+class SiteCompetitiveGapClusterState(Base):
+    __tablename__ = "site_competitive_gap_cluster_states"
+    __table_args__ = (
+        UniqueConstraint(
+            "site_id",
+            "active_crawl_id",
+            "semantic_cluster_key",
+            name="uq_site_competitive_gap_cluster_states_site_crawl_cluster",
+        ),
+        Index("ix_site_competitive_gap_cluster_states_site_id", "site_id"),
+        Index("ix_site_competitive_gap_cluster_states_active_crawl_id", "active_crawl_id"),
+        Index("ix_site_competitive_gap_cluster_states_cluster_key", "semantic_cluster_key"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    active_crawl_id: Mapped[int | None] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    semantic_cluster_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    topic_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    canonical_topic_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source_candidate_ids_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    competitor_ids_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    cluster_state_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    coverage_state_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    cluster_summary_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    coverage_state_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
+class SiteContentGapCandidate(Base):
+    __tablename__ = "site_content_gap_candidates"
+    __table_args__ = (
+        UniqueConstraint(
+            "site_id",
+            "basis_crawl_job_id",
+            "candidate_key",
+            "candidate_input_hash",
+            name="uq_site_content_gap_candidates_site_crawl_key_hash",
+        ),
+        Index("ix_site_content_gap_candidates_site_id", "site_id"),
+        Index("ix_site_content_gap_candidates_basis_crawl_job_id", "basis_crawl_job_id"),
+        Index(
+            "ix_site_content_gap_candidates_site_crawl_current",
+            "site_id",
+            "basis_crawl_job_id",
+            "current",
+        ),
+        Index(
+            "ix_site_content_gap_candidates_site_crawl_status",
+            "site_id",
+            "basis_crawl_job_id",
+            "status",
+        ),
+        Index(
+            "ix_site_content_gap_candidates_site_crawl_topic_key",
+            "site_id",
+            "basis_crawl_job_id",
+            "normalized_topic_key",
+        ),
+        Index(
+            "ix_site_content_gap_candidates_site_crawl_candidate_key",
+            "site_id",
+            "basis_crawl_job_id",
+            "candidate_key",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    basis_crawl_job_id: Mapped[int] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    candidate_key: Mapped[str] = mapped_column(String(96), nullable=False)
+    candidate_input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
+    current: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    generation_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    rules_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    normalized_topic_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    original_topic_label: Mapped[str] = mapped_column(String(255), nullable=False)
+    original_phrase: Mapped[str] = mapped_column(String(255), nullable=False)
+    gap_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_cluster_key: Mapped[str] = mapped_column(String(96), nullable=False)
+    source_cluster_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_competitor_ids_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    source_competitor_page_ids_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    competitor_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    own_coverage_hint: Mapped[str] = mapped_column(String(64), nullable=False)
+    deterministic_priority_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    rationale_summary: Mapped[str] = mapped_column(Text, nullable=False)
+    signals_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    review_needed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    review_visibility: Mapped[str] = mapped_column(String(32), nullable=False, default="visible")
+    first_generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    last_generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="content_gap_candidates")
+    basis_crawl_job: Mapped[CrawlJob] = relationship(back_populates="content_gap_candidates")
+    content_gap_items: Mapped[list["SiteContentGapItem"]] = relationship(
+        back_populates="source_candidate",
+        cascade="all, delete-orphan",
+    )
+
+
+class SiteContentGapReviewRun(Base):
+    __tablename__ = "site_content_gap_review_runs"
+    __table_args__ = (
+        UniqueConstraint(
+            "site_id",
+            "run_id",
+            name="uq_site_content_gap_review_runs_site_id_run_id",
+        ),
+        Index("ix_site_content_gap_review_runs_site_id", "site_id"),
+        Index("ix_site_content_gap_review_runs_basis_crawl_job_id", "basis_crawl_job_id"),
+        Index("ix_site_content_gap_review_runs_status", "status"),
+        Index("ix_site_content_gap_review_runs_lease_expires_at", "lease_expires_at"),
+        Index(
+            "ix_site_content_gap_review_runs_site_crawl_created_at",
+            "site_id",
+            "basis_crawl_job_id",
+            "created_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    basis_crawl_job_id: Mapped[int] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    run_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    stage: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    trigger_source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual")
+    scope_type: Mapped[str] = mapped_column(String(32), nullable=False, default="all_current")
+    selected_candidate_ids_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    candidate_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    candidate_set_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    candidate_generation_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    own_context_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    gsc_context_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    context_summary_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    output_language: Mapped[str] = mapped_column(String(16), nullable=False, default="en")
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    schema_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    batch_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    batch_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    completed_batch_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    lease_owner: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message_safe: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retry_of_run_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="content_gap_review_runs")
+    basis_crawl_job: Mapped[CrawlJob] = relationship(back_populates="content_gap_review_runs")
+    items: Mapped[list["SiteContentGapItem"]] = relationship(
+        back_populates="review_run",
+        cascade="all, delete-orphan",
+    )
+
+
+class SiteContentGapItem(Base):
+    __tablename__ = "site_content_gap_items"
+    __table_args__ = (
+        UniqueConstraint(
+            "review_run_id",
+            "source_candidate_id",
+            name="uq_site_content_gap_items_run_candidate",
+        ),
+        Index("ix_site_content_gap_items_site_id", "site_id"),
+        Index("ix_site_content_gap_items_basis_crawl_job_id", "basis_crawl_job_id"),
+        Index("ix_site_content_gap_items_review_run_id", "review_run_id"),
+        Index("ix_site_content_gap_items_source_candidate_id", "source_candidate_id"),
+        Index("ix_site_content_gap_items_item_status", "item_status"),
+        Index(
+            "ix_site_content_gap_items_site_crawl_visible",
+            "site_id",
+            "basis_crawl_job_id",
+            "visible_in_results",
+        ),
+        Index(
+            "ix_site_content_gap_items_site_crawl_group",
+            "site_id",
+            "basis_crawl_job_id",
+            "review_group_key",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    basis_crawl_job_id: Mapped[int] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    review_run_id: Mapped[int] = mapped_column(
+        ForeignKey("site_content_gap_review_runs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    source_candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("site_content_gap_candidates.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    source_candidate_key: Mapped[str] = mapped_column(String(96), nullable=False)
+    source_candidate_input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    item_status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
+    decision_action: Mapped[str] = mapped_column(String(32), nullable=False)
+    display_state: Mapped[str] = mapped_column(String(32), nullable=False, default="visible")
+    review_group_key: Mapped[str] = mapped_column(String(96), nullable=False)
+    group_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    original_phrase: Mapped[str] = mapped_column(String(255), nullable=False)
+    original_topic_label: Mapped[str] = mapped_column(String(255), nullable=False)
+    reviewed_phrase: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reviewed_topic_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reviewed_normalized_topic_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reviewed_gap_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    fit_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    decision_reason_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    decision_reason_text: Mapped[str] = mapped_column(Text, nullable=False)
+    merge_target_candidate_key: Mapped[str | None] = mapped_column(String(96), nullable=True)
+    merge_target_phrase: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    remove_reason_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    remove_reason_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rewrite_reason_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    own_site_alignment_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    gsc_support_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    competitor_evidence_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    schema_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    output_language: Mapped[str] = mapped_column(String(16), nullable=False, default="en")
+    response_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    raw_decision_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    visible_in_results: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    sort_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="content_gap_items")
+    basis_crawl_job: Mapped[CrawlJob] = relationship(back_populates="content_gap_items")
+    review_run: Mapped[SiteContentGapReviewRun] = relationship(back_populates="items")
+    source_candidate: Mapped[SiteContentGapCandidate] = relationship(back_populates="content_gap_items")
+
+
+class SiteCompetitorPageExtraction(Base):
+    __tablename__ = "site_competitor_page_extractions"
+    __table_args__ = (
+        Index("ix_site_competitor_page_extractions_site_id", "site_id"),
+        Index("ix_site_competitor_page_extractions_competitor_id", "competitor_id"),
+        Index("ix_site_competitor_page_extractions_competitor_page_id", "competitor_page_id"),
+        Index("ix_site_competitor_page_extractions_topic_key", "topic_key"),
+        Index("ix_site_competitor_page_extractions_site_id_topic_key", "site_id", "topic_key"),
+        Index("ix_site_competitor_page_extractions_semantic_input_hash", "semantic_input_hash"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("site_competitors.id", ondelete="CASCADE"), nullable=False)
+    competitor_page_id: Mapped[int] = mapped_column(
+        ForeignKey("site_competitor_pages.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    content_hash_at_extraction: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    schema_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    semantic_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    semantic_input_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    topic_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    topic_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    search_intent: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    content_format: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    page_role: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    evidence_snippets_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    semantic_card_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    chunk_summary_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    extracted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    competitor: Mapped[SiteCompetitor] = relationship(back_populates="extractions")
+    competitor_page: Mapped[SiteCompetitorPage] = relationship(back_populates="extractions")
+
+
+class CrawlPageSemanticProfile(Base):
+    __tablename__ = "crawl_page_semantic_profiles"
+    __table_args__ = (
+        UniqueConstraint(
+            "page_id",
+            "semantic_input_hash",
+            name="uq_crawl_page_semantic_profiles_page_id_hash",
+        ),
+        Index("ix_crawl_page_semantic_profiles_site_id", "site_id"),
+        Index("ix_crawl_page_semantic_profiles_crawl_job_id", "crawl_job_id"),
+        Index("ix_crawl_page_semantic_profiles_page_id", "page_id"),
+        Index(
+            "ix_crawl_page_semantic_profiles_crawl_job_id_current",
+            "crawl_job_id",
+            "current",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    crawl_job_id: Mapped[int] = mapped_column(ForeignKey("crawl_jobs.id", ondelete="CASCADE"), nullable=False)
+    page_id: Mapped[int] = mapped_column(ForeignKey("pages.id", ondelete="CASCADE"), nullable=False)
+    semantic_input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    semantic_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    semantic_card_json: Mapped[dict[str, Any]] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=False,
+        default=dict,
+    )
+    current: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    crawl_job: Mapped[CrawlJob] = relationship(back_populates="semantic_profiles")
+    page: Mapped[Page] = relationship(back_populates="semantic_profiles")
+
+
+class GscProperty(Base):
+    __tablename__ = "gsc_properties"
+    __table_args__ = (
+        UniqueConstraint("site_id", name="uq_gsc_properties_site_id"),
+        Index("ix_gsc_properties_property_uri", "property_uri"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    property_uri: Mapped[str] = mapped_column(String(2048), nullable=False)
+    permission_level: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="gsc_property")
+    url_metrics: Mapped[list["GscUrlMetric"]] = relationship(back_populates="gsc_property")
+    top_queries: Mapped[list["GscTopQuery"]] = relationship(back_populates="gsc_property")
+
+
+class GscUrlMetric(Base):
+    __tablename__ = "gsc_url_metrics"
+    __table_args__ = (
+        UniqueConstraint(
+            "crawl_job_id",
+            "normalized_url",
+            "date_range_label",
+            name="uq_gsc_url_metrics_job_url_range",
+        ),
+        Index("ix_gsc_url_metrics_job_range", "crawl_job_id", "date_range_label"),
+        Index("ix_gsc_url_metrics_page_range", "page_id", "date_range_label"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    gsc_property_id: Mapped[int] = mapped_column(ForeignKey("gsc_properties.id", ondelete="CASCADE"), nullable=False)
+    crawl_job_id: Mapped[int] = mapped_column(ForeignKey("crawl_jobs.id", ondelete="CASCADE"), nullable=False)
+    page_id: Mapped[int | None] = mapped_column(ForeignKey("pages.id", ondelete="SET NULL"), nullable=True)
+    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    normalized_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    date_range_label: Mapped[str] = mapped_column(String(32), nullable=False)
+    clicks: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    impressions: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    ctr: Mapped[float | None] = mapped_column(Float, nullable=True)
+    position: Mapped[float | None] = mapped_column(Float, nullable=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    gsc_property: Mapped[GscProperty] = relationship(back_populates="url_metrics")
+    crawl_job: Mapped[CrawlJob] = relationship(back_populates="gsc_url_metrics")
+    page: Mapped[Page | None] = relationship(back_populates="gsc_url_metrics")
+
+
+class GscTopQuery(Base):
+    __tablename__ = "gsc_top_queries"
+    __table_args__ = (
+        UniqueConstraint(
+            "crawl_job_id",
+            "normalized_url",
+            "date_range_label",
+            "query",
+            name="uq_gsc_top_queries_job_url_range_query",
+        ),
+        Index("ix_gsc_top_queries_job_range", "crawl_job_id", "date_range_label"),
+        Index("ix_gsc_top_queries_page_range", "page_id", "date_range_label"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    gsc_property_id: Mapped[int] = mapped_column(ForeignKey("gsc_properties.id", ondelete="CASCADE"), nullable=False)
+    crawl_job_id: Mapped[int] = mapped_column(ForeignKey("crawl_jobs.id", ondelete="CASCADE"), nullable=False)
+    page_id: Mapped[int | None] = mapped_column(ForeignKey("pages.id", ondelete="SET NULL"), nullable=True)
+    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    normalized_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    date_range_label: Mapped[str] = mapped_column(String(32), nullable=False)
+    query: Mapped[str] = mapped_column(Text, nullable=False)
+    clicks: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    impressions: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    ctr: Mapped[float | None] = mapped_column(Float, nullable=True)
+    position: Mapped[float | None] = mapped_column(Float, nullable=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    gsc_property: Mapped[GscProperty] = relationship(back_populates="top_queries")
+    crawl_job: Mapped[CrawlJob] = relationship(back_populates="gsc_top_queries")
+    page: Mapped[Page | None] = relationship(back_populates="gsc_top_queries")
+
+
+def _sync_site_competitor_page_text_fields(target: SiteCompetitorPage) -> None:
+    prepared = prepare_visible_text(target.visible_text)
+    target.visible_text = prepared.stored_text
+    target.content_text_hash = prepared.content_hash
+    diagnostics = dict(target.fetch_diagnostics_json or {})
+    diagnostics["visible_text_truncated"] = prepared.truncated
+    target.fetch_diagnostics_json = diagnostics
+
+
+@event.listens_for(SiteCompetitorPage, "before_insert")
+def _before_insert_site_competitor_page(_mapper: Any, _connection: Any, target: SiteCompetitorPage) -> None:
+    _sync_site_competitor_page_text_fields(target)
+
+
+@event.listens_for(SiteCompetitorPage, "before_update")
+def _before_update_site_competitor_page(_mapper: Any, _connection: Any, target: SiteCompetitorPage) -> None:
+    _sync_site_competitor_page_text_fields(target)

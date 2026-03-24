@@ -1,0 +1,11 @@
+﻿checkpoint_name=Przed_zmian__Sitecentric
+timestamp=2026-03-15_13-03-48
+repo_root=C:\Users\szymo\Desktop\Olinet Scraper\seo_crawler
+git_branch=
+git_commit=
+git_tag=
+db_container=seo-crawler-db
+db_name=seo_crawler
+db_user=postgres
+zip_enabled=True
+backup_root=C:\Users\szymo\Desktop\Olinet Scraper\seo_crawler\backups\Przed_zmian__Sitecentric

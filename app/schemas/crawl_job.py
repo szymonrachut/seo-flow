@@ -1,16 +1,23 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.core.config import get_settings
+
+settings = get_settings()
 
 
 class CrawlJobCreateRequest(BaseModel):
     root_url: str
     max_urls: int = Field(default=500, ge=1)
-    max_depth: int = Field(default=3, ge=0)
+    max_depth: int = Field(default=settings.crawl_default_max_depth, ge=0)
     delay: float = Field(default=0.25, ge=0)
+    render_mode: Literal["never", "auto", "always"] = Field(default=settings.crawl_default_render_mode)
+    render_timeout_ms: int = Field(default=settings.crawl_default_render_timeout_ms, ge=1)
+    max_rendered_pages_per_job: int = Field(default=settings.crawl_default_max_rendered_pages_per_job, ge=1)
 
 
 class CrawlJobResponse(BaseModel):
@@ -48,6 +55,15 @@ class CrawlJobSummaryCounts(BaseModel):
     pages_missing_meta_description: int
     pages_missing_h1: int
     pages_non_indexable_like: int
+    rendered_pages: int
+    js_heavy_like_pages: int
+    pages_with_render_errors: int
+    pages_with_schema: int
+    pages_with_x_robots_tag: int
+    pages_with_gsc_28d: int
+    pages_with_gsc_90d: int
+    gsc_opportunities_28d: int
+    gsc_opportunities_90d: int
     broken_internal_links: int
     redirecting_internal_links: int
 

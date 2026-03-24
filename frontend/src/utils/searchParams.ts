@@ -44,3 +44,51 @@ export function parseIntegerParam(value: string | null, fallback: number | undef
 
   return parsed
 }
+
+export function parseFloatParam(value: string | null, fallback: number): number
+export function parseFloatParam(value: string | null, fallback: undefined): number | undefined
+export function parseFloatParam(value: string | null, fallback: number | undefined) {
+  if (value === null || value.trim() === '') {
+    return fallback
+  }
+
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed)) {
+    return fallback
+  }
+
+  return parsed
+}
+
+export function parseCsvParam<T extends string>(
+  value: string | null,
+  allowedValues?: readonly T[],
+): Set<T> {
+  if (!value) {
+    return new Set<T>()
+  }
+
+  const allowed = allowedValues ? new Set<string>(allowedValues) : null
+
+  return new Set(
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item): item is T => item.length > 0 && (allowed === null || allowed.has(item))),
+  )
+}
+
+export function serializeCsvParam<T extends string>(values: Iterable<T>) {
+  const serialized = Array.from(new Set(values))
+  return serialized.length > 0 ? serialized.join(',') : undefined
+}
+
+export function toggleCsvParamValue<T extends string>(current: Iterable<T>, value: T) {
+  const next = new Set(current)
+  if (next.has(value)) {
+    next.delete(value)
+  } else {
+    next.add(value)
+  }
+  return next
+}

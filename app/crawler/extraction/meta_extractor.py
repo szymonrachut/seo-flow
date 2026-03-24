@@ -39,6 +39,15 @@ def extract_robots_meta(response: Response) -> str | None:
     return _clean_text(content)
 
 
+def extract_x_robots_tag(response: Response) -> str | None:
+    values = response.headers.getlist("X-Robots-Tag") or response.headers.getlist(b"X-Robots-Tag")
+    if not values:
+        return None
+
+    decoded_values = [value.decode("latin-1") if isinstance(value, bytes) else str(value) for value in values]
+    return _clean_text(", ".join(decoded_values))
+
+
 def _clean_text(value: str | None) -> str | None:
     if value is None:
         return None

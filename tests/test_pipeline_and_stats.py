@@ -10,6 +10,7 @@ from app.crawler.scrapy_project.items import PageWithLinksItem
 from app.crawler.scrapy_project.pipelines import DatabasePipeline
 from app.db.base import Base
 from app.db.models import CrawlJob, CrawlJobStatus, Link, Page, Site
+from app.services import page_taxonomy_service
 
 
 def build_session_factory(tmp_path):
@@ -217,3 +218,42 @@ def test_update_job_stats_counts_pages_links_and_errors(tmp_path) -> None:
         crawl_job = session.get(CrawlJob, crawl_job_id)
         assert crawl_job is not None
         assert crawl_job.stats_json == stats
+
+
+def test_update_job_stats_backfills_page_taxonomy_for_new_pages(tmp_path) -> None:
+    SessionLocal = build_session_factory(tmp_path)
+    crawl_job_id = create_site_and_job(SessionLocal)
+
+    with SessionLocal() as session:
+        session.add(
+            Page(
+                crawl_job_id=crawl_job_id,
+                url="https://example.com/blog/hello-world",
+                normalized_url="https://example.com/blog/hello-world",
+                final_url="https://example.com/blog/hello-world",
+                status_code=200,
+                title="Hello world guide",
+                h1="Hello world guide",
+                schema_types_json=["Article"],
+                is_internal=True,
+                depth=1,
+                fetched_at=datetime.now(timezone.utc),
+                error_message=None,
+            )
+        )
+        session.commit()
+
+    with SessionLocal() as session:
+        page = session.scalars(select(Page).where(Page.crawl_job_id == crawl_job_id)).one()
+        assert page.page_type_version == "unclassified"
+
+        crawl_job = session.get(CrawlJob, crawl_job_id)
+        assert crawl_job is not None
+        update_job_stats(session, crawl_job)
+        session.commit()
+
+    with SessionLocal() as session:
+        page = session.scalars(select(Page).where(Page.crawl_job_id == crawl_job_id)).one()
+        assert page.page_type == "blog_article"
+        assert page.page_bucket == "informational"
+        assert page.page_type_version == page_taxonomy_service.PAGE_TAXONOMY_VERSION

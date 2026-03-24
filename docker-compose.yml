@@ -5,12 +5,20 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      # Keep this stable. Changing it does not update an already initialized volume and
+      # local tests / migrations must not rotate the postgres role password for convenience.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-seo_crawler}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test:
+        [
+          "CMD-SHELL",
+          "gosu postgres psql -d postgres -c 'select 1' >/dev/null 2>&1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 20

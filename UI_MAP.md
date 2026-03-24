@@ -1,0 +1,1060 @@
+# UI_MAP.md
+
+Aktualna mapa UI frontendu na podstawie:
+- `frontend/src/routes/AppRoutes.tsx`
+- `frontend/src/layouts/AppLayout.tsx`
+- `frontend/src/features/*`
+
+Uwagi:
+- site workspace trzyma kontekst w query params: `active_crawl_id`, `baseline_crawl_id`
+- wiekszosc ekranow ma standardowe stany: `loading`, `error`, `empty`
+- Competitive Gap ma juz dual-read backend (`reviewed -> raw_candidates -> legacy`), semantic debug/status panel i reczny rerun semantic matchingu
+- site-level data screens dla `Stron`, `Audytu`, `Szans SEO`, `Linkowania wewnetrznego` i compare pod `Zmianami` reuse'uja wspolny wzorzec:
+  - compact header
+  - action bar `Primary action` / `Operacje` / `Eksport` tam, gdzie ma to sens
+  - summary cards
+  - quick filters
+  - pojedynczy panel filtrow
+  - tabela / lista / raport
+  - details panel albo drawer
+  - pagination dla widokow listowych
+- quick filters w site workspace maja jeden kontrakt UX:
+  - klik = wlacz
+  - klik ponownie = wylacz
+  - mozna wlaczyc wiele naraz
+  - zawsze jest `Reset`
+  - stan jest odtwarzalny z query stringa
+- ponizej skupiam sie na realnych widokach i glownych blokach UI, nie na kazdym helperze technicznym
+
+## Drzewo UI
+
+- App shell
+  - Sticky header
+    - Branding
+      - `SEO Flow`
+    - Logiczny tytul aktualnej sekcji
+      - dla site workspace moze zawierac domene witryny
+    - Przelacznik motywu
+    - Przelacznik jezyka
+    - Placeholder / ikona ustawien systemu
+    - Placeholder / ikona usera
+  - Sidebar
+    - Site switcher
+      - select witryny
+      - szybkie wyszukiwanie witryny
+      - akcja `Dodaj witryne`
+    - Sekcja aktualnej witryny
+      - nazwa witryny
+      - root URL
+      - status aktywnego crawla
+      - ostatni crawl
+      - status GSC
+    - Menu witryny
+      - `/sites/:siteId` -> Przeglad
+      - `/sites/:siteId/progress` -> Postep
+      - `/sites/:siteId/pages`
+        - `/sites/:siteId/pages`
+        - `/sites/:siteId/pages/records`
+      - `/sites/:siteId/audit`
+        - `/sites/:siteId/audit`
+        - `/sites/:siteId/audit/sections`
+      - `/sites/:siteId/opportunities`
+        - `/sites/:siteId/opportunities`
+        - `/sites/:siteId/opportunities/records`
+      - `/sites/:siteId/internal-linking`
+        - `/sites/:siteId/internal-linking`
+        - `/sites/:siteId/internal-linking/issues`
+      - `/sites/:siteId/content-recommendations`
+        - `/sites/:siteId/content-recommendations`
+        - `/sites/:siteId/content-recommendations/active`
+        - `/sites/:siteId/content-recommendations/implemented`
+      - `/sites/:siteId/competitive-gap`
+        - `/sites/:siteId/competitive-gap`
+        - `/sites/:siteId/competitive-gap/strategy`
+        - `/sites/:siteId/competitive-gap/competitors`
+        - `/sites/:siteId/competitive-gap/sync`
+        - `/sites/:siteId/competitive-gap/results`
+      - `/sites/:siteId/gsc`
+        - `/sites/:siteId/gsc`
+        - `/sites/:siteId/gsc/settings`
+        - `/sites/:siteId/gsc/import`
+      - `/sites/:siteId/crawls`
+        - `/sites/:siteId/crawls`
+        - `/sites/:siteId/crawls/new`
+      - `/sites/:siteId/changes`
+        - submenu aktywnej sekcji prowadzi do compare views:
+          - `/sites/:siteId/changes`
+          - `/sites/:siteId/changes/pages`
+          - `/sites/:siteId/changes/audit`
+          - `/sites/:siteId/changes/opportunities`
+          - `/sites/:siteId/changes/internal-linking`
+    - Sekcja globalna
+      - `/sites` -> Wszystkie witryny
+      - `/jobs` -> Operacje
+      - Ustawienia systemu -> disabled / soon
+      - Konto -> disabled / soon
+  - Main content
+    - `/` -> redirect do `/sites`
+    - `*` -> not found / EmptyState
+
+- Site-centric UI
+  - `/sites`
+    - Hero
+      - "Witryny i workspaces"
+      - opis workspace modelu
+      - akcja `Dodaj witryne`
+    - Formularz nowego crawla
+      - `root_url`
+      - `max_urls`
+      - `max_depth`
+      - `delay`
+      - `render_mode`
+      - `render_timeout_ms`
+      - `max_rendered_pages_per_job`
+    - Tabela witryn
+      - domena
+      - root URL
+      - ostatni crawl
+      - liczba crawli
+      - data ostatniego crawla
+      - property GSC
+      - akcja "Otworz"
+
+  - `/sites/new`
+    - Hero
+      - "Dodaj witryne i uruchom pierwszy crawl"
+      - opis roli workspace vs snapshot
+      - link powrotny do `/sites`
+    - Formularz nowego crawla
+    - Karty wyjasniajace
+      - workspace
+      - snapshot
+      - routing / shell
+
+  - `/sites/:siteId`
+    - Site workspace shell
+      - Context bar
+        - domena
+        - root URL
+        - karta aktywnego crawla
+        - karta statusu GSC
+        - glowne CTA `Nowy crawl`
+        - `Operacje`
+          - `Otworz Zmiany`
+          - `Otworz aktywny crawl`
+      - Select context
+        - `active_crawl_id`
+      - Lekki pasek informacji
+        - last crawl
+        - property GSC
+        - subtelny helper, ze porownanie jest dostepne w `Zmianach`
+
+    - `/sites/:siteId` -> Site Overview
+      - Compact current-first header
+        - status aktywnego crawla
+        - link do aktywnego crawla
+      - Sekcja statusu aktywnego crawla
+        - visited / queued / discovered / errors
+        - start / finish / created
+        - zakres aktywnego crawla
+      - KPI aktywnego snapshotu
+        - strony
+        - linki wewnetrzne
+        - strony z GSC 28d
+        - szanse GSC
+        - braki title / meta
+        - broken / redirecting internal links
+      - Karta GSC
+        - status podpiecia property
+        - root property
+        - szybki skrot do site GSC
+      - Mala karta baseline helper
+        - status baseline
+        - subtelny helper, ze porownanie jest dostepne w `Zmianach`
+        - link do hubu `Zmiany`
+      - Sekcja najwazniejszych sygnalow
+        - karty "co wymaga uwagi teraz"
+        - akcje prowadza do aktywnego crawla / GSC / historii / recommendations
+      - Sekcja skrotow workspace
+        - Rekomendacje tresci
+        - Braki wzgledem konkurencji
+        - GSC
+        - Crawle
+        - Zmiany
+      - Sekcja historii crawli
+        - tabela ostatnich crawli
+        - akcje: use as active / use as baseline / open crawl
+      - Lekki blok site summary
+        - total crawls
+        - running crawls
+        - last crawl
+        - created at
+      - Lekki blok `Nowy crawl`
+        - helper o kolejnym snapshotcie
+        - CTA do `/sites/:siteId/crawls/new`
+      - Info o reuse GSC property
+
+    - `/sites/:siteId/progress` -> Site Progress
+      - Compact header
+        - status aktywnego crawla
+        - link do aktywnego crawla
+      - Sekcja statusu aktywnego crawla
+        - visited / queued / discovered / errors
+        - start / finish
+        - working scope
+      - Mala karta kontekstu baseline
+        - helper baseline
+        - subtelny skrot do `Zmian` albo historii crawli
+      - Karta GSC
+        - property
+        - zaimportowany zakres
+        - strony z wyswietleniami
+        - ostatni import
+      - Sekcja trend KPI
+        - strony w crawlu
+        - luki metadata
+        - strony z szansami
+        - strony z problemami linkowania
+        - wdrozone rekomendacje
+        - strony GSC z kliknieciami
+      - Sekcja `Co sie poprawilo`
+        - resolved audit issues
+        - improved URLs
+        - resolved opportunities
+        - improved internal linking
+        - improved implemented outcomes
+      - Sekcja `Co sie pogorszylo`
+        - new audit issues
+        - worsened URLs
+        - new opportunity URLs
+        - internal linking regressions
+        - worsened implemented outcomes
+      - Sekcja postepu wdrozen
+        - aktywne rekomendacje
+        - wdrozone
+        - too early
+        - assessed outcomes
+        - lista ostatnio sledzonych wdrozen
+      - Lekki timeline / ostatnie zdarzenia
+        - aktywny crawl
+        - baseline update
+        - import GSC
+        - recommendation marked done
+
+    - `/sites/:siteId/crawls` -> Site Crawls / Historia
+      - Compact header
+        - opis historii snapshotow
+        - CTA `Nowy crawl`
+      - Summary cards
+        - total crawls
+        - running crawls
+        - finished crawls
+        - last crawl
+      - Tabela historii crawli
+        - crawl
+        - status
+        - created / started / finished
+        - pages / internal links / external links / errors
+        - akcje
+          - ustaw jako aktywny
+          - ustaw jako baseline
+          - otworz crawl
+          - otworz strony
+
+    - `/sites/:siteId/crawls/new` -> Site Crawls / Nowy crawl
+      - Compact header
+        - opis kolejnego snapshotu dla tej samej witryny
+        - link powrotny do historii
+      - Formularz nowego crawla
+        - reuse `CreateJobForm`
+        - root_url prefilled root URL-em witryny
+      - Karta kontekstu witryny
+        - domena
+        - root URL
+        - liczba snapshotow
+        - ostatni crawl
+      - Karty helper
+        - ten sam workspace
+        - nowy snapshot
+      - Info o reuse GSC property, jesli witryna ma juz property
+
+    - `/sites/:siteId/changes` -> Site Changes Hub
+      - Compact compare header
+      - Summary cards
+        - aktywny crawl
+        - baseline crawl
+        - status compare
+        - liczba gotowych obszarow compare
+      - Kontekst aktywnego / baseline crawla
+      - Empty / guidance state, gdy brak active albo baseline
+      - Karty-linki do compare views
+        - zmiany stron
+          - status loading / waiting / ready
+          - lekkie summary delty
+        - zmiany audytu
+          - status loading / waiting / ready
+          - lekkie summary delty
+        - zmiany szans SEO
+          - status loading / waiting / ready
+          - lekkie summary delty
+        - zmiany linkowania wewnetrznego
+          - status loading / waiting / ready
+          - lekkie summary delty
+
+    - `/sites/:siteId/pages` -> Site Pages Current-State Overview
+      - compact header
+        - kontekst aktywnego crawla
+        - primary action do `Rekordow`
+        - `Operacje`
+          - `Open Changes`
+          - `Open active crawl`
+        - `Eksport`
+          - full CSV
+          - current view CSV
+      - Summary cards
+        - total pages
+        - matching rows
+        - metadata gaps
+        - render issues
+        - GSC coverage
+        - opportunities
+        - taxonomy coverage
+      - Quick filters
+        - toggle on/off
+        - multi-select
+        - reset
+      - Filter panel
+        - sortowanie
+        - zakres GSC
+        - URL / title
+        - page type / bucket
+        - confidence
+        - on-page flags
+        - rendering / schema / indexability
+        - technical issue / GSC / cannibalization
+        - priority / opportunity
+      - tabela / lista rekordow aktywnego crawla
+      - details panel wybranej strony
+      - pagination
+
+    - `/sites/:siteId/pages/records` -> Site Pages Current-State Records
+      - ten sam current-state payload, header i logika filtrow co overview
+      - pelniejszy widok rekordow dla aktywnego crawla
+      - details panel
+      - pagination
+
+    - `/sites/:siteId/changes/pages` -> Site Pages Compare
+      - kanoniczny compare route sekcji `Zmiany`
+      - compact compare header
+        - kontekst active / baseline
+        - primary action do current-state `Stron`
+        - `Operacje`
+          - `Open active crawl`
+      - Summary cards
+      - Quick filters
+      - Filter panel
+        - zakres GSC
+        - change type
+        - url contains
+        - changed fields
+        - trends
+        - sorting
+      - Tabela compare stron
+        - URL + changed fields + linki pomocnicze
+        - active snapshot
+        - baseline snapshot
+        - delty
+        - rationale
+      - Pagination
+
+    - `/sites/:siteId/content-recommendations` -> Rekomendacje tresci / Przeglad
+      - Compact header
+        - status aktywnego crawla
+        - secondary link do `Aktywnych`
+        - secondary link do `Wdrozonych`
+        - linki do `Stron` i `Brakow wzgledem konkurencji`
+        - eksport CSV
+      - Summary cards / KPI
+        - liczba aktywnych rekomendacji
+        - liczba wdrozonych
+        - liczba ocenionych outcome
+        - liczba `too early`
+      - Sekcja statusu lifecycle
+        - summary pills z backendowego `implemented_summary`
+        - helper o scope outcome window / mode / search
+      - Sekcja skrotow
+        - `Aktywne`
+        - `Wdrozone`
+        - `Strony`
+        - `Braki wzgledem konkurencji`
+      - Lekki blok statusowy
+        - co jest aktywne teraz
+        - jaki jest stan wdrozen teraz
+      - Bez dlugiej listy wszystkich rekordow naraz
+
+    - `/sites/:siteId/content-recommendations/active` -> Rekomendacje tresci / Aktywne
+      - Compact header
+        - kontekst aktywnego crawla
+        - secondary link do `Wdrozonych`
+        - linki do `Stron` i `Brakow wzgledem konkurencji`
+        - eksport CSV
+      - Summary cards
+      - Quick filters
+        - toggle on/off
+        - multi-select
+        - reset
+      - Filter panel
+        - zakres GSC
+        - recommendation type
+        - segment
+        - page type
+        - cluster
+        - confidence
+        - priority
+        - sorting
+      - Sekcja "Mix rekomendacji"
+      - Sekcja "Aktywne rekomendacje"
+        - lista kart rekomendacji
+        - badge: type / segment / priority / confidence / impact / effort
+        - akcje
+          - `Mark done`
+          - otworz target URL
+          - otworz w Pages
+        - expand / details
+          - reasons
+          - signals
+          - prerequisites
+          - supporting URLs
+          - helper context
+            - GSC context
+            - internal linking context
+            - cannibalization context
+      - Pagination
+
+    - `/sites/:siteId/content-recommendations/implemented` -> Rekomendacje tresci / Wdrozone
+      - Compact header
+        - kontekst aktywnego crawla
+        - secondary link do `Aktywnych`
+        - linki do `Stron` i `Brakow wzgledem konkurencji`
+        - eksport CSV
+      - Summary cards
+        - wdrozone
+        - improved
+        - too early
+        - pending / limited / worsened, jesli sa dostepne
+      - Filter panel lifecycle
+        - outcome window
+        - status
+        - mode
+        - search
+        - sorting
+      - Summary wdrozen
+        - summary bar z backendowego `implemented_summary`
+        - `In scope` opisuje scope po window / mode / search, a `Visible` dotyczy juz listy po status drilldown
+        - clickable status drilldown
+        - total w summary liczone po outcome window / mode / search, ale przed status drilldown
+      - Lista collapsible items
+        - outcome details
+        - snapshot wdrozenia
+        - open target / open in Pages
+        - helper snapshot
+        - reasons snapshot
+        - signals snapshot
+      - Empty state dla braku wdrozen / braku danych outcome
+      - Pagination
+
+    - `/sites/:siteId/competitive-gap` -> Braki wzgledem konkurencji / Przeglad
+      - Compact header
+        - status source mode
+        - latest review run status
+        - linki do `Strategii`, `Konkurentow`, `Synchronizacji`, `Wynikow`
+      - Summary cards / KPI
+      - Sekcja skrotow workspace
+        - Strategia
+        - Konkurenci
+        - Synchronizacja
+        - Wyniki
+      - Readiness panel
+        - active crawl
+        - strategy optional / missing
+        - competitor count
+        - stored competitor pages
+        - analyzed competitor pages
+        - readiness badge / needs input badge
+      - Debug semantic merge
+        - semantic status
+        - analysis mode
+        - merged URLs
+        - cache / fallback / last error
+      - Top 5 wynikow jako lekki preview
+
+    - `/sites/:siteId/competitive-gap/strategy` -> Braki wzgledem konkurencji / Strategia
+      - Compact header
+        - secondary link do `Wynikow`
+      - Brief strategii
+        - textarea strategii
+        - save
+        - rerun normalization
+        - remove
+      - Normalized hints
+      - Debug normalization callout
+        - headline statusu
+        - fallback badge
+        - provider / model / prompt version
+        - debug code / debug message
+
+    - `/sites/:siteId/competitive-gap/competitors` -> Braki wzgledem konkurencji / Konkurenci
+      - Compact header
+        - secondary link do `Synchronizacji`
+      - Formularz dodawania konkurenta
+      - Lista konkurentow
+        - status aktywny / nieaktywny
+        - sync status
+        - sync stage
+        - coverage pages / extracted
+        - last run / last status / started / finished
+        - akcje
+          - `Open synchronization`
+          - edit
+          - remove
+
+    - `/sites/:siteId/competitive-gap/sync` -> Braki wzgledem konkurencji / Synchronizacja
+      - Compact header
+        - refresh analysis
+        - `Resume semantic matching`
+        - `Re-run semantic matching`
+        - secondary link do `Wynikow`
+      - Summary cards
+      - Lekki panel review runow
+        - latest run status
+        - 2-5 ostatnich runow
+        - retry dla failed / stale / cancelled runu aktywnego snapshotu
+      - Readiness + semantic runtime status
+      - Operacyjna lista konkurentow
+        - sync summary
+          - visited URLs
+          - stored pages
+          - analyzed pages
+          - skipped URLs
+        - progress bar
+        - semantic stats
+        - top rejection reasons
+        - recent runs
+        - URL review
+        - partial data hint
+        - akcje
+          - sync
+          - retry sync
+          - reset runtime
+      - Sync all
+
+    - `/sites/:siteId/competitive-gap/results` -> Braki wzgledem konkurencji / Wyniki
+      - Compact header
+        - refresh analysis
+        - `Eksport`
+        - secondary link do `Synchronizacji`
+      - Summary cards
+      - Quick filters
+        - toggle on/off
+        - multi-select
+        - reset
+      - Filter panel
+        - zakres dat
+        - gap type
+        - segment
+        - page type
+        - topic
+        - priority
+        - consensus
+        - sorting
+      - Sekcja "Mix rekomendacji"
+      - Empty states
+        - brak strategii
+        - brak competitorow
+        - competitorzy dodani, ale bez syncu
+        - zapisane strony competitorow bez analizy tematow
+        - brak realnych gap rows po syncu
+        - filtry ukrywaja wszystkie wyniki
+      - Lista kart gapu
+        - topic
+        - gap type / segment / page type
+        - priority / consensus / confidence
+        - review action / fit score, gdy source mode to `reviewed`
+        - reviewed phrase / merge target / remove reason jako secondary text, gdy sa dostepne
+        - recommended move
+        - score mix
+        - competitor signal
+        - strategy fit
+        - explanation panel lazy-loaded on click
+      - Pagination
+
+    - `/sites/:siteId/changes/audit` -> Site Audit Compare
+      - kanoniczny compare route sekcji `Zmiany`
+      - compact compare header
+        - kontekst active / baseline
+        - primary action do current-state `Audytu`
+        - `Operacje`
+          - `Open active crawl`
+      - Summary cards
+      - Quick filters
+      - Filter panel
+        - status sekcji
+      - Tabela compare sekcji audytu
+        - section
+        - area
+        - status
+        - counts
+        - changes
+
+    - `/sites/:siteId/audit` -> Site Audit Current-State Overview
+      - compact header
+        - kontekst aktywnego crawla
+        - primary action do `Sekcji`
+        - `Operacje`
+          - `Open Changes`
+          - `Open active crawl`
+        - `Eksport`
+          - `audit.csv`
+      - Summary cards
+        - audited pages
+        - open sections
+        - problem rows
+        - pages issues
+        - links issues
+        - technical issues
+      - Quick filters
+        - toggle on/off
+        - multi-select
+        - reset
+      - Filter panel
+        - grupy sekcji
+        - search
+        - minimum count
+        - sortowanie
+        - page size
+        - pokazuj puste / tylko otwarte
+      - lista sekcji audytu
+      - drilldown do `Stron` albo `Linkow`
+      - pagination
+
+    - `/sites/:siteId/audit/sections` -> Site Audit Current-State Sections
+      - ten sam current-state payload, header i logika filtrow co overview
+      - rozwiniete sekcje z detalami
+      - drilldown do `Stron` albo `Linkow`
+      - pagination
+
+    - `/sites/:siteId/opportunities` -> Site Opportunities Current-State
+      - compact header
+        - kontekst aktywnego crawla
+        - primary action do `Rekordow`
+        - `Operacje`
+          - `Open Changes`
+          - `Open active crawl`
+        - `Eksport`
+          - pages CSV
+          - opportunities CSV
+      - Summary cards
+      - Quick filters
+        - toggle on/off
+        - multi-select
+        - reset
+      - Filter panel
+        - zakres GSC
+        - priority level
+        - opportunity type
+        - priority score min / max
+        - sorting
+        - top pages limit
+      - `/sites/:siteId/opportunities`
+        - top rekordy szans
+        - grupy szans
+        - details panel
+      - `/sites/:siteId/opportunities/records`
+        - tabela rekordow
+        - pagination
+        - details panel
+
+    - `/sites/:siteId/changes/opportunities` -> Site Opportunities Compare
+      - kanoniczny compare route sekcji `Zmiany`
+      - compact compare header
+        - kontekst active / baseline
+        - primary action do current-state `Szans SEO`
+        - `Operacje`
+          - `Open active crawl`
+      - Summary cards
+      - Quick filters
+      - Filter panel
+        - zakres GSC
+        - change kind
+        - opportunity type
+        - url contains
+        - sorting
+      - Tabela compare
+        - URL + highlights + linki pomocnicze
+        - priority delta
+        - opportunity deltas
+        - rationale
+      - Pagination
+
+    - `/sites/:siteId/internal-linking` -> Site Internal Linking Current-State
+      - compact header
+        - kontekst aktywnego crawla
+        - primary action do `Problemow`
+        - `Operacje`
+          - `Open Changes`
+          - `Open active crawl`
+        - `Eksport`
+          - internal linking CSV
+      - Summary cards
+      - Quick filters
+        - toggle on/off
+        - multi-select
+        - reset
+      - Filter panel
+        - zakres GSC
+        - issue type
+        - priority level
+        - opportunity type
+        - url contains
+        - sorting
+      - `/sites/:siteId/internal-linking`
+        - preview najwazniejszych problemow
+        - details panel
+      - `/sites/:siteId/internal-linking/issues`
+        - tabela problemow
+        - pagination
+        - details panel
+
+    - `/sites/:siteId/changes/internal-linking` -> Site Internal Linking Compare
+      - kanoniczny compare route sekcji `Zmiany`
+      - compact compare header
+        - kontekst active / baseline
+        - primary action do current-state `Linkowania wewnetrznego`
+        - `Operacje`
+          - `Open active crawl`
+      - Summary cards
+      - Quick filters
+      - Filter panel
+        - zakres GSC
+        - change type
+        - compare kind
+        - issue type
+        - url contains
+        - sorting
+      - Tabela compare
+        - URL + highlights + linki pomocnicze
+        - issue deltas
+        - internal linking deltas
+        - rationale
+      - Pagination
+
+    - `/sites/:siteId/gsc` -> Site GSC / Przeglad
+      - Compact header
+      - Karty statusowe
+        - status property
+        - status importu aktywnego crawla
+        - ostatni import
+        - root URL
+      - Blok integracji
+        - wybrane property
+        - permission
+        - status importu dla aktywnego crawla
+        - CTA do konfiguracji i importu
+      - Blok aktywnego crawla
+        - aktywny crawl
+        - status
+        - skrot do snapshot detail
+      - Summary cards 28d / 90d
+      - Szybkie skroty do konfiguracji / importu / stron / szans SEO / workspace
+
+    - `/sites/:siteId/gsc/settings` -> Site GSC / Konfiguracja
+      - Compact header
+      - OAuth connect
+      - Wybor property
+      - Zapis property witryny
+      - Info o reuse property dla kolejnych crawl snapshotow
+
+    - `/sites/:siteId/gsc/import` -> Site GSC / Import
+      - Compact header
+      - Karty statusowe
+        - property gotowe / brak property
+        - aktywny crawl
+        - ostatni import
+      - Empty state, jesli brak property
+      - Empty state, jesli brak aktywnego crawla
+      - Sekcja importu do aktywnego crawla
+        - wybor zakresu
+        - top queries limit
+        - import aktywnego zakresu
+        - import 28d + 90d
+      - Summary kart dla zakresow 28d / 90d
+
+- Job-centric UI
+  - `/jobs`
+    - Hero
+      - "Zadania i kontrola crawlowania"
+    - Formularz nowego crawla
+    - Filtry listy zadan
+      - status
+      - search
+    - Tabela zadan
+      - job
+      - status
+      - started / finished
+      - pages / internal links / external links / errors
+      - open
+
+  - `/jobs/:jobId`
+    - Hero szczegolu zadania
+      - status
+      - time range
+      - root URL
+      - akcje
+        - eksport `pages.csv`
+        - eksport `links.csv`
+        - eksport `audit.csv`
+        - otworz site workspace
+        - rerun z tymi samymi ustawieniami
+        - stop job
+    - Job navigation
+      - `/jobs/:jobId` -> Przeglad
+      - `/jobs/:jobId/pages`
+      - `/jobs/:jobId/links`
+      - `/jobs/:jobId/internal-linking`
+      - `/jobs/:jobId/cannibalization`
+      - `/jobs/:jobId/audit`
+      - `/jobs/:jobId/opportunities`
+      - `/jobs/:jobId/gsc`
+      - `/jobs/:jobId/trends`
+    - Summary cards
+    - Sekcja "Podsumowanie"
+    - Sekcja "Ustawienia i runtime"
+      - render settings
+      - `settings_json`
+      - `stats_json`
+    - Sekcja "Nastepne kroki"
+
+  - `/jobs/:jobId/pages`
+    - Hero + eksporty
+    - Sekcja kolumn GSC
+      - toggle 28d / 90d
+      - przejscie do GSC
+      - przejscie do Opportunities
+    - Summary cards taksonomii
+    - Sekcja "Taksonomia stron"
+      - focus badges dla page types
+    - Quick filters
+    - Filter panel
+      - podstawowe filtry
+        - status
+        - page type
+        - page bucket
+        - URL
+        - title
+        - GSC min clicks
+      - expanded filters
+        - title/meta/H1/canonical/indexability/content/media
+        - rendering/schema/x-robots
+        - technical issue
+        - GSC / priority / opportunity
+        - cannibalization
+        - confidence / score / sorting
+    - Tabela stron
+      - URL
+      - status
+      - taksonomia
+      - title
+      - title length
+      - meta
+      - meta length
+      - headings
+      - H1 length
+      - canonical
+      - on-page metrics
+      - GSC
+      - priority
+      - signals
+      - response time
+      - fetched at
+    - Pagination
+
+  - `/jobs/:jobId/links`
+    - Hero + eksporty
+    - Quick filters
+    - Filter panel
+      - internal
+      - nofollow
+      - target domain
+      - anchor
+      - broken / redirecting / unresolved internal
+      - noindex / canonicalized / redirect chain
+    - Tabela linkow
+      - source URL
+      - target URL
+      - target domain
+      - anchor text
+      - target status
+      - redirect hops
+      - final URL
+      - internal
+      - nofollow
+      - signals
+    - Pagination
+
+  - `/jobs/:jobId/internal-linking`
+    - Hero + eksport
+    - Quick filters
+    - Filter panel
+      - zakres GSC / priorytetu
+      - issue type
+      - priority level
+      - opportunity type
+      - URL
+      - sorting
+    - Summary cards overview
+    - Tabela issue rows
+      - URL
+      - importance
+      - internal support
+      - anchors
+      - rationale
+    - Pagination
+
+  - `/jobs/:jobId/cannibalization`
+    - Hero + eksport
+    - Quick filters
+    - Filter panel
+      - zakres GSC
+      - severity
+      - impact level
+      - recommendation type
+      - clear primary
+      - URL / query contains
+      - sorting
+    - Summary cards
+    - Opcjonalny details panel dla wybranego `page_id`
+      - focused overlap
+      - primary / severity / recommendation
+      - overlap details
+      - competing URLs
+    - Tabela klastrow
+      - cluster
+      - dominant URL
+      - sample queries
+      - competing URLs
+      - rationale
+    - Pagination
+
+  - `/jobs/:jobId/audit`
+    - Hero + eksport
+    - Summary cards
+    - Lista rozwijanych sekcji audytu
+      - page issue tables
+      - duplicate groups
+      - link issue tables
+      - deep-linki do Pages / Links
+    - Sekcje obejmuja m.in.
+      - missing / short / long title
+      - missing / short / long meta
+      - missing / multiple H1
+      - missing H2
+      - duplicate title / meta / content
+      - canonical / noindex / non-indexable
+      - broken / redirecting / unresolved links
+      - thin content
+      - JS-heavy / rendered / render errors
+      - schema / missing schema / X-Robots
+      - missing alt / no images / oversized pages
+
+  - `/jobs/:jobId/opportunities`
+    - Hero + eksporty
+    - Quick filters
+    - Filter panel
+      - zakres GSC
+      - priority level
+      - opportunity type
+      - priority min / max
+      - sort groups by
+      - top pages limit
+    - Summary cards
+    - Sekcja "Top URL-e priorytetowe"
+    - Sekcje grup opportunity
+      - opis grupy
+      - licznik
+      - deep-link do Pages
+      - tabela top pages
+        - URL
+        - priority
+        - impact / effort
+        - traffic
+        - rationale
+
+  - `/jobs/:jobId/gsc`
+    - Hero + eksporty
+    - Sekcja polaczenia i property
+      - OAuth connect
+      - property selector
+      - save property
+      - top queries limit
+      - import current range
+      - import all
+      - link do site workspace GSC
+    - Summary cards GSC
+    - Quick filters dla pages z danymi GSC
+    - Filter panel dla pages
+      - zakres GSC
+      - technical issue
+      - GSC thresholds
+    - Tabela pages z GSC metrics
+      - URL
+      - technical issues
+      - clicks
+      - impressions
+      - CTR
+      - position
+    - Pagination
+    - Sekcja "Top queries"
+    - Modal top queries dla wybranego `page_id`
+      - header z page context
+      - filter panel
+      - summary bar
+      - tabela query rows
+      - pagination
+
+  - `/jobs/:jobId/trends`
+    - Hero + eksporty compare
+    - Sekcja compare crawl
+      - quick filters
+      - filter panel
+        - baseline job
+        - zakres GSC
+        - change type
+        - issue thresholds
+        - URL
+        - sorting
+      - summary cards
+      - tabela compare crawl
+        - URL
+        - change
+        - issues
+        - priority
+        - content
+        - internal linking
+      - Pagination
+    - Sekcja compare GSC
+      - quick filters
+      - filter panel
+        - baseline range
+        - target range
+        - overall trend
+        - URL
+        - sorting
+      - summary cards
+      - tabela compare GSC
+        - URL
+        - trend
+        - clicks
+        - impressions
+        - CTR
+        - position
+      - Pagination

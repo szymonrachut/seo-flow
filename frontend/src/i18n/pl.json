@@ -1,0 +1,3341 @@
+{
+  "app": {
+    "eyebrow": "Lokalny crawler SEO",
+    "title": "Konsola crawlera"
+  },
+  "language": {
+    "label": "Jezyk",
+    "english": "English",
+    "polish": "Polski",
+    "short": {
+      "en": "EN",
+      "pl": "PL"
+    }
+  },
+  "theme": {
+    "label": "Motyw",
+    "light": "Jasny",
+    "dark": "Ciemny"
+  },
+  "nav": {
+    "sites": "Witryny",
+    "jobs": "Operacje",
+    "overview": "Przeglad",
+    "progress": "Postep",
+    "pages": "Strony",
+    "contentRecommendations": "Rekomendacje tresci",
+    "competitiveGap": "Braki wzgledem konkurencji",
+    "links": "Linki",
+    "internalLinking": "Linkowanie wewnetrzne",
+    "cannibalization": "Cannibalization",
+    "audit": "Audyt",
+    "opportunities": "Szanse SEO",
+    "gsc": "GSC",
+    "trends": "Trendy",
+    "crawls": "Crawle",
+    "crawlsHistory": "Historia",
+    "newCrawl": "Nowy crawl",
+    "changes": "Zmiany"
+  },
+  "common": {
+    "any": "Dowolne",
+    "yes": "Tak",
+    "no": "Nie",
+    "reset": "Resetuj",
+    "open": "Otworz",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano",
+    "search": "Szukaj",
+    "status": "Status",
+    "created": "Utworzono",
+    "started": "Start",
+    "finished": "Koniec",
+    "rootUrl": "Root URL",
+    "prev": "Poprzednia",
+    "next": "Nastepna",
+    "pageSize": "Rozmiar strony",
+    "sortBy": "Sortuj po: {{column}}",
+    "unknownError": "Nieznany blad",
+    "length": "Dlugosc: {{count}}",
+    "operations": "Operacje",
+    "export": "Eksport",
+    "showFilters": "Pokaz filtry",
+    "hideFilters": "Ukryj filtry",
+    "showInPages": "Pokaz w Stronach",
+    "showInLinks": "Pokaz w Linkach",
+    "showAllFilters": "Pokaz wszystkie filtry",
+    "hideExtraFilters": "Ukryj dodatkowe filtry",
+    "soon": "Wkrotce"
+  },
+  "errors": {
+    "networkUnavailable": "Nie mozna polaczyc sie z API pod adresem {{apiBaseUrl}}. Sprawdz, czy backend FastAPI jest uruchomiony."
+  },
+  "pagination": {
+    "summary": "Strona {{page}} z {{totalPages}} | {{totalItems}} elementow"
+  },
+  "quickFilters": {
+    "description": "Klikniecie wlacza albo wylacza filtr, pozwala laczyc wiele filtrow i resetuje tylko szybki wycinek."
+  },
+  "sort": {
+    "title": "Sortowanie",
+    "description": "Sortowanie jest synchronizowane z URL.",
+    "by": "Po",
+    "order": "Kolejnosc",
+    "ascending": "Rosnaco",
+    "descending": "Malejaco"
+  },
+  "routes": {
+    "notFound": {
+      "title": "Nie znaleziono trasy",
+      "description": "Ta lokalna konsola nie zna wskazanej trasy."
+    }
+  },
+  "documentTitle": {
+    "sites": "Witryny",
+    "newSite": "Dodaj witryne",
+    "siteOverview": "Witryna {{domain}}",
+    "siteProgress": "Postep witryny {{domain}}",
+    "siteChanges": "Zmiany witryny {{domain}}",
+    "siteCrawls": "Crawle witryny {{domain}}",
+    "siteNewCrawl": "Nowy crawl witryny {{domain}}",
+    "sitePages": "Strony witryny {{domain}}",
+    "sitePagesRecords": "Rekordy stron witryny {{domain}}",
+    "siteAudit": "Audyt witryny {{domain}}",
+    "siteAuditSections": "Sekcje audytu witryny {{domain}}",
+    "siteGsc": "Przeglad GSC witryny {{domain}}",
+    "siteGscSettings": "Konfiguracja GSC witryny {{domain}}",
+    "siteGscImport": "Import GSC witryny {{domain}}",
+    "siteContentRecommendations": "Przeglad rekomendacji tresci witryny {{domain}}",
+    "siteContentRecommendationsActive": "Aktywne rekomendacje tresci witryny {{domain}}",
+    "siteContentRecommendationsImplemented": "Wdrozone rekomendacje tresci witryny {{domain}}",
+    "siteCompetitiveGap": "Braki wzgledem konkurencji witryny {{domain}}",
+    "siteCompetitiveGapStrategy": "Strategia brakow wzgledem konkurencji witryny {{domain}}",
+    "siteCompetitiveGapCompetitors": "Konkurenci brakow wzgledem konkurencji witryny {{domain}}",
+    "siteCompetitiveGapSync": "Synchronizacja brakow wzgledem konkurencji witryny {{domain}}",
+    "siteCompetitiveGapResults": "Wyniki brakow wzgledem konkurencji witryny {{domain}}",
+    "siteOpportunities": "Szanse SEO witryny {{domain}}",
+    "siteOpportunitiesRecords": "Rekordy szans witryny {{domain}}",
+    "siteInternalLinking": "Linkowanie wewnetrzne witryny {{domain}}",
+    "siteInternalLinkingIssues": "Problemy linkowania wewnetrznego witryny {{domain}}",
+    "pagesCompare": "Zmiany stron witryny {{domain}}",
+    "auditCompare": "Zmiany audytu witryny {{domain}}",
+    "opportunitiesCompare": "Zmiany szans witryny {{domain}}",
+    "internalLinkingCompare": "Zmiany linkowania wewnetrznego witryny {{domain}}",
+    "jobs": "Zadania",
+    "job": "Zadanie",
+    "jobDetail": "Zadanie #{{jobId}}",
+    "pages": "Strony zadania #{{jobId}}",
+    "links": "Linki zadania #{{jobId}}",
+    "internalLinking": "Internal linking zadania #{{jobId}}",
+    "cannibalization": "Cannibalization zadania #{{jobId}}",
+    "audit": "Audyt zadania #{{jobId}}",
+    "opportunities": "Szanse zadania #{{jobId}}",
+    "gsc": "GSC zadania #{{jobId}}",
+    "trends": "Trendy zadania #{{jobId}}"
+  },
+  "shell": {
+    "routeTitles": {
+      "sites": "Wszystkie witryny",
+      "newSite": "Dodaj witryne",
+      "progress": "Postep",
+      "pages": "Strony",
+      "pagesRecords": "Rekordy stron",
+      "audit": "Audyt",
+      "auditSections": "Sekcje audytu",
+      "opportunities": "Szanse SEO",
+      "opportunitiesRecords": "Rekordy szans",
+      "internalLinking": "Linkowanie wewnetrzne",
+      "internalLinkingIssues": "Problemy linkowania",
+      "changes": "Zmiany",
+      "changesPages": "Zmiany stron",
+      "changesAudit": "Zmiany audytu",
+      "changesOpportunities": "Zmiany szans SEO",
+      "changesInternalLinking": "Zmiany linkowania wewnetrznego",
+      "contentRecommendationsOverview": "Przeglad rekomendacji tresci",
+      "contentRecommendationsActive": "Aktywne rekomendacje tresci",
+      "contentRecommendationsImplemented": "Wdrozone rekomendacje tresci",
+      "gscOverview": "Przeglad GSC",
+      "gscSettings": "Konfiguracja GSC",
+      "gscImport": "Import GSC",
+      "crawlsHistory": "Historia crawli",
+      "crawlsNew": "Nowy crawl",
+      "operations": "Operacje",
+      "jobDetail": "Zadanie #{{jobId}}",
+      "jobPages": "Strony zadania #{{jobId}}",
+      "jobLinks": "Linki zadania #{{jobId}}",
+      "jobInternalLinking": "Linkowanie wewnetrzne zadania #{{jobId}}",
+      "jobCannibalization": "Cannibalization zadania #{{jobId}}",
+      "jobAudit": "Audyt zadania #{{jobId}}",
+      "jobOpportunities": "Szanse SEO zadania #{{jobId}}",
+      "jobGsc": "GSC zadania #{{jobId}}",
+      "jobTrends": "Trendy zadania #{{jobId}}"
+    },
+    "actions": {
+      "systemSettings": "Ustawienia systemu",
+      "account": "Konto"
+    },
+    "global": {
+      "sites": "Wszystkie witryny",
+      "operations": "Operacje",
+      "systemSettings": "Ustawienia systemu",
+      "account": "Konto"
+    },
+    "sidebar": {
+      "eyebrow": "Nawigacja",
+      "title": "Workspace witryn",
+      "siteSearch": "Szybkie wyszukiwanie witryny",
+      "siteSearchPlaceholder": "example.com",
+      "siteSwitcher": "Site switcher",
+      "siteSwitcherPlaceholder": "Wybierz witryne",
+      "addSite": "Dodaj witryne",
+      "sitesError": "Nie udalo sie zaladowac listy witryn.",
+      "noSites": "Brak witryn pasujacych do wyszukiwania.",
+      "currentSite": "Aktualna witryna",
+      "siteNavigation": "Nawigacja aktualnej witryny",
+      "global": "Sekcja globalna",
+      "globalNavigation": "Nawigacja globalna"
+    },
+    "site": {
+      "empty": "Wybierz witryne, aby zobaczyc jej status i menu workspace.",
+      "activeCrawlLabel": "Aktywny crawl #{{id}}",
+      "noActiveCrawl": "Brak aktywnego crawla",
+      "lastCrawl": "Ostatni crawl",
+      "gsc": "Status GSC",
+      "gscConnected": "Polaczono",
+      "gscNotConnected": "Brak polaczenia"
+    }
+  },
+  "jobs": {
+    "status": {
+      "pending": "Oczekuje",
+      "running": "W trakcie",
+      "finished": "Zakonczone",
+      "failed": "Nieudane",
+      "stopped": "Zatrzymane"
+    },
+    "page": {
+      "eyebrow": "Konsola SEO crawlera",
+      "title": "Zadania i kontrola crawlowania",
+      "description": "Uruchamiaj lokalne crawlery, monitoruj postep, duplikuj sprawdzone konfiguracje i przechodz od razu do stron, linkow lub audytu.",
+      "loading": "Ladowanie zadan crawla..."
+    },
+    "filters": {
+      "title": "Filtry zadan",
+      "description": "Filtruj po statusie albo szukaj po id zadania / root URL. Naglowki tabeli steruja sortowaniem.",
+      "searchPlaceholder": "id zadania lub root URL"
+    },
+    "table": {
+      "job": "Zadanie",
+      "status": "Status",
+      "started": "Start",
+      "finished": "Koniec",
+      "pages": "Strony",
+      "internalLinks": "Linki wewnetrzne",
+      "externalLinks": "Linki zewnetrzne",
+      "errors": "Bledy",
+      "open": "Otworz"
+    },
+    "empty": {
+      "title": "Brak zadan crawla dla biezacego widoku",
+      "description": "Dostosuj filtry albo utworz nowe zadanie crawla."
+    },
+    "errors": {
+      "listTitle": "Nie udalo sie pobrac listy zadan"
+    },
+    "form": {
+      "eyebrow": "Nowe zadanie crawla",
+      "title": "Uruchom lokalny audyt",
+      "description": "Walidacja po stronie frontendu pozostaje lekka. Backend nadal waliduje payload.",
+      "rootUrl": "Root URL",
+      "rootUrlPlaceholder": "https://example.com",
+      "maxUrls": "Maks. URL",
+      "maxDepth": "Maks. glebokosc",
+      "delay": "Opoznienie",
+      "renderMode": "Tryb renderu",
+      "renderModeNever": "Nigdy",
+      "renderModeAuto": "Auto",
+      "renderModeAlways": "Zawsze",
+      "renderTimeout": "Timeout renderu (ms)",
+      "renderLimit": "Limit renderowanych stron",
+      "submit": "Utworz zadanie crawla",
+      "submitting": "Tworzenie zadania..."
+    },
+    "detail": {
+      "invalidIdTitle": "Nieprawidlowe id zadania",
+      "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+      "loading": "Ladowanie zadania #{{jobId}}...",
+      "errorTitle": "Nie udalo sie pobrac szczegolow zadania",
+      "emptyTitle": "Zadanie niedostepne",
+      "emptyDescription": "Backend zwrocil pusta odpowiedz zadania.",
+      "overviewEyebrow": "Przeglad zadania",
+      "title": "Zadanie crawla #{{jobId}}",
+      "timeRange": "Start {{started}} | Koniec {{finished}}",
+      "exportPages": "Eksportuj pages.csv",
+      "exportLinks": "Eksportuj links.csv",
+      "exportAudit": "Eksportuj audit.csv",
+      "openSiteWorkspace": "Otworz workspace witryny",
+      "duplicate": "Uruchom ponownie z tymi samymi ustawieniami",
+      "duplicatePending": "Tworzenie kopii...",
+      "stop": "Zatrzymaj zadanie",
+      "stopPending": "Zatrzymywanie...",
+      "stopErrorTitle": "Nie udalo sie wyslac zadania stop",
+      "duplicateErrorTitle": "Nie udalo sie zduplikowac zadania",
+      "summaryCards": {
+        "pages": "Strony",
+        "links": "Linki",
+        "renderedPages": "Renderowane strony",
+        "jsHeavyLike": "JS-heavy-like",
+        "renderErrors": "Bledy renderu",
+        "schema": "Strony ze schema",
+        "gsc28d": "Strony z GSC 28d",
+        "gscOpportunities": "Szanse GSC",
+        "queuedUrls": "URL w kolejce",
+        "visitedPages": "Odwiedzone strony",
+        "discoveredLinks": "Odkryte linki",
+        "errors": "Bledy"
+      },
+      "summaryCountsTitle": "Podsumowanie",
+      "summaryCounts": {
+        "total_pages": "Lacznie stron",
+        "total_links": "Lacznie linkow",
+        "total_internal_links": "Lacznie linkow wewnetrznych",
+        "total_external_links": "Lacznie linkow zewnetrznych",
+        "pages_missing_title": "Strony bez title",
+        "pages_missing_meta_description": "Strony bez meta description",
+        "pages_missing_h1": "Strony bez H1",
+        "pages_non_indexable_like": "Strony typu non-indexable-like",
+        "rendered_pages": "Renderowane strony",
+        "js_heavy_like_pages": "Strony JS-heavy-like",
+        "pages_with_render_errors": "Strony z bledem renderu",
+        "pages_with_schema": "Strony ze schema",
+        "pages_with_x_robots_tag": "Strony z X-Robots-Tag",
+        "pages_with_gsc_28d": "Strony z GSC 28d",
+        "pages_with_gsc_90d": "Strony z GSC 90d",
+        "gsc_opportunities_28d": "Szanse GSC 28d",
+        "gsc_opportunities_90d": "Szanse GSC 90d",
+        "broken_internal_links": "Uszkodzone linki wewnetrzne",
+        "redirecting_internal_links": "Przekierowujace linki wewnetrzne"
+      },
+      "runtimeTitle": "Ustawienia i runtime",
+      "renderSettingsTitle": "Ustawienia renderingu",
+      "renderMode": "Tryb renderu",
+      "renderTimeout": "Timeout renderu",
+      "renderLimit": "Limit renderu",
+      "nextStepsTitle": "Nastepne kroki",
+      "inspectPages": "Sprawdz strony",
+      "inspectLinks": "Sprawdz linki",
+      "openAudit": "Otworz audyt",
+      "openOpportunities": "Otworz szanse",
+      "openGsc": "Otworz GSC",
+      "openTrends": "Otworz trendy",
+      "waitingTitle": "Oczekiwanie na pierwsze wyniki",
+      "waitingDescription": "To zadanie zostalo utworzone, ale zadne strony nie zostaly jeszcze zapisane. Widok przegladu odswieza sie automatycznie, gdy zadanie jest aktywne."
+    }
+  },
+  "sites": {
+    "invalidIdTitle": "Nieprawidlowe id witryny",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id witryny.",
+    "page": {
+      "eyebrow": "Workspace witryny",
+      "title": "Witryny i workspaces",
+      "description": "Traktuj kazda witryne jako trwala przestrzen robocza, a crawle jako snapshoty w czasie z szybkim wejsciem do aktywnego crawla.",
+      "addSite": "Dodaj witryne",
+      "loading": "Ladowanie witryn...",
+      "errorTitle": "Nie udalo sie pobrac listy witryn",
+      "emptyTitle": "Brak witryn",
+      "emptyDescription": "Utworz pierwszy crawl, aby otworzyc workspace witryny."
+    },
+    "newPage": {
+      "eyebrow": "Nowa witryna",
+      "title": "Dodaj witryne i uruchom pierwszy crawl",
+      "description": "To jest szybkie wejscie do nowego workspace. Lista witryn pod `/sites` pozostaje glownym miejscem zarzadzania wszystkimi workspace'ami.",
+      "backToSites": "Wroc do witryn",
+      "workspaceTitle": "Co stanie sie po uruchomieniu",
+      "workspaceDescription": "Pierwszy crawl zalozy workspace witryny, ustawi aktywny snapshot i od razu otworzy nowy shell dla tej domeny.",
+      "cards": {
+        "workspace": {
+          "label": "Workspace",
+          "description": "Witryna pozostaje trwala przestrzenia robocza dla kolejnych crawl snapshotow."
+        },
+        "snapshot": {
+          "label": "Snapshot",
+          "description": "Pierwszy crawl tworzy bazowy snapshot danych bez mieszania wielu crawl'i w podstawowych tabelach."
+        },
+        "navigation": {
+          "label": "Nawigacja",
+          "description": "Po utworzeniu od razu trafisz do site workspace z sidebarem, context barem i routingiem site-centric."
+        }
+      }
+    },
+    "table": {
+      "site": "Witryna",
+      "latestCrawl": "Ostatni crawl",
+      "noCrawls": "Brak crawli",
+      "crawls": "Crawle",
+      "lastCrawlAt": "Ostatni crawl",
+      "gscProperty": "Property GSC",
+      "open": "Otworz"
+    },
+    "pages": {
+      "records": {
+        "navLabel": "Rekordy"
+      }
+    },
+    "audit": {
+      "sectionsPage": {
+        "navLabel": "Sekcje"
+      }
+    },
+    "workspace": {
+      "loading": "Ladowanie workspace witryny...",
+      "errorTitle": "Nie udalo sie pobrac workspace witryny",
+      "emptyTitle": "Workspace witryny niedostepny",
+      "emptyDescription": "Backend zwrocil pusta odpowiedz workspace witryny.",
+      "eyebrow": "Workspace witryny",
+      "lastCrawl": "Ostatni crawl",
+      "gscProperty": "Property GSC",
+      "gscStatus": "Status GSC",
+      "gscConnected": "Polaczono",
+      "gscNotConnected": "Brak polaczenia",
+      "gscNotConnectedHint": "Wybierz property GSC dla tej witryny, gdy bedziesz gotowy.",
+      "activeCrawlHint": "Biezacy snapshot roboczy dla workspace witryny.",
+      "openActiveCrawl": "Otworz aktywny crawl",
+      "openChanges": "Otworz Zmiany",
+      "activeCrawl": "Aktywny crawl",
+      "baselineCrawl": "Baseline crawl",
+      "noActiveCrawl": "Brak aktywnego crawla",
+      "noBaseline": "Bez baseline",
+      "changesStatus": "Kontekst zmian",
+      "changesReady": "Zmiany sa gotowe",
+      "changesWaiting": "Czeka na baseline",
+      "changesReadyHint": "Masz aktywny i baseline crawl, wiec compare views pozostaja dostepne pod sekcja Zmiany.",
+      "changesWaitingHint": "Wybierz inny baseline crawl, aby aktywowac compare views bez dominowania nimi calego shellu.",
+      "changesHelper": "Porownanie jest dostepne w sekcji Zmiany."
+    },
+    "progress": {
+      "eyebrow": "Postep",
+      "title": "Czy idziemy do przodu?",
+      "description": "Sledz postep wybranej witryny przez aktywny crawl, pomocniczy baseline i najbardziej wiarygodne sygnaly site-level, ktore repo juz teraz wystawia.",
+      "emptyActiveTitle": "Brak aktywnego crawla",
+      "emptyActiveDescription": "Wybierz aktywny crawl w kontekscie workspace albo uruchom nowy snapshot, aby odblokowac dashboard postepu.",
+      "actions": {
+        "openCrawl": "Otworz crawl",
+        "openChanges": "Otworz Zmiany",
+        "openCrawls": "Otworz historie crawli",
+        "openGsc": "Otworz GSC",
+        "openContentRecommendations": "Otworz Rekomendacje tresci"
+      },
+      "loadingCompare": "Ladowanie sygnalow zmian dla tej witryny.",
+      "loadingImplementation": "Ladowanie postepu wdrozen.",
+      "compareErrorTitle": "Compare dla postepu jest niedostepny",
+      "compareEmptyTitle": "Dodaj kolejny crawl, aby mierzyc zmiane",
+      "compareEmptyDescription": "Strona nadal pokazuje aktualne sygnaly witryny, ale listy popraw i pogorszen potrzebuja pomocniczego baseline snapshotu.",
+      "status": {
+        "title": "Status aktywnego crawla",
+        "description": "Aktywny crawl pozostaje glownym snapshotem roboczym w workspace witryny.",
+        "pagesVisited": "Odwiedzone strony",
+        "queuedUrls": "URL-e w kolejce",
+        "discoveredLinks": "Odkryte linki",
+        "errors": "Bledy",
+        "crawlStarted": "Start crawla",
+        "crawlFinished": "Koniec crawla",
+        "activeSnapshot": "Aktywny snapshot",
+        "workingScope": "Zakres pracy"
+      },
+      "context": {
+        "title": "Kontekst porownania",
+        "readyDescription": "Baseline jest dostepny jako pomocniczy kontekst, ale nie dominuje juz calego ekranu.",
+        "waitingDescription": "Postep dziala sensownie takze bez baseline, ale sekcje zmian pozostaja lzejsze, dopoki nie ma drugiego crawla.",
+        "compareReady": "Compare gotowe",
+        "baselineOnly": "Pomoc baseline",
+        "compareReadyDescription": "Aktywny crawl mozna teraz porownac z baseline crawl #{{id}} w sekcji Zmiany i w sygnalach ponizej.",
+        "baselineOnlyDescription": "Baseline crawl #{{id}} jest wybrany, ale compare pozostaje tylko wsparciem dla aktywnego snapshotu.",
+        "emptyTitle": "Brak wybranego baseline",
+        "emptyDescription": "Uruchom kolejny crawl albo wybierz go z historii, aby odblokowac sekcje przed/po."
+      },
+      "gsc": {
+        "title": "Snapshot GSC",
+        "connectedDescription": "Aktywny crawl ma juz zaimportowany zakres GSC dla tego workspace.",
+        "noDataDescription": "Property jest podlaczone, ale ten aktywny crawl nie ma jeszcze zaimportowanych danych GSC.",
+        "notConnectedDescription": "Podepnij property witryny, aby dodac sygnaly GSC do widoku postepu.",
+        "property": "Property",
+        "noProperty": "Brak wybranego property",
+        "rangeLabel": "Zaimportowany zakres",
+        "pagesWithImpressions": "Strony z wyswietleniami",
+        "lastImported": "Ostatni import",
+        "noRange": "Brak zaimportowanego zakresu",
+        "ranges": {
+          "last_28_days": "Ostatnie 28 dni",
+          "last_90_days": "Ostatnie 90 dni"
+        }
+      },
+      "kpis": {
+        "title": "KPI trendow",
+        "description": "Te karty trzymaja sie aktywnego snapshotu i dodaja kontekst zmian tylko tam, gdzie dane sa juz stabilne.",
+        "cards": {
+          "pagesCrawled": "Strony w crawlu",
+          "metadataIssues": "Luki metadata",
+          "opportunityPages": "Strony z szansami",
+          "internalLinkingIssues": "Strony z problemami linkowania",
+          "implementedRecommendations": "Wdrozone rekomendacje",
+          "gscPagesWithClicks": "Strony GSC z kliknieciami"
+        },
+        "valueUnavailable": "Niedostepne",
+        "valueNoGsc": "Bez GSC",
+        "hints": {
+          "pagesCompared": "Wzgledem baseline: {{delta}} stron.",
+          "pagesCurrent": "Rozmiar aktualnego aktywnego snapshotu.",
+          "metadataCompared": "Wzgledem baseline: {{delta}} problemow metadata.",
+          "metadataCurrent": "Brakujacy title, meta description albo H1 w aktywnym crawlu.",
+          "opportunitiesCompared": "Rozwiazane: {{resolved}} URL-i. Nowe: {{newCount}} URL-i.",
+          "opportunitiesCurrent": "Wysoki priorytet: {{high}}. Krytyczne: {{critical}}.",
+          "opportunitiesWaiting": "Dane szans SEO dla aktywnego crawla jeszcze sie laduja.",
+          "internalCompared": "Rozwiazane orphan-like: {{resolved}}. Slabe strony pogorszone: {{worsened}}.",
+          "internalCurrent": "Orphan-like: {{orphan}}. Slabo wsparte wazne strony: {{weak}}.",
+          "internalWaiting": "Sygnały linkowania wewnetrznego jeszcze sie laduja.",
+          "implemented": "Poprawa: {{improved}}. Za wczesnie: {{tooEarly}}. Aktywne teraz: {{active}}.",
+          "implementedWaiting": "Dane lifecycle wdrozen jeszcze sie laduja.",
+          "gscCoverage": "Strony z wyswietleniami: {{impressions}}. Ostatni import: {{importedAt}}.",
+          "gscWaiting": "Zaimportuj GSC dla aktywnego crawla, aby odblokowac to KPI.",
+          "gscDisconnected": "Najpierw podepnij property na poziomie witryny."
+        }
+      },
+      "improved": {
+        "title": "Co sie poprawilo",
+        "description": "Skupione delty pokazujace, gdzie aktywny crawl idzie we wlasciwa strone.",
+        "emptyTitle": "Na razie brak wyraznej poprawy",
+        "emptyDescription": "Biezace dane nie pokazuja jeszcze mocnego pozytywnego delta wzgledem baseline.",
+        "items": {
+          "auditResolvedTitle": "Rozwiazano {{count}} problemow audytu",
+          "auditResolvedDescription": "Rozwiazane lacznie w {{count}} sekcjach audytu.",
+          "pagesImprovedTitle": "Poprawilo sie {{count}} URL-i",
+          "pagesImprovedDescription": "Priorytet wzrosl na {{priorityCount}} URL-ach. Linkowanie poprawilo sie na {{internalCount}} URL-ach.",
+          "opportunitiesResolvedTitle": "Rozwiazano {{count}} URL-i z szansami",
+          "opportunitiesResolvedDescription": "{{count}} URL-i wyszlo z actionable set.",
+          "internalLinkingTitle": "Poprawilo sie {{count}} sygnalow linkowania",
+          "internalLinkingDescription": "Rozwiazane orphan-like: {{orphanCount}}. Lepszy link equity: {{equityCount}}.",
+          "implementedTitle": "{{count}} wdrozonych rekomendacji juz pokazuje poprawe",
+          "implementedDescription": "Ocenionych outcome'ow jest juz {{count}}."
+        }
+      },
+      "worsened": {
+        "title": "Co sie pogorszylo",
+        "description": "Konkretne regresje do sprawdzenia przed kolejnym crawlem albo nastepnym cyklem wdrozen.",
+        "emptyTitle": "Brak wyraznej regresji",
+        "emptyDescription": "Compare z baseline nie pokazuje teraz istotnego ruchu w dol.",
+        "items": {
+          "auditNewTitle": "Doszlo {{count}} nowych problemow audytu",
+          "auditNewDescription": "Nowe albo pogorszone w {{count}} sekcjach audytu.",
+          "pagesTitle": "Pogorszylo sie {{count}} URL-i",
+          "pagesDescription": "Priorytet spadl na {{priorityCount}} URL-ach. Content spadl na {{contentCount}} URL-ach.",
+          "opportunitiesTitle": "Doszlo {{count}} nowych URL-i z szansami",
+          "opportunitiesDescription": "{{count}} URL-i weszlo do actionable set.",
+          "internalLinkingTitle": "Doszlo {{count}} regresji linkowania",
+          "internalLinkingDescription": "Nowe orphan-like: {{orphanCount}}. Pogorszone weak important: {{weakCount}}.",
+          "implementedTitle": "{{count}} wdrozonych rekomendacji pogorszylo wynik",
+          "implementedDescription": "Sprawdz ostatnie wdrozenia, dla ktorych sledzony outcome idzie teraz w dol."
+        }
+      },
+      "implementation": {
+        "title": "Postep wdrozen",
+        "description": "Lifecycle rekomendacji dla aktywnego workspace, liczony z oknem outcome {{window}}.",
+        "errorTitle": "Postep wdrozen jest niedostepny",
+        "cards": {
+          "active": "Aktywne rekomendacje",
+          "implemented": "Wdrozone",
+          "tooEarly": "Za wczesnie na ocene",
+          "assessed": "Ocenione outcome'y"
+        },
+        "hints": {
+          "active": "Rekomendacje aktualnie otwarte dla aktywnego crawla.",
+          "implemented": "Wdrozone rekomendacje sledzone w biezacym scope.",
+          "tooEarly": "Wciaz w oknie {{window}}.",
+          "assessed": "Poprawa, bez zmian, ograniczone, niedostepne albo pogorszenie."
+        },
+        "recentTitle": "Ostatnio sledzone wdrozenia",
+        "implementedAt": "Wdrozone",
+        "emptyTitle": "Brak lifecycle wdrozen",
+        "emptyDescription": "Oznacz rekomendacje jako wykonane, aby zaczac sledzic postep wdrozenia w czasie."
+      },
+      "timeline": {
+        "title": "Ostatnie zdarzenia",
+        "description": "Lekki timeline ostatnich zdarzen crawl, GSC i wdrozen, ktore workspace juz teraz potrafi pokazac.",
+        "emptyTitle": "Brak ostatnich zdarzen",
+        "emptyDescription": "Ta witryna potrzebuje co najmniej jednego crawla, importu albo sledzonego wdrozenia, aby zbudowac timeline.",
+        "compareBadge": "Compare",
+        "events": {
+          "activeFinishedTitle": "Aktywny crawl zakonczony",
+          "activeRunningTitle": "Aktywny crawl trwa",
+          "activePendingTitle": "Aktywny crawl czeka",
+          "activeSnapshotTitle": "Aktywny snapshot zaktualizowany",
+          "activeDescription": "Snapshot #{{id}} jest glownym crawlem roboczym dla tego workspace.",
+          "baselineTitle": "Zmieniono kontekst baseline",
+          "baselineDescription": "Baseline crawl #{{id}} jest dostepny jako pomocniczy kontekst compare.",
+          "gscImportTitle": "Zaimportowano GSC dla {{range}}",
+          "gscImportDescription": "Strony z kliknieciami: {{clicksPages}}. Strony z wyswietleniami: {{impressionsPages}}.",
+          "implementedTitle": "Rekomendacja oznaczona jako wykonana",
+          "implementedDescription": "Sledzone wdrozenie: {{target}}."
+        }
+      }
+    },
+    "changes": {
+      "eyebrow": "Zmiany",
+      "title": "Co zmienilo sie miedzy crawlami?",
+      "description": "Uzyj tego hubu jako glownego miejsca wejscia do compare aktywnego crawla vs baseline crawl. Semantyka compare zostaje bez zmian, ale wszystkie widoki porownawcze sa teraz zebrane pod sekcja Zmiany.",
+      "contextTitle": "Aktywny kontekst zmian",
+      "contextDescription": "Aktywny crawl: {{active}}. Baseline crawl: {{baseline}}.",
+      "compareTitle": "Wejscia do compare",
+      "compareDescription": "Otworz dokladnie ten obszar, w ktorym zaszla zmiana, bez gubienia kontekstu workspace witryny.",
+      "summary": {
+        "activeHint": "Wybierz aktywny crawl, aby odblokowac kontekst compare.",
+        "baselineHint": "Wybierz baseline crawl, aby porownac stan przed i po.",
+        "compareAreasLabel": "Gotowe obszary compare",
+        "compareAreasReady": "Wszystkie cztery widoki compare sa dostepne z tego hubu.",
+        "compareAreasWaiting": "Karty compare czekaja tutaj, dopoki workspace nie ma uzywalnego baseline."
+      },
+      "empty": {
+        "noActiveTitle": "Najpierw wybierz aktywny crawl",
+        "noActiveDescription": "Hub Zmiany potrzebuje aktywnego crawla, zanim pokaze co zmienilo sie miedzy snapshotami.",
+        "noBaselineTitle": "Wybierz baseline crawl do compare",
+        "noBaselineDescription": "Ustaw baseline crawl w kontekscie workspace, aby odblokowac compare views i delty przed/po.",
+        "unavailableTitle": "Compare nie jest jeszcze gotowe",
+        "unavailableDescription": "Biezacy kontekst active i baseline nadal nie pozwala uruchomic compare dla tej witryny."
+      },
+      "card": {
+        "eyebrow": "Compare",
+        "open": "Otworz widok compare",
+        "notReady": "Czeka na kontekst compare",
+        "noSummary": "Summary pojawi sie tutaj, gdy compare bedzie gotowe.",
+        "status": {
+          "ready": "Gotowe",
+          "loading": "Ladowanie",
+          "error": "Wymaga ponowienia",
+          "waiting": "Czeka"
+        }
+      },
+      "links": {
+        "pages": {
+          "title": "Zmiany stron",
+          "description": "Sprawdz, ktore URL-e sa nowe, zniknely, poprawily sie, pogorszyly albo inaczej zmienily miedzy aktywnym i baseline crawl."
+        },
+        "audit": {
+          "title": "Zmiany audytu",
+          "description": "Zobacz, ktore sekcje audytu zostaly rozwiazane, ktore sie pogorszyly i gdzie pojawily sie nowe problemy."
+        },
+        "opportunities": {
+          "title": "Zmiany szans SEO",
+          "description": "Sledz, jak zmienily sie szanse, actionable URL-e i przesuniecia priorytetu miedzy crawlami."
+        },
+        "internalLinking": {
+          "title": "Zmiany linkowania wewnetrznego",
+          "description": "Przejrzyj regresje i poprawy strukturalne dla orphan-like, weakly linked i sygnalow link equity."
+        }
+      }
+    },
+    "overview": {
+      "summary": {
+        "totalCrawls": "Liczba crawli",
+        "runningCrawls": "W trakcie",
+        "lastCrawl": "Ostatni crawl",
+        "createdAt": "Utworzono workspace"
+      },
+      "newCrawlTitle": "Utworz kolejny snapshot",
+      "newCrawlDescription": "Uruchom kolejny crawl tej samej witryny w dedykowanym flow i zachowaj spojny kontekst workspace.",
+      "newCrawlCards": {
+        "snapshot": {
+          "label": "Najpierw snapshot",
+          "description": "Kolejny crawl tworzy nowy snapshot w czasie dla tej samej witryny."
+        },
+        "workspace": {
+          "label": "Ten sam workspace",
+          "description": "Pozostajesz w tym samym workspace witryny z aktywnym, baseline i kontekstem GSC."
+        }
+      },
+      "activeEyebrow": "Aktywny crawl",
+      "activeTitle": "Stan witryny teraz",
+      "activeDescription": "Aktywny crawl pozostaje glownym snapshotem roboczym dla tego workspace, a baseline sluzy tylko jako pomocniczy kontekst.",
+      "emptyActiveTitle": "Brak aktywnego crawla",
+      "emptyActiveDescription": "Uruchom nowy crawl albo wybierz snapshot z historii, aby zbudowac current-first overview.",
+      "kpiTitle": "KPI aktywnego snapshotu",
+      "kpiDescription": "To sa najwazniejsze liczby z aktualnie wybranego crawla.",
+      "status": {
+        "title": "Status aktywnego crawla",
+        "description": "Ten snapshot jest centrum pracy w workspace witryny.",
+        "pagesVisited": "Odwiedzone strony",
+        "queuedUrls": "URL w kolejce",
+        "discoveredLinks": "Odkryte linki",
+        "errors": "Bledy crawla",
+        "crawlStarted": "Start crawla",
+        "crawlFinished": "Koniec crawla",
+        "crawlCreated": "Utworzono crawl",
+        "workingScope": "Zakres crawla"
+      },
+      "actions": {
+        "openCrawl": "Otworz crawl",
+        "openChanges": "Otworz Zmiany",
+        "openContentRecommendations": "Otworz Rekomendacje tresci",
+        "openCompetitiveGap": "Otworz Braki wzgledem konkurencji",
+        "openGsc": "Otworz GSC witryny",
+        "openCrawls": "Otworz historie crawli"
+      },
+      "kpi": {
+        "totalPages": "Strony",
+        "internalLinks": "Linki wewnetrzne",
+        "missingTitle": "Brak title",
+        "missingMeta": "Brak meta description",
+        "gsc28d": "Strony z GSC 28d",
+        "gscOpportunities": "Szanse GSC",
+        "brokenInternalLinks": "Uszkodzone linki wewnetrzne",
+        "redirectingInternalLinks": "Przekierowujace linki wewnetrzne"
+      },
+      "gsc": {
+        "title": "Status i skrot GSC",
+        "connectedDescription": "Property GSC jest juz podpiete do witryny i moze byc reuse'owane przy kolejnych crawlach.",
+        "emptyDescription": "GSC nie jest jeszcze podpiete, wiec overview nie dostaje pelnego kontekstu wyszukiwarki.",
+        "property": "Property",
+        "noProperty": "Brak podpietego property"
+      },
+      "signals": {
+        "title": "Najwazniejsze sygnaly i najblizsze dzialania",
+        "description": "Te karty odpowiadaja na pytanie, co wymaga uwagi teraz w aktywnym snapshocie.",
+        "noActiveTitle": "Najpierw potrzebny jest aktywny crawl",
+        "noActiveDescription": "Bez aktywnego snapshotu overview nie pokaze jeszcze biezacych KPI ani sygnalow do dzialania.",
+        "crawlRunningTitle": "Crawl nadal trwa",
+        "crawlRunningDescription": "Aktywny crawl wciaz zbiera dane. Traktuj KPI jako stan roboczy i wracaj, gdy liczba odwiedzonych stron rosnie.",
+        "crawlErrorsTitle": "Crawler zglosil bledy",
+        "crawlErrorsDescription": "{{count}} bledow crawla wymaga sprawdzenia w aktywnym snapshocie.",
+        "metadataTitle": "Metadata nadal wymaga poprawy",
+        "metadataDescription": "{{titleCount}} stron bez title i {{metaCount}} bez meta description nadal czeka na poprawki.",
+        "internalLinkingTitle": "Linkowanie wewnetrzne ma problemy techniczne",
+        "internalLinkingDescription": "{{brokenCount}} uszkodzonych i {{redirectCount}} przekierowujacych linkow wewnetrznych nadal jest widocznych.",
+        "gscMissingTitle": "Podlacz GSC do tej witryny",
+        "gscMissingDescription": "Property GSC nie jest jeszcze podpiete, wiec current-first overview nie ma sygnalow z wyszukiwarki.",
+        "gscOpportunitiesTitle": "GSC pokazuje pierwsze szanse",
+        "gscOpportunitiesDescription": "{{count}} stron juz wyglada jak szanse z danych GSC dla aktywnego snapshotu.",
+        "readyTitle": "Snapshot jest gotowy do dalszej pracy",
+        "readyDescription": "Aktywny crawl ma juz podstawowy kontekst techniczny i moze byc punktem startowym do planowania kolejnych ruchow SEO."
+      },
+      "shortcuts": {
+        "title": "Skroty workspace",
+        "description": "Przejdz od razu do kolejnych obszarow pracy wokol aktywnego snapshotu.",
+        "contentRecommendationsDescription": "Przeloz aktywny snapshot na rekomendacje oparte o dane tej witryny.",
+        "competitiveGapDescription": "Sprawdz braki wzgledem konkurencji na tle aktualnie aktywnego snapshotu i store competitorow.",
+        "gscDescription": "Zarzadzaj property GSC i importem danych do aktywnego crawla.",
+        "crawlsDescription": "Przegladaj historie crawli i ustawiaj aktywny albo baseline snapshot.",
+        "changesDescription": "Compare pozostaje pomocnicza warstwa nad aktywnym i baseline crawl, zebrana w jednym hubie."
+      },
+      "baselineTitle": "Baseline crawl",
+      "baselineDescription": "Starszy crawl pozostaje pomocniczym punktem odniesienia i nie dominuje overview.",
+      "baselineReady": "Compare gotowe",
+      "baselineReadyDescription": "Masz wybrany baseline crawl #{{id}}. Uzyj go jako lekkiego kontekstu do sekcji Zmiany.",
+      "baselineWaiting": "Brak baseline",
+      "baselineWaitingDescription": "Wybierz inny crawl jako baseline, gdy bedziesz chcial otworzyc compare bez budowania overview wokol porownan.",
+      "delta": {
+        "totalPages": "Delta stron",
+        "internalLinks": "Delta linkow wewnetrznych",
+        "missingTitle": "Delta brakow title"
+      },
+      "deltaHint": "Aktywny {{active}} vs baseline {{baseline}}",
+      "historyTitle": "Historia ostatnich crawli",
+      "historyDescription": "Przelaczaj kontekst workspace albo przechodz od razu do konkretnego snapshotu.",
+      "emptyHistoryTitle": "Brak historii crawli",
+      "emptyHistoryDescription": "Ta witryna nie ma jeszcze zadnych snapshotow crawla.",
+      "siteSummaryTitle": "Workspace w skrocie",
+      "siteSummaryDescription": "Lekki kontekst zarzadzania witryna obok current-first overview.",
+      "reuseGscTitle": "Ta witryna ma juz trwale podpiete property GSC",
+      "reuseGscDescription": "Nowe crawle uruchamiane z tego workspace automatycznie reuse'uja wybrane property. Import nadal trafia do aktywnego snapshotu crawla."
+    },
+    "crawls": {
+      "eyebrow": "Historia crawli",
+      "loading": "Ladowanie crawli witryny...",
+      "errorTitle": "Nie udalo sie pobrac crawli witryny",
+      "emptyTitle": "Brak crawli dla tej witryny",
+      "emptyDescription": "Uruchom crawl, aby zapelnic historie witryny.",
+      "title": "Crawle witryny",
+      "description": "Przegladaj historie snapshotow witryny, wybieraj aktywny crawl, ustawiaj opcjonalny baseline i uruchamiaj kolejny snapshot z jednej uporzadkowanej sekcji.",
+      "summary": {
+        "totalCrawls": "Liczba crawli",
+        "runningCrawls": "Aktywne crawle",
+        "finishedCrawls": "Zakonczone crawle",
+        "lastCrawl": "Ostatni crawl"
+      },
+      "newPage": {
+        "eyebrow": "Nowy crawl",
+        "title": "Uruchom kolejny snapshot crawla",
+        "description": "Utworz kolejny snapshot dla tej samej witryny bez opuszczania biezacego workspace.",
+        "backToHistory": "Wroc do historii",
+        "siteContextTitle": "Biezacy kontekst witryny",
+        "siteContextDescription": "Nowy crawl pozostaje w tym samym workspace i reuse'uje jego trwaly kontekst.",
+        "siteContext": {
+          "domain": "Witryna",
+          "rootUrl": "Root URL",
+          "totalCrawls": "Snapshoty do tej pory",
+          "lastCrawl": "Ostatni crawl"
+        },
+        "snapshotTitle": "Co robi ta akcja",
+        "snapshotDescription": "Tworzysz nowy snapshot dla tej samej witryny, a nie osobny nowy workspace.",
+        "cards": {
+          "workspace": {
+            "label": "Ten sam workspace",
+            "description": "Witryna pozostaje trwala przestrzenia robocza z ta sama nawigacja, property GSC i historia."
+          },
+          "snapshot": {
+            "label": "Nowy snapshot",
+            "description": "Nowy crawl job staje sie kolejnym aktywnym snapshotem po utworzeniu, a starsze crawle zostaja w historii."
+          }
+        },
+        "gscTitle": "Property GSC zostanie reuse'owane",
+        "gscDescription": "Ta witryna ma juz wybrane property Search Console, wiec po utworzeniu nowego crawla nadal zaimportujesz dane bez ponownej konfiguracji integracji."
+      },
+      "table": {
+        "crawl": "Crawl",
+        "status": "Status",
+        "created": "Utworzono",
+        "started": "Start",
+        "finished": "Koniec",
+        "pages": "Strony",
+        "internalLinks": "Linki wewnetrzne",
+        "externalLinks": "Linki zewnetrzne",
+        "errors": "Bledy",
+        "actions": "Akcje"
+      },
+      "actions": {
+        "active": "Aktywny",
+        "useAsActive": "Ustaw jako aktywny",
+        "useAsBaseline": "Ustaw jako baseline",
+        "open": "Otworz crawl",
+        "openPages": "Otworz strony"
+      }
+    },
+    "gsc": {
+      "loading": "Ladowanie workspace GSC witryny...",
+      "errorTitle": "Nie udalo sie pobrac workspace GSC witryny",
+      "emptyTitle": "Workspace GSC witryny niedostepny",
+      "emptyDescription": "Backend zwrocil pusta odpowiedz GSC dla witryny.",
+      "nav": {
+        "settings": "Konfiguracja",
+        "import": "Import"
+      },
+      "actions": {
+        "openActiveCrawl": "Otworz aktywny crawl",
+        "openSnapshotDetails": "Otworz szczegoly GSC snapshotu",
+        "openSettings": "Otworz konfiguracje",
+        "openImport": "Otworz import",
+        "openPages": "Otworz strony",
+        "openOpportunities": "Otworz Szanse SEO",
+        "openWorkspace": "Otworz przeglad workspace",
+        "manageProperty": "Zarzadzaj property",
+        "importData": "Importuj dane"
+      },
+      "status": {
+        "connected": "Polaczono",
+        "imported": "Zaimportowano",
+        "notImported": "Jeszcze nie zaimportowano",
+        "missingProperty": "Brak property",
+        "awaitingSetup": "Wymaga konfiguracji",
+        "oauthConnected": "OAuth polaczone",
+        "oauthMissing": "Brak OAuth",
+        "readyToImport": "Gotowe",
+        "noProperty": "Brak wybranego property",
+        "noPropertyHint": "Wybierz property Search Console dla tego workspace witryny.",
+        "noImportHint": "Dla tej witryny nie wykonano jeszcze importu.",
+        "noActiveCrawl": "Brak aktywnego crawla",
+        "noActiveCrawlHint": "Wybierz albo uruchom crawl snapshot przed importem danych."
+      },
+      "overview": {
+        "eyebrow": "Przeglad GSC",
+        "title": "Status Google Search Console",
+        "description": "Sprawdz stan integracji dla tej witryny i to, czy aktywny crawl ma juz zaimportowane dane GSC.",
+        "integrationTitle": "Property i polaczenie",
+        "integrationDescription": "Wybor property pozostaje na poziomie witryny i reuse'uje sie w kolejnych snapshotach tej samej witryny.",
+        "propertyLabel": "Wybrane property",
+        "permissionLabel": "Uprawnienie",
+        "importStatusLabel": "Status importu dla aktywnego crawla",
+        "activeCrawlTitle": "Kontekst aktywnego crawla",
+        "activeCrawlDescription": "Import nadal trafia tylko do aktywnego snapshotu crawla.",
+        "noActiveCrawl": "Dla tej witryny nie ma jeszcze wybranego aktywnego crawla.",
+        "summaryTitle": "Podsumowanie {{range}}",
+        "summaryDescription": "Zaimportowane metryki dostepne juz w tym workspace witryny.",
+        "shortcutsTitle": "Szybkie skroty",
+        "shortcutsDescription": "Przejdz do kolejnego kroku GSC albo wroc do analiz z aktualnego workspace witryny.",
+        "rangeHint": "Zaimportowane strony: {{importedPages}}. Ostatni import: {{lastImportedAt}}.",
+        "cards": {
+          "activeCrawlHint": "Biezacy snapshot: #{{id}}.",
+          "noActiveCrawlHint": "Wybierz aktywny crawl, aby odblokowac importy.",
+          "rootUrlHint": "Dopasowanie property do witryny nadal opiera sie o root URL."
+        }
+      },
+      "settings": {
+        "eyebrow": "Konfiguracja GSC",
+        "title": "Skonfiguruj property witryny",
+        "description": "Podlacz OAuth i wybierz trwale property Search Console dla tego workspace witryny.",
+        "connectionTitle": "Site-level konfiguracja property",
+        "connectionDescription": "To ustawienie nalezy do witryny i reuse'uje sie w kolejnych crawl snapshotach tego samego workspace.",
+        "connectEmpty": "Podlacz Google Search Console, zanim wybierzesz property dla tej witryny.",
+        "propertyLabel": "Property",
+        "saveProperty": "Zapisz property witryny",
+        "reuseTitle": "Reuse property dla kolejnych crawli",
+        "reuseDescription": "Po zapisaniu tutaj to samo property jest reuse'owane w kolejnych crawl snapshotach. Sam import nadal wykonujesz osobno dla aktywnego crawla.",
+        "connectionHint": "Polaczenie OAuth tylko odblokowuje wybor property. Nie wykonuje jeszcze importu danych.",
+        "rootUrlHint": "Wybierz property, ktore najlepiej pasuje do root URL tego workspace."
+      },
+      "import": {
+        "eyebrow": "Import GSC",
+        "title": "Importuj dane do aktywnego crawla",
+        "description": "Wybierz zakres importu dla aktywnego snapshotu crawla bez zmiany site-level konfiguracji property.",
+        "activeCrawlTitle": "Cel importu",
+        "activeCrawlDescription": "Ten import zawsze zapisuje dane do aktywnego snapshotu crawla wybranego w workspace witryny.",
+        "importStatusLabel": "Biezacy stan importu",
+        "importRange": "Zakres importu",
+        "importCurrentRange": "Importuj aktywny zakres do crawla",
+        "importAll": "Importuj 28d + 90d do aktywnego crawla",
+        "rangeSummaryTitle": "Podsumowanie importu {{range}}",
+        "lastImportHint": "Uzyj przyciskow nizej, aby odswiezyc zaimportowane dane dla aktywnego crawla.",
+        "noPropertyTitle": "Wybierz property przed importem",
+        "noPropertyDescription": "Site-level konfiguracja property jest wymagana, zanim zaimportujesz dane GSC do aktywnego crawla."
+      },
+      "noActiveCrawlTitle": "Brak aktywnego crawla",
+      "noActiveCrawlDescription": "Wybierz aktywny crawl w workspace witryny przed importem danych GSC.",
+      "cards": {
+        "propertyStatus": "Status property",
+        "connectionStatus": "Polaczenie OAuth",
+        "activeCrawl": "Aktywny crawl",
+        "activeCrawlImport": "Import aktywnego crawla",
+        "rootUrl": "Root URL",
+        "lastImport": "Ostatni import"
+      },
+      "ranges": {
+        "last_28_days": "Ostatnie 28 dni",
+        "last_90_days": "Ostatnie 90 dni"
+      },
+      "rangeMetrics": {
+        "importedPages": "Zaimportowane strony",
+        "pagesWithImpressions": "Strony z impressions",
+        "pagesWithClicks": "Strony z clicks",
+        "pagesWithTopQueries": "Strony z top queries",
+        "topQueries": "Zapisane top queries",
+        "opportunities": "Problemy + impressions",
+        "lastImported": "Ostatni import"
+      }
+    }
+  },
+  "contentRecommendations": {
+    "nav": {
+      "active": "Aktywne",
+      "implemented": "Wdrozone"
+    },
+    "actions": {
+      "openActive": "Otworz aktywne",
+      "openImplemented": "Otworz wdrozone",
+      "openPages": "Otworz strony",
+      "openCompetitiveGap": "Otworz Braki wzgledem konkurencji",
+      "export": "Eksportuj recommendations CSV"
+    },
+    "views": {
+      "eyebrow": "Site intelligence",
+      "overview": {
+        "title": "Przeglad rekomendacji tresci",
+        "description": "Sprawdz, ile rekomendacji jest teraz aktywnych, ile zostalo juz wdrozonych i gdzie kontynuowac dalsza prace."
+      },
+      "active": {
+        "title": "Aktywne rekomendacje tresci",
+        "description": "To jest glowna kolejka robocza dla aktualnych rekomendacji opartych o aktywny snapshot witryny."
+      },
+      "implemented": {
+        "title": "Wdrozone rekomendacje tresci",
+        "description": "Przegladaj wdrozone rekomendacje, timing lifecycle i status oceny efektu bez zmiany semantyki backendu."
+      }
+    },
+    "overview": {
+      "lifecycleTitle": "Status lifecycle",
+      "lifecycleDescription": "Ten sam site-level lifecycle zostaje zachowany: aktywne, wdrozone, too early i ocenione outcome tam, gdzie dane juz istnieja.",
+      "shortcutsTitle": "Szybkie skroty",
+      "shortcutsDescription": "Przejdz od razu do aktywnej kolejki, historii wdrozen albo powiazanych widokow site-level.",
+      "activeNow": "Aktywne rekomendacje teraz",
+      "activeNowDescription": "{{count}} aktywnych rekomendacji jest teraz gotowych do pracy.",
+      "implementedNow": "Wdrozone rekomendacje teraz",
+      "implementedNowDescription": "{{count}} wdrozonych rekomendacji jest obecnie w scope lifecycle review."
+    },
+    "page": {
+      "eyebrow": "Site intelligence",
+      "title": "Content recommendations",
+      "description": "Rekomendacje oparte tylko o dane wlasne dla {{active}}. Kontekst baseline: {{baseline}}.",
+      "noBaseline": "brak",
+      "loading": "Ladowanie content recommendations...",
+      "openPages": "Otworz compare stron",
+      "export": "Eksportuj recommendations CSV"
+    },
+    "errorTitle": "Nie udalo sie pobrac content recommendations",
+    "emptyTitle": "Brak content recommendations dla biezacego widoku",
+    "emptyDescription": "Sprobuj szerszych filtrow, przelacz aktywny crawl albo zresetuj widok.",
+    "noActiveCrawlTitle": "Content recommendations wymagaja aktywnego crawla",
+    "noActiveCrawlDescription": "Wybierz aktywny crawl w workspace witryny przed otwarciem tego modulu.",
+    "summary": {
+      "totalRecommendations": "Rekomendacje",
+      "implemented": "Wdrozone",
+      "highPriority": "Wysoki priorytet",
+      "clustersCovered": "Pokryte klastry",
+      "createNewPage": "Nowa strona",
+      "expandExistingPage": "Rozbuduj istniejaca",
+      "strengthenCluster": "Wzmocnij klaster",
+      "internalSupport": "Wsparcie internal linking",
+      "range": "Zakres GSC"
+    },
+    "quickFilters": {
+      "title": "Presety rekomendacji",
+      "createNewPage": "Nowa strona",
+      "expandExisting": "Rozbuduj strone",
+      "strengthenCluster": "Wzmocnij klaster",
+      "internalSupport": "Popraw internal support",
+      "highPriority": "Wysoki priorytet"
+    },
+    "filters": {
+      "title": "Filtry rekomendacji",
+      "description": "Trzymaj kontekst witryny w URL i wycinaj kolejke rekomendacji bez zmiany samych heurystyk.",
+      "dateRange": "Zakres dat",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "recommendationType": "Typ rekomendacji",
+      "segment": "Segment",
+      "pageType": "Sugerowany typ strony",
+      "cluster": "Klaster zawiera",
+      "clusterPlaceholder": "np. audit",
+      "confidenceMin": "Min. confidence (%)",
+      "priorityMin": "Min. priority score",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "sort": {
+        "priorityScore": "Priority score",
+        "confidence": "Confidence",
+        "impact": "Impact",
+        "effort": "Effort",
+        "cluster": "Klaster",
+        "type": "Typ rekomendacji",
+        "pageType": "Sugerowany typ strony"
+      }
+    },
+    "mix": {
+      "title": "Mix rekomendacji",
+      "description": "Liczniki nizej pochodza z tego samego site-level payloadu own-data co lista i eksport."
+    },
+    "active": {
+      "title": "Aktywne rekomendacje",
+      "description": "Aktywna kolejka nadal jest liczona dynamicznie z biezacego workspace witryny i aktywnego snapshotu.",
+      "visible": "Widoczne wiersze"
+    },
+    "segments": {
+      "create_new_page": "Nowa strona",
+      "expand_existing_page": "Rozbuduj istniejaca strone",
+      "strengthen_cluster": "Wzmocnij klaster",
+      "improve_internal_support": "Popraw internal support"
+    },
+    "types": {
+      "MISSING_SUPPORTING_CONTENT": {
+        "title": "Brak supporting content",
+        "description": "Temat ma juz hub albo strone komercyjna, ale nadal brakuje mu wspierajacych URL-i informacyjnych."
+      },
+      "THIN_CLUSTER": {
+        "title": "Thin cluster",
+        "description": "Witryna dotyka tematu, ale klaster jest jeszcze zbyt plytki, zeby dobrze go wspierac."
+      },
+      "EXPAND_EXISTING_PAGE": {
+        "title": "Rozbuduj istniejaca strone",
+        "description": "Istniejacy URL pokazuje juz popyt, ale depth contentu albo sygnaly wspierajace sa nadal slabe."
+      },
+      "MISSING_STRUCTURAL_PAGE_TYPE": {
+        "title": "Brak strukturalnego typu strony",
+        "description": "Temat ma strony szczegolowe, ale nadal brakuje mu mocniejszego huba strukturalnego."
+      },
+      "INTERNAL_LINKING_SUPPORT": {
+        "title": "Wsparcie internal linking",
+        "description": "Tresci juz istnieja, ale klaster potrzebuje lepszego wsparcia linkowaniem wewnetrznym przed dalsza rozbudowa."
+      }
+    },
+    "card": {
+      "priority": "Priorytet",
+      "confidence": "Confidence",
+      "markDone": "Oznacz jako wdrozone",
+      "markingDone": "Zapisywanie...",
+      "previouslyImplemented": "Wdrozone wczesniej: {{date}}",
+      "openTarget": "Otworz target URL",
+      "openInPages": "Otworz w Pages",
+      "targetPage": "Target page",
+      "targetPageType": "Typ target page",
+      "suggestedPageType": "Sugerowany typ strony",
+      "impactEffort": "Impact / effort",
+      "impact": "Impact",
+      "effort": "Effort",
+      "clusterScores": "Scoring klastra",
+      "clusterStrength": "Sila klastra",
+      "coverageGap": "Coverage gap",
+      "internalSupport": "Internal support",
+      "cluster": "Klaster",
+      "clusterKey": "Klucz klastra",
+      "reasons": "Powody",
+      "signals": "Sygnaly",
+      "prerequisites": "Prerequisites",
+      "supportingUrls": "Wspierajace URL-e",
+      "none": "Brak"
+    },
+    "helper": {
+      "title": "Co jeszcze mozna poprawic dla tego URL-a",
+      "openIssues": "Otwarte problemy",
+      "improvementActions": "Dalsze dzialania",
+      "supportingSignals": "Sygnaly wspierajace",
+      "gscContext": "Kontekst GSC",
+      "gscImpressions": "Impresje",
+      "gscClicks": "Klikniecia",
+      "gscCtr": "CTR",
+      "gscPosition": "Srednia pozycja",
+      "gscTopQueries": "Top queries",
+      "internalLinkingContext": "Kontekst internal linking",
+      "internalScore": "Internal score",
+      "internalIssues": "Problemy internal linking",
+      "internalLinks": "Linki wewnetrzne",
+      "internalLinkingPages": "Linkujace strony",
+      "linkEquity": "Link equity",
+      "anchorDiversity": "Anchor diversity",
+      "cannibalizationContext": "Kontekst cannibalization",
+      "competingUrls": "Konkurujace URL-e",
+      "sharedQueries": "Wspolne query",
+      "noCannibalization": "Brak aktywnych sygnalow cannibalization dla tego URL-a w aktywnym snapshocie.",
+      "compareContext": "Porownanie do baseline",
+      "compareStatus": {
+        "improved": "Poprawa",
+        "worsened": "Pogorszenie",
+        "unchanged": "Bez zmian",
+        "new": "Nowe",
+        "missing": "Brak"
+      }
+    },
+    "implemented": {
+      "title": "Wdrozone rekomendacje",
+      "description": "{{count}} wdrozonych rekomendacji sledzonych w biezacym zakresie dla aktywnego snapshotu.",
+      "summaryTitle": "Podsumowanie wdrozonych",
+      "summaryTotal": "W zakresie",
+      "summaryImproved": "Poprawione",
+      "summaryTooEarly": "Za wczesnie",
+      "visible": "Widoczne",
+      "filtersTitle": "Filtry wdrozonych",
+      "filtersDescription": "Zmien okno oceny, przefiltruj outcome albo wyszukaj konkretna rekomendacje.",
+      "implementedAt": "Wdrozone",
+      "implementedAtLabel": "Data wdrozenia",
+      "implementedCrawl": "Crawl wdrozenia",
+      "baselineCrawl": "Baseline przy wdrozeniu",
+      "timesMarkedDone": "Liczba oznaczen",
+      "modeLabel": "Tryb outcome",
+      "windowLabel": "Okno outcome",
+      "statusFilterLabel": "Status outcome",
+      "modeFilterLabel": "Tryb outcome",
+      "searchLabel": "Szukaj we wdrozonych",
+      "searchPlaceholder": "Tresc rekomendacji, tytul albo URL",
+      "sortLabel": "Sortowanie wdrozonych",
+      "daysSinceImplemented": "Dni od wdrozenia",
+      "eligibleForWindow": "Gotowe dla okna",
+      "windowApplied": "Ocena liczona dla okna {{window}}. Dni od wdrozenia: {{days}}.",
+      "tooEarlyMessage": "Od wdrozenia minelo dopiero {{days}} dni, wiec okno {{window}} jest jeszcze zbyt wczesne.",
+      "emptyFilteredTitle": "Brak wdrozonych rekomendacji w zakresie",
+      "emptyFilteredDescription": "Sprobuj szerszego okna, trybu albo wyszukiwania.",
+      "emptyStatusDrilldownTitle": "Brak wdrozonych rekomendacji dla tego statusu",
+      "emptyStatusDrilldownDescription": "Podsumowanie nadal pokazuje biezacy zakres okna, trybu i wyszukiwania. Wybierz inny status albo wyczysc drilldown.",
+      "snapshot": "Snapshot wdrozenia",
+      "snapshotOpenIssues": "Problemy przy wdrozeniu",
+      "snapshotActions": "Planowane dalsze dzialania",
+      "outcomeDetails": "Detale outcome",
+      "before": "Przed",
+      "after": "Po",
+      "windows": {
+        "7d": "7d",
+        "30d": "30d",
+        "90d": "90d",
+        "all": "Caly dostepny okres"
+      },
+      "mode": {
+        "gsc": "GSC",
+        "internal_linking": "Internal linking",
+        "cannibalization": "Cannibalization",
+        "issue_flags": "Flagi problemow",
+        "mixed": "Mieszany",
+        "unknown": "Nieznany"
+      },
+      "sort": {
+        "implementedAtDesc": "Data wdrozenia: najnowsze",
+        "implementedAtAsc": "Data wdrozenia: najstarsze",
+        "outcome": "Status outcome",
+        "recommendationType": "Typ rekomendacji",
+        "title": "Tytul / URL"
+      },
+      "status": {
+        "improved": "Poprawa",
+        "unchanged": "Bez zmian",
+        "pending": "Oczekuje",
+        "too_early": "Za wczesnie",
+        "limited": "Ograniczone",
+        "unavailable": "Niedostepne",
+        "worsened": "Pogorszenie"
+      }
+    }
+  },
+  "competitiveGap": {
+    "nav": {
+      "sync": "Synchronizacja",
+      "strategy": "Brief Strategii",
+      "competitors": "Wybor Konkurentow",
+      "results": "Wyniki"
+    },
+    "views": {
+      "overview": {
+        "title": "Przeglad brakow wzgledem konkurencji",
+        "description": "Lekki widok statusowy gotowosci, pokrycia konkurentow i ostatniego stanu wynikow dla {{active}}."
+      },
+      "strategy": {
+        "title": "Strategia brakow wzgledem konkurencji",
+        "description": "Przegladaj i utrzymuj site-level kontekst strategii, ktory wspiera scoring gapow."
+      },
+      "competitors": {
+        "title": "Konkurenci",
+        "description": "Zarzadzaj lista konkurentow, ich gotowoscia i podstawowa konfiguracja modulu dla tej witryny."
+      },
+      "sync": {
+        "title": "Synchronizacja brakow wzgledem konkurencji",
+        "description": "Uruchamiaj i monitoruj sync konkurentow, przetwarzanie semantyczne i status runtime review dla {{active}}."
+      },
+      "results": {
+        "title": "Wyniki brakow wzgledem konkurencji",
+        "description": "Pracuj na aktualnych wynikach gapow, filtrach i explainable details dla {{active}}."
+      }
+    },
+    "page": {
+      "eyebrow": "Research konkurencji",
+      "title": "Competitive gap",
+      "description": "Manual competitors zamienione w konkretne rekomendacje dla aktywnego crawla z {{active}}.",
+      "loading": "Ladowanie competitive gap...",
+      "refresh": "Odswiez analize",
+      "openPages": "Otworz compare stron",
+      "export": "Eksportuj gap CSV"
+    },
+    "sourceMode": {
+      "reviewed": "Reviewed",
+      "raw_candidates": "Raw candidates",
+      "legacy": "Legacy fallback"
+    },
+    "sourceModeBadge": "Zrodlo: {{mode}}",
+    "review": {
+      "runStatusBadge": "Review run: {{status}}",
+      "basisCrawlBadge": "Bazowy crawl #{{crawlId}}",
+      "outdatedTitle": "Dane review nie sa aktualne dla aktywnego crawla",
+      "outdatedMessage": "Te reviewed albo raw records zostaly wygenerowane dla crawla #{{basisCrawlId}}. Dla aktywnego crawla #{{activeCrawlId}} backend pokazal bezpieczny fallback.",
+      "action": {
+        "keep": "Keep",
+        "remove": "Remove",
+        "merge": "Merge",
+        "rewrite": "Rewrite"
+      },
+      "fitScoreBadge": "Fit {{score}}",
+      "reviewedPhraseLabel": "Reviewed phrase",
+      "removeReasonLabel": "Remove reason",
+      "mergeTargetLabel": "Merge target"
+    },
+    "reviewRuns": {
+      "title": "Runy Content Gap review",
+      "description": "Lekki widok operatorowy ostatnich runow Content Gap review powiazanych z aktywnym snapshotem.",
+      "loading": "Ladowanie runow review...",
+      "empty": "Brak runow Content Gap review.",
+      "activeCrawlBadge": "Aktywny crawl #{{crawlId}}",
+      "latestRunBadge": "Ostatni run #{{runId}}",
+      "runBadge": "Run #{{runId}}",
+      "statusBadge": "Status: {{status}}",
+      "stageBadge": "Etap: {{stage}}",
+      "snapshotBadge": "Snapshot #{{crawlId}}",
+      "retryOfBadge": "Retry po #{{runId}}",
+      "candidates": "Kandydaci: {{count}}",
+      "progress": "Batch-e: {{completed}} / {{total}}",
+      "startedAt": "Start: {{value}}",
+      "finishedAt": "Koniec: {{value}}",
+      "outdatedRunHint": "Ten run dotyczy crawla #{{crawlId}}, wiec retry pozostaje wylaczone dla obecnego aktywnego snapshotu.",
+      "retry": "Ponow review",
+      "retrying": "Ponawianie review..."
+    },
+    "overview": {
+      "topFiveTitle": "Top 5 rekomendacji content gap",
+      "topFiveDescription": "Najmocniejsze rekordy z aktualnego read modelu, bez pelnej listy i bez filtrow workspace.",
+      "openResults": "Otworz wszystkie wyniki",
+      "shortcutsTitle": "Skroty workspace",
+      "shortcutsDescription": "Przejdz od razu do podwidoku pasujacego do kolejnego kroku: strategii, konkurentow, synchronizacji albo wynikow."
+    },
+    "semantic": {
+      "resume": "Wznów semantic matching",
+      "resumePending": "Wznawianie semantic matching...",
+      "rerun": "Uruchom ponownie semantic matching",
+      "rerunPending": "Ponowne semantic matching...",
+      "title": "Warstwa semantyczna",
+      "noData": "Warstwa semantyczna nie jest jeszcze dostepna.",
+      "canonicalTopicLabel": "Kanoniczny temat: {{label}}",
+      "mergedTopics": "Scalone tematy: {{count}}",
+      "mergedHint": "Powiazane tematy konkurencji zostaly scalone w jeden klaster semantyczny.",
+      "status": {
+        "not_started": "Nie rozpoczeco",
+        "queued": "W kolejce",
+        "running": "W trakcie",
+        "completed": "Zakonczone",
+        "ready": "Gotowe",
+        "partial": "Czesciowe",
+        "failed": "Nieudane",
+        "stale": "Stale",
+        "cancelled": "Anulowane"
+      },
+      "matchStatus": {
+        "exact_match": "Dokladne dopasowanie",
+        "semantic_match": "Dopasowanie semantyczne",
+        "partial_coverage": "Czesciowe pokrycie",
+        "no_meaningful_match": "Brak sensownego dopasowania"
+      },
+      "analysisMode": {
+        "not_started": "Nie uruchomiono",
+        "local_only": "Analiza lokalna",
+        "llm_only": "Merge przez LLM",
+        "mixed": "LLM + fallback lokalny"
+      },
+      "stage": {
+        "queued": "W kolejce",
+        "prepare_candidates": "Przygotowanie kandydatow",
+        "own_semantic_profiling": "Profilowanie stron Twojej witryny",
+        "merge_topics": "Scalanie tematow konkurencji",
+        "canonicalization": "Ustalanie tematow kanonicznych",
+        "match_own_site": "Dopasowanie do Twojej witryny",
+        "cluster_to_own_match": "Dopasowanie klastrow do Twojej witryny",
+        "cluster_build": "Budowanie klastrow semantycznych",
+        "finalize": "Finalizacja",
+        "final_synthesis": "Synteza finalnego wyniku",
+        "completed": "Zakonczone",
+        "failed": "Nieudane",
+        "stale": "Oznaczone jako stale",
+        "cancelled": "Anulowane"
+      }
+    },
+    "errorTitle": "Nie udalo sie pobrac competitive gap",
+    "emptyTitle": "Brak rekomendacji competitive gap dla biezacego widoku",
+    "emptyDescription": "Sprobuj szerszych filtrow, dodaj konkurentow albo zresetuj widok.",
+    "noActiveCrawlTitle": "Competitive gap wymaga aktywnego crawla",
+    "noActiveCrawlDescription": "Wybierz aktywny crawl w workspace witryny przed otwarciem tego modulu.",
+    "summary": {
+      "totalGaps": "Wiersze gapu",
+      "highPriority": "Wysoki priorytet",
+      "topicsCovered": "Pokryte tematy",
+      "competitors": "Konkurenci",
+      "strategyStatus": "Status strategii",
+      "range": "Zakres GSC",
+      "activeCrawl": "Aktywny crawl",
+      "visibleRecommendations": "Widoczne wiersze"
+    },
+    "readiness": {
+      "title": "Gotowosc danych",
+      "ready": "Dane sa gotowe do liczenia rekomendacji. Jesli lista jest pusta, to w biezacym zestawie danych po prostu nie widac mocnego gapu.",
+      "notReady": "Model czeka jeszcze na pelniejszy zestaw danych od competitorow albo aktywny crawl.",
+      "strategyMissing": "Strategia jest opcjonalna, ale warto ja dopisac. Pomoze w czytelniejszym dopasowaniu rekomendacji do priorytetow biznesowych.",
+      "readyBadge": "Gotowe",
+      "needsInputBadge": "Brakuje danych",
+      "strategyOptionalBadge": "Strategia opcjonalna",
+      "activeCrawl": "Aktywny crawl",
+      "strategy": "Strategia",
+      "competitors": "Aktywni konkurenci",
+      "pages": "Zapisane strony competitorow",
+      "extractions": "Przeanalizowane strony competitorow",
+      "readyShort": "Gotowe",
+      "missingShort": "Brak",
+      "optionalShort": "Opcjonalna",
+      "semanticDebug": {
+        "title": "Debug semantic merge",
+        "readyHeadline": "Warstwa semantyczna jest gotowa",
+        "runningHeadline": "Warstwa semantyczna jest aktualnie przetwarzana",
+        "failedHeadline": "Warstwa semantyczna wymaga uwagi",
+        "partialHeadline": "Warstwa semantyczna jest gotowa czesciowo",
+        "notStartedHeadline": "Warstwa semantyczna nie zostala jeszcze uruchomiona",
+        "notStartedMessage": "Dla aktywnych competitorow nie zakonczyl sie jeszcze semantic run, wiec obecny stan opiera sie tylko o lokalne dane wejciowe.",
+        "llmMessage": "Podobne tematy konkurencji zostaly scalone przez LLM. Liczba adresow wlaczonych do merge'u: {{count}}.",
+        "mixedMessage": "Semantic layer korzysta z polaczenia LLM i lokalnego fallbacku. Liczba adresow wlaczonych do merge'u przez LLM: {{count}}.",
+        "localMessage": "Aktualny stan semantic layer pochodzi z lokalnej analizy i fallbackow, bez gotowego merge'u LLM.",
+        "runtimeHintWorking": "Semantic matching nadal pracuje. Jesli heartbeat sie odswieza, warto jeszcze chwile poczekac.",
+        "runtimeHintQueued": "Semantic matching jest w kolejce i czeka na wykonanie.",
+        "runtimeHintStopped": "Ostatni semantic run zatrzymal sie przed koncem. Uzyj Wznów, aby kontynuowac brakujaca prace.",
+        "runtimeHintStoppedWithError": "Ostatni semantic run zatrzymal sie przed koncem. Sprawdz ostatni blad i uzyj Wznów, aby kontynuowac brakujaca prace.",
+        "runtimeStatus": "Status runtime",
+        "currentStage": "Aktualny etap",
+        "activeRuns": "Aktywne runy",
+        "currentBatch": "Biezaca partia",
+        "lastRunStarted": "Ostatni start semantic runu",
+        "lastRunFinished": "Ostatnie zakonczenie semantic runu",
+        "lastHeartbeat": "Ostatni heartbeat",
+        "leaseExpires": "Lease wygasa",
+        "mergedUrls": "Adresy competitorow scalone przez LLM",
+        "mergedUrlsBadge": "LLM scalil {{count}} adresow",
+        "candidates": "Kandydaci",
+        "resolved": "Rozwiazane",
+        "progress": "Postep semantic matching",
+        "progressBadge": "Postep {{percent}}%",
+        "llmJobs": "Zadania LLM",
+        "cacheHits": "Trafienia cache",
+        "fallbackCount": "Liczba fallbackow",
+        "model": "Model",
+        "promptVersion": "Wersja promptu",
+        "lastError": "Ostatni blad semantic",
+        "runtimeState": {
+          "working": "Pracuje",
+          "queued": "W kolejce",
+          "stopped": "Zatrzymany",
+          "idle": "Brak aktywnego runu"
+        }
+      }
+    },
+    "strategy": {
+      "title": "Brief strategii",
+      "description": "Opisz kontekst biznesowy zwyklym tekstem. Backend moze go znormalizowac do hintow, ale sam gap pozostaje deterministyczny.",
+      "inputLabel": "Notatki strategii",
+      "placeholder": "Opisz cele, odbiorcow, oferte, priorytety i ograniczenia.",
+      "save": "Zapisz strategie",
+      "saving": "Zapisywanie strategii...",
+      "rerun": "Normalizuj ponownie",
+      "rerunning": "Ponowna normalizacja...",
+      "remove": "Usun strategie",
+      "removing": "Usuwanie strategii...",
+      "normalizedTitle": "Znormalizowane hinty",
+      "lastNormalized": "Ostatnia normalizacja: {{date}}",
+      "emptyTitle": "Brak zapisanej strategii",
+      "emptyDescription": "Dodaj krotki opis, aby model mogl pokazac lepszy kontekst dopasowania do strategii. Sam gap nadal zadziala bez tego.",
+      "notReadyTitle": "Strategia jest zapisana, ale nie ma jeszcze gotowych hintow",
+      "notReadyHint": "Brak znormalizowanej strategii. Model gap nadal dziala bez niej.",
+      "noStrategy": "Brak zapisanej strategii",
+      "debug": {
+        "title": "Debug normalizacji",
+        "readyHeadline": "Normalizacja strategii zakonczyla sie powodzeniem",
+        "failedHeadline": "Normalizacja strategii nie powiodla sie",
+        "notProcessedHeadline": "Strategia jest zapisana, ale normalizacja nie byla dostepna",
+        "status": "Status",
+        "lastAttempt": "Ostatnia proba",
+        "fallbackUsed": "Uzyto fallbacku",
+        "fallbackUsedYes": "Uzyto fallbacku",
+        "fallbackUsedNo": "Bez fallbacku",
+        "provider": "Provider",
+        "model": "Model",
+        "promptVersion": "Wersja promptu",
+        "code": "Kod debug",
+        "message": "Komunikat debug",
+        "notAvailable": "Brak danych"
+      },
+      "status": {
+        "not_started": "Brak zapisu",
+        "not_processed": "Nieprzetworzona",
+        "ready": "Gotowa",
+        "failed": "Nieudana"
+      }
+    },
+    "competitors": {
+      "title": "Konkurenci reczni",
+      "description": "Trzymaj ten modul lekki. Dodaj tylko domeny, ktore chcesz uwzgledniac w read modelu rekomendacji.",
+      "count": "Konkurenci: {{count}}",
+      "openSync": "Otworz synchronizacje",
+      "form": {
+        "rootUrl": "Root URL konkurenta",
+        "label": "Etykieta konkurenta",
+        "notes": "Notatki",
+        "active": "Aktywny",
+        "labelPlaceholder": "np. agencja regionalna",
+        "notesPlaceholder": "Opcjonalny kontekst dla zespolu",
+        "adding": "Dodawanie konkurenta...",
+        "add": "Dodaj konkurenta"
+      },
+      "emptyTitle": "Brak dodanych konkurentow",
+      "emptyDescription": "Dodaj przynajmniej jednego manual competitor, aby zobaczyc rekomendacje oparte o konkurencje.",
+      "saving": "Zapisywanie konkurenta...",
+      "save": "Zapisz zmiany",
+      "cancel": "Anuluj",
+      "active": "Aktywny",
+      "inactive": "Nieaktywny",
+      "sync": "Sync",
+      "syncing": "Syncowanie...",
+      "retrySync": "Ponow sync",
+      "retryingSync": "Ponawianie...",
+      "syncQueued": "W kolejce",
+      "syncRunning": "Sync w trakcie",
+      "resetSync": "Reset runtime",
+      "resettingSync": "Resetowanie...",
+      "syncAll": "Syncuj wszystkich",
+      "syncAllRunning": "Syncowanie wszystkich...",
+      "syncAllSkipped": "{{count}} competitorow juz bylo w kolejce albo w trakcie i zostalo pominietych.",
+      "review": {
+        "title": "Przeglad akceptacji i odrzucen URL-i",
+        "description": "Szczegoly decyzji pre-semantic gate dla zapisanych URL-i tego competitora.",
+        "show": "Pokaz review URL-i",
+        "hide": "Ukryj review URL-i",
+        "loading": "Ladowanie review URL-i...",
+        "empty": "Brak rekordow dla tego filtra review.",
+        "showing": "Pokazano {{shown}} z {{total}} rekordow.",
+        "acceptedCount": "Zaakceptowane: {{count}}",
+        "rejectedCount": "Odrzucone: {{count}}",
+        "extractedCount": "Z ekstrakcja: {{count}}",
+        "currentExtractionReady": "Aktualna ekstrakcja gotowa",
+        "currentExtractionTopic": "Aktualny temat ekstrakcji: {{topic}}",
+        "filter": {
+          "all": "Wszystkie",
+          "accepted": "Zaakceptowane",
+          "rejected": "Odrzucone"
+        }
+      },
+      "lastRun": "Ostatni run",
+      "lastRunValue": "run #{{runId}}",
+      "lastStatus": "Status ostatniego runu",
+      "lastStarted": "Ostatni start",
+      "lastFinished": "Ostatnie zakonczenie",
+      "lastHeartbeat": "Ostatni heartbeat",
+      "lastErrorCode": "Kod bledu",
+      "progressLabel": "Postep",
+      "noRunYet": "Brak runu",
+      "semantic": {
+        "title": "Warstwa semantyczna",
+        "lastRunStarted": "Ostatni start semantic runu",
+        "lastRunFinished": "Ostatnie zakonczenie semantic runu",
+        "candidates": "Kandydaci",
+        "resolved": "Rozwiazane",
+        "llmJobs": "Zadania LLM",
+        "cacheHits": "Trafienia cache",
+        "fallbackCount": "Liczba fallbackow",
+        "lastError": "Ostatni blad semantic",
+        "noData": "Warstwa semantyczna nie jest jeszcze dostepna."
+      },
+      "syncStatus": {
+        "idle": "Bez syncu",
+        "queued": "W kolejce",
+        "running": "W trakcie",
+        "done": "Gotowe",
+        "failed": "Nieudane"
+      },
+      "syncStage": {
+        "idle": "Bez syncu",
+        "queued": "W kolejce",
+        "crawling": "Crawlowanie",
+        "persisting": "Zapisywanie stron",
+        "extracting": "Analiza stron",
+        "finalizing": "Finalizacja",
+        "done": "Gotowe",
+        "failed": "Nieudane",
+        "stale": "Odzyskano jako stale",
+        "cancelled": "Anulowano"
+      },
+      "runStatus": {
+        "idle": "Brak runu",
+        "queued": "W kolejce",
+        "running": "W trakcie",
+        "done": "Gotowe",
+        "failed": "Nieudane",
+        "stale": "Stale po restarcie",
+        "cancelled": "Anulowany"
+      },
+      "runStage": {
+        "queued": "W kolejce",
+        "crawling": "Crawlowanie",
+        "persisting": "Zapisywanie stron",
+        "extracting": "Analiza stron",
+        "finalizing": "Finalizacja",
+        "done": "Gotowe",
+        "failed": "Nieudane",
+        "stale": "Oznaczono jako stale",
+        "cancelled": "Anulowany"
+      },
+      "runTrigger": {
+        "manual_single": "Reczny sync",
+        "manual_all": "Sync all",
+        "retry": "Retry"
+      },
+      "progressCrawling": "Postep crawla: {{current}} / {{total}}",
+      "progressExtracting": "Analiza stron: {{current}} / {{total}}",
+      "partialDataHint": "To, co juz udalo sie zapisac i przeanalizowac, nadal zasila rekomendacje competitive gap.",
+      "coverage": "Strony: {{pages}} | przeanalizowane: {{extracted}}",
+      "syncHeadlineIdle": "Competitor czeka na pierwszy sync.",
+      "syncHeadlineQueued": "Sync zostal zlecony i czeka na uruchomienie.",
+      "syncHeadlineRunning": "Trwa sync. Odwiedzono {{visited}} URL-i, zapisano {{stored}} stron.",
+      "syncHeadlineDone": "Odwiedzono {{visited}} URL-i, zapisano {{stored}} stron i przeanalizowano {{extracted}} z nich.",
+      "syncHeadlineFailed": "Sync zatrzymal sie po odwiedzeniu {{visited}} URL-i. Zapisane strony i przeanalizowane wyniki nadal zostaja w modelu.",
+      "syncHeadlineStale": "Ostatni sync zostal odzyskany jako stale po restarcie. Nadal masz {{stored}} zapisanych stron i {{extracted}} analiz.",
+      "syncHeadlineCancelled": "Stan runtime zostal zresetowany. Zapisane strony i wyniki analizy pozostaja dostepne.",
+      "summaryIdle": "Brak historii syncu",
+      "summaryInProgress": "Sync w toku",
+      "summaryDone": "Ostatni sync zakonczony",
+      "summaryFailed": "Ostatni sync wymagal uwagi",
+      "summaryPartial": "Czesciowe dane sa juz dostepne",
+      "summaryStale": "Ostatni run odzyskano jako stale",
+      "summaryCancelled": "Stan runtime zostal zresetowany",
+      "inProgressBadge": "W trakcie",
+      "partialDataBadge": "Czesciowe dane",
+      "retryQueuedBadge": "Retry zakolejkowany",
+      "summary": {
+        "visited": "Odwiedzone URL-e",
+        "stored": "Zapisane strony",
+        "extracted": "Przeanalizowane strony",
+        "skipped": "Odrzucone URL-e"
+      },
+      "rejectionsTitle": "Najczesciej odrzucane URL-e",
+      "rejectionReasons": {
+        "filtered": "Filtry i utility: {{count}}",
+        "lowValue": "Mala wartosc strony: {{count}}",
+        "nonHtml": "Nie-HTML: {{count}}",
+        "outOfScope": "Poza domena: {{count}}",
+        "duplicate": "Duplikaty: {{count}}",
+        "fetchError": "Bledy pobrania: {{count}}"
+      },
+      "lastErrorTitle": "Ostatni blad syncu",
+      "recentRunsTitle": "Ostatnie runy",
+      "recentRunsDescription": "Lekka historia operatorska dla competitora laduje sie dopiero po rozwinieciu.",
+      "showRecentRuns": "Pokaz ostatnie runy",
+      "hideRecentRuns": "Ukryj ostatnie runy",
+      "recentRunsLoading": "Ladowanie ostatnich runow...",
+      "recentRunsEmpty": "Brak dostepnych runow syncu.",
+      "retryOf": "Retry runu #{{runId}}",
+      "errors": {
+        "alreadyRunning": "Ten competitor jest juz w kolejce albo w trakcie syncu."
+      },
+      "edit": "Edytuj",
+      "removing": "Usuwanie...",
+      "remove": "Usun"
+    },
+    "emptyStates": {
+      "noCompetitorsTitle": "Najpierw dodaj competitorow",
+      "noCompetitorsDescription": "Competitive gap nie policzy rekomendacji bez przynajmniej jednego aktywnego competitora.",
+      "noCompetitorPagesTitle": "Competitorzy sa dodani, ale jeszcze niezsynchronizowani",
+      "noCompetitorPagesDescription": "Kliknij Sync przy wybranym konkurencie albo Sync all, aby zapisac jego strony do analizy.",
+      "noCompetitorExtractionsTitle": "Strony competitorow sa zapisane, ale analiza tematow jeszcze nie jest gotowa",
+      "noCompetitorExtractionsDescription": "Poczekaj na zakonczenie analizy stron albo ponow sync, jesli poprzedni przebieg zakonczyl sie z bledem.",
+      "noOwnPagesTitle": "Aktywny crawl nie dostarcza stron do porownania",
+      "noOwnPagesDescription": "Wybierz aktywny crawl z zapisanymi stronami wlasnej witryny, aby policzyc gap.",
+      "filtersExcludedTitle": "Filtry ukrywaja wszystkie rekomendacje",
+      "filtersExcludedDescription": "Poszerz filtry albo zresetuj widok, aby zobaczyc wszystkie dostepne wiersze gapu.",
+      "noRealGapsTitle": "Po ostatnim syncu nie widac mocnych gapow",
+      "noRealGapsDescription": "Dane competitorow zostaly juz przeanalizowane, ale przy obecnym stanie witryny i scoringu nie ma jeszcze rekomendacji do pokazania.",
+      "resetFilters": "Resetuj filtry"
+    },
+    "quickFilters": {
+      "title": "Presety rekomendacji",
+      "newTopic": "Nowy temat",
+      "expandExisting": "Rozbuduj istniejacy",
+      "supportCluster": "Wesprzyj klaster",
+      "highPriority": "Wysoki priorytet",
+      "highConsensus": "Wysoki consensus"
+    },
+    "filters": {
+      "title": "Filtry gapu",
+      "description": "Te filtry zostaja w URL i reuse'uja ten sam deterministyczny payload co lista i eksport CSV.",
+      "dateRange": "Zakres dat",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "gapType": "Typ gapu",
+      "segment": "Segment",
+      "pageType": "Rekomendowany typ strony",
+      "ownMatchStatus": "Sensowne dopasowanie",
+      "topic": "Temat zawiera",
+      "topicPlaceholder": "np. local seo",
+      "priorityMin": "Min. priority score",
+      "consensusMin": "Min. consensus",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "sort": {
+        "priorityScore": "Priority score",
+        "consensus": "Consensus",
+        "competitorCount": "Liczba konkurentow",
+        "competitorCoverage": "Pokrycie konkurencji",
+        "ownCoverage": "Pokrycie wlasne",
+        "strategyAlignment": "Dopasowanie do strategii",
+        "businessValue": "Wartosc biznesowa",
+        "mergedTopics": "Liczba scalonych tematow",
+        "confidence": "Confidence",
+        "topic": "Temat",
+        "gapType": "Typ gapu",
+        "pageType": "Rekomendowany typ strony"
+      }
+    },
+    "sync": {
+      "title": "Synchronizacja",
+      "description": "Widok operacyjny runow sync, runtime semantycznego, retry i ostatniego stanu przetwarzania konkurentow."
+    },
+    "mix": {
+      "title": "Mix rekomendacji",
+      "description": "Liczniki nizej pochodza z tego samego read modelu competitive gap co lista i eksport."
+    },
+    "types": {
+      "NEW_TOPIC": { "title": "Nowy temat" },
+      "EXPAND_EXISTING_TOPIC": { "title": "Rozbuduj istniejacy temat" },
+      "MISSING_SUPPORTING_PAGE": { "title": "Brakujaca strona wspierajaca" }
+    },
+    "segments": {
+      "create_new_page": "Nowa strona",
+      "expand_existing_page": "Rozbuduj istniejaca strone",
+      "strengthen_cluster": "Wzmocnij klaster"
+    },
+    "card": {
+      "priority": "Priorytet",
+      "consensus": "Consensus",
+      "showExplanation": "Wyjasnij",
+      "hideExplanation": "Ukryj wyjasnienie",
+      "openTarget": "Otworz cel",
+      "openInPages": "Otworz w Stronach",
+      "recommendedMove": "Rekomendowany ruch",
+      "targetPage": "Strona docelowa",
+      "newPage": "Utworz nowa strone",
+      "scoreMix": "Mix scoringu",
+      "competitorCoverage": "Pokrycie konkurencji",
+      "ownCoverage": "Pokrycie wlasne",
+      "businessValue": "Wartosc biznesowa",
+      "competitorSignal": "Sygnal konkurencji",
+      "competitorsCount": "{{count}} konkurentow",
+      "confidence": "Confidence",
+      "strategyFit": "Dopasowanie do strategii",
+      "topicKey": "Topic key"
+    },
+    "explanation": {
+      "title": "Wyjasnienie",
+      "llm": "LLM",
+      "fallback": "Fallback",
+      "fallbackUsed": "Uzyto fallbacku",
+      "loading": "Ladowanie wyjasnienia...",
+      "semanticDebugTitle": "Debug semantyczny",
+      "semanticClusterKey": "Klucz klastra",
+      "canonicalTopicLabel": "Kanoniczny temat",
+      "mergedTopicCount": "Scalone tematy",
+      "ownMatchStatus": "Status dopasowania do wlasnej strony",
+      "ownMatchSource": "Zrodlo dopasowania do wlasnej strony"
+    }
+  },
+  "pages": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Strony",
+      "title": "Zcrawlowane strony dla zadania #{{jobId}}",
+      "description": "Klikaj naglowki kolumn, aby sortowac, zachowuj filtry w URL i eksportuj caly job albo aktywny wycinek.",
+      "exportFull": "Eksportuj pelny CSV",
+      "exportCurrentView": "Eksportuj biezacy widok CSV",
+      "loading": "Ladowanie stron..."
+    },
+    "quickFilters": {
+      "title": "Szybkie filtry stron",
+      "highPriority": "Wysoki priorytet",
+      "quickWins": "Quick wins",
+      "trafficTechnical": "Ruch + technika",
+      "highImpressionsLowCtrOpportunity": "Wysokie impressions / niski CTR",
+      "lowHangingFruit": "Low-hanging fruit",
+      "underlinked": "Niedolinkowane",
+      "highRiskPages": "Wysokie ryzyko",
+      "titleTooShort": "Za krotki title",
+      "titleTooLong": "Za dlugi title",
+      "metaTooShort": "Za krotkie meta",
+      "metaTooLong": "Za dlugie meta",
+      "multipleH1": "Wiele H1",
+      "missingH2": "Brak H2",
+      "canonicalToOther": "Canonical do innego URL",
+      "noindexLike": "Noindex-like",
+      "thinContent": "Thin content",
+      "duplicateContent": "Duplikat contentu",
+      "missingAlt": "Brak alt",
+      "oversized": "Za duze strony",
+      "rendered": "Renderowane",
+      "jsHeavyLike": "JS-heavy-like",
+      "renderErrors": "Bledy renderu",
+      "schemaPresent": "Schema",
+      "xRobots": "X-Robots",
+      "impressionsWithIssue": "Impressions + problem",
+      "clicksWithIssue": "Clicks + problem",
+      "lowCtrHighImpressions": "Niski CTR / wysokie impressions",
+      "highImpressionsWeakPosition": "Wysokie impressions / slaba pozycja"
+    },
+    "filters": {
+      "title": "Filtry",
+      "description": "Widoczny stan przetrwa odswiezenie i daje czyste deep-linki z raportu audytowego.",
+      "statusCode": "Status HTTP",
+      "pageType": "Typ strony",
+      "pageBucket": "Bucket strony",
+      "urlContains": "URL zawiera",
+      "urlContainsPlaceholder": "https://example.com/sciezka",
+      "titleContains": "Title zawiera",
+      "titleContainsPlaceholder": "Wpisz fragment title",
+      "hasTitle": "Ma title",
+      "hasMetaDescription": "Ma meta description",
+      "titleTooShort": "Za krotki title",
+      "titleTooLong": "Za dlugi title",
+      "metaTooShort": "Za krotkie meta",
+      "metaTooLong": "Za dlugie meta",
+      "hasH1": "Ma H1",
+      "multipleH1": "Wiele H1",
+      "missingH2": "Brak H2",
+      "canonicalMissing": "Brak canonical",
+      "canonicalToOther": "Canonical do innego URL",
+      "robotsMetaContains": "Robots meta zawiera",
+      "robotsMetaPlaceholder": "noindex",
+      "noindexLike": "Noindex-like",
+      "nonIndexableLike": "Typu non-indexable",
+      "thinContent": "Thin content",
+      "duplicateContent": "Duplikat contentu",
+      "missingAltImages": "Obrazki bez alt",
+      "oversized": "Za duze strony",
+      "wasRendered": "Byla renderowana",
+      "jsHeavyLike": "JS-heavy-like",
+      "schemaPresent": "Schema obecna",
+      "schemaType": "Typ schema",
+      "schemaTypePlaceholder": "Article",
+      "hasRenderError": "Ma blad renderu",
+      "hasXRobotsTag": "Ma X-Robots-Tag",
+      "hasTechnicalIssue": "Ma problem techniczny",
+      "hasGscData": "Ma dane GSC",
+      "hasCannibalization": "Ma cannibalization",
+      "priorityLevel": "Poziom priorytetu",
+      "opportunityType": "Typ szansy",
+      "pageTypeConfidenceMin": "Min. pewnosc taksonomii (%)",
+      "pageTypeConfidenceMax": "Maks. pewnosc taksonomii (%)",
+      "priorityScoreMin": "Min. priority score",
+      "priorityScoreMax": "Maks. priority score",
+      "gscMinImpressions": "Min. GSC impressions",
+      "gscMinClicks": "Min. GSC clicks",
+      "gscMaxCtr": "Maks. GSC CTR (%)",
+      "gscMinPosition": "Min. GSC pozycja",
+      "gscMinTopQueries": "Min. top queries",
+      "statusCodeMin": "Minimalny status",
+      "statusCodeMinPlaceholder": "200",
+      "statusCodeMax": "Maksymalny status",
+      "statusCodeMaxPlaceholder": "299",
+      "exactTitle": "Dokladny title",
+      "exactTitlePlaceholder": "Uzywane przez deep-linki duplikatow title",
+      "exactMetaDescription": "Dokladny meta description",
+      "exactMetaDescriptionPlaceholder": "Uzywane przez deep-linki duplikatow meta"
+    },
+    "table": {
+      "url": "URL",
+      "status": "Status",
+      "taxonomy": "Taksonomia",
+      "title": "Title",
+      "titleLength": "Dl. title",
+      "length": "Dlugosc",
+      "metaDescription": "Meta description",
+      "metaDescriptionLength": "Dl. meta",
+      "headings": "Naglowki",
+      "h1Length": "Dl. H1",
+      "canonical": "Canonical",
+      "robotsLabel": "Robots",
+      "xRobotsLabel": "X-Robots",
+      "schemaLabel": "Schema",
+      "depthLabel": "Glebokosc: {{count}}",
+      "metrics": "On-page",
+      "gsc": "GSC",
+      "priority": "Priorytet",
+      "signals": "Sygnaly",
+      "responseTime": "Czas odpowiedzi",
+      "fetchedAt": "Pobrano",
+      "openTopQueries": "Otworz top queries",
+      "openOpportunity": "Otworz widok szans"
+    },
+    "metrics": {
+      "words": "Slowa",
+      "images": "Obrazki",
+      "missingAlt": "Brak alt",
+      "htmlSize": "Rozmiar HTML"
+    },
+    "taxonomy": {
+      "confidence": "Pewnosc",
+      "version": "Wersja",
+      "pageTypes": {
+        "home": "Home",
+        "category": "Kategoria",
+        "product": "Produkt",
+        "service": "Usluga",
+        "blog_article": "Artykul blogowy",
+        "blog_index": "Indeks bloga",
+        "contact": "Kontakt",
+        "about": "O nas",
+        "faq": "FAQ",
+        "location": "Lokalizacja",
+        "legal": "Prawne",
+        "utility": "Utility",
+        "other": "Inne"
+      },
+      "pageBuckets": {
+        "commercial": "Komercyjne",
+        "informational": "Informacyjne",
+        "utility": "Utility",
+        "trust": "Zaufanie",
+        "other": "Inne"
+      }
+    },
+    "summary": {
+      "taxonomyTitle": "Taksonomia stron",
+      "taxonomyDescription": "Deterministyczne liczniki typow stron oparte o schema, wzorce URL, title i H1.",
+      "versionHint": "Wersja klasyfikatora {{version}}",
+      "totalPages": "Lacznie stron",
+      "commercial": "Komercyjne",
+      "informational": "Informacyjne",
+      "utility": "Utility",
+      "trust": "Zaufanie",
+      "category": "Strony kategorii",
+      "product": "Strony produktowe",
+      "blogArticle": "Artykuly blogowe"
+    },
+    "cannibalization": {
+      "label": "Cannibalization",
+      "competingUrls": "Konkurujace URL-e",
+      "overlapStrength": "Sila overlapu",
+      "strongestCompetitor": "Najsilniejszy konkurent",
+      "openDetails": "Otworz cannibalization"
+    },
+    "signals": {
+      "missingTitle": "Brak title",
+      "titleTooShort": "Za krotki title",
+      "titleTooLong": "Za dlugi title",
+      "missingMeta": "Brak meta",
+      "metaTooShort": "Za krotkie meta",
+      "metaTooLong": "Za dlugie meta",
+      "missingH1": "Brak H1",
+      "multipleH1": "Wiele H1",
+      "missingH2": "Brak H2",
+      "missingCanonical": "Brak canonical",
+      "canonicalToOther": "Canonical do innego URL",
+      "canonicalToNon200": "Canonical do non-200",
+      "canonicalToRedirect": "Canonical do redirectu",
+      "nonIndexable": "Typu non-indexable",
+      "thinContent": "Thin content",
+      "duplicateContent": "Duplikat contentu",
+      "missingAlt": "Brak alt",
+      "noImages": "Brak obrazkow",
+      "oversized": "Za duza",
+      "rendered": "Renderowane",
+      "jsHeavyLike": "JS-heavy-like",
+      "schemaPresent": "Schema",
+      "xRobots": "X-Robots",
+      "renderError": "Blad renderu"
+    },
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac stron"
+    },
+    "empty": {
+      "title": "Brak stron pasujacych do biezacych filtrow",
+      "description": "Sprobuj szerszego presetu, wyczysc jeden lub wiecej filtrow albo wroc do przegladu."
+    },
+    "gsc": {
+      "title": "Kolumny GSC",
+      "description": "Przelaczaj metryki 28d i 90d bez rozwalania czytelnosci tabeli.",
+      "last28Days": "Uzyj 28d",
+      "last90Days": "Uzyj 90d",
+      "openSection": "Otworz sekcje GSC",
+      "openOpportunities": "Otworz szanse",
+      "clicks": "Clicks",
+      "impressions": "Impressions",
+      "ctr": "CTR",
+      "position": "Pozycja",
+      "topQueries": "Top queries"
+    },
+    "priority": {
+      "scoreBadge": "Score {{score}}",
+      "trafficComponent": "Ruch",
+      "issueComponent": "Problemy",
+      "opportunityComponent": "Szanse",
+      "internalLinkingComponent": "Linkowanie wewn.",
+      "opportunityCount": "Liczba szans",
+      "internalLinks": "Wsparcie linkowania",
+      "level": {
+        "critical": "Krytyczny",
+        "high": "Wysoki",
+        "medium": "Sredni",
+        "low": "Niski"
+      }
+    }
+  },
+  "opportunities": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Priority score i opportunities",
+      "title": "Szanse dla zadania #{{jobId}}",
+      "description": "Pracuj od priority score, impact i effort zamiast przegladac surowe listy problemow.",
+      "loading": "Ladowanie szans...",
+      "exportPages": "Eksportuj strony z priorytetem",
+      "exportOpportunities": "Eksportuj opportunities CSV"
+    },
+    "quickFilters": {
+      "title": "Presety szans",
+      "highPriority": "Wysoki priorytet",
+      "quickWins": "Quick wins",
+      "trafficTechnical": "Ruch + technika",
+      "highImpressionsLowCtr": "Wysokie impressions / niski CTR",
+      "lowHangingFruit": "Low-hanging fruit",
+      "underlinked": "Niedolinkowane"
+    },
+    "filters": {
+      "title": "Filtry szans",
+      "description": "Trzymaj stan w query params i przechodz od razu do pasujacego wycinka stron.",
+      "dateRange": "Zakres dat",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "priorityLevel": "Poziom priorytetu",
+      "opportunityType": "Typ szansy",
+      "priorityMin": "Min. priority score",
+      "priorityMax": "Maks. priority score",
+      "sortBy": "Sortuj grupy po",
+      "sortOrder": "Kolejnosc",
+      "topPagesLimit": "Top URL-i na grupe",
+      "sort": {
+        "count": "Rozmiar grupy",
+        "topPriority": "Najwyzszy priority score",
+        "topOpportunity": "Najwyzszy opportunity score",
+        "type": "Typ"
+      }
+    },
+    "summary": {
+      "totalPages": "Lacznie stron",
+      "pagesWithOpportunities": "Strony z szansami",
+      "highPriorityPages": "Strony wysokiego priorytetu",
+      "criticalPriorityPages": "Strony krytyczne",
+      "groups": "Grupy",
+      "range": "Zakres"
+    },
+    "topPriority": {
+      "title": "Top URL-e priorytetowe",
+      "description": "Najwyzszy priorytet po polaczeniu ruchu, wagi problemow i wsparcia internal linking."
+    },
+    "table": {
+      "url": "URL",
+      "priority": "Priorytet",
+      "traffic": "Ruch",
+      "rationale": "Uzasadnienie",
+      "impact": "Impact / effort",
+      "primaryOpportunity": "Glowna szansa",
+      "opportunityScore": "Opportunity score",
+      "impactLevel": "Impact",
+      "effortLevel": "Effort"
+    },
+    "metrics": {
+      "clicks": "Klikniecia",
+      "impressions": "Wyswietlenia",
+      "ctr": "CTR",
+      "position": "Pozycja",
+      "internalLinks": "Linki wewn. / strony linkujace"
+    },
+    "rationaleText": {
+      "templates": {
+        "leadWithIssues": "{{lead}}: {{traffic}}; problemy: {{issues}}.",
+        "trafficWithIssues": "URL ma {{traffic}} oraz problemy: {{issues}}.",
+        "trafficLimitedIssues": "URL ma {{traffic}}, ale niewiele konkretnych problemow do naprawy.",
+        "issuesNoTraffic": "URL ma {{issues}}, ale w wybranym zakresie GSC brak mocnego sygnalu ruchowego.",
+        "weakInternalLinking": "URL ma popyt, ale slabe wsparcie z internal linking.",
+        "lowTrafficLowPressure": "URL ma niski ruch i ograniczona presje optymalizacyjna w wybranym zakresie GSC."
+      },
+      "leads": {
+        "quickWins": "URL jest w zakresie pozycji 4-15 i ma przestrzen do poprawy snippetu lub sygnalow on-page",
+        "highImpressionsLowCtr": "URL ma wysokie wyswietlenia i niski CTR przy problemach snippetowych",
+        "trafficWithTechnicalIssues": "URL juz zbiera ruch lub wyswietlenia, ale nadal ma problemy techniczne",
+        "importantButWeak": "URL jest wazny w wyszukiwarce, ale sygnaly jakosci nadal sa slabe",
+        "lowHangingFruit": "URL ma relatywnie niskokosztowe poprawki z sensownym potencjalem",
+        "highRiskPages": "URL ma juz widocznosc, ale jest narazony na wysokie ryzyko indexability lub canonical",
+        "underlinked": "URL pokazuje popyt, ale ma slabe wsparcie internal linking"
+      },
+      "issues": {
+        "titleMissing": "brak title",
+        "titleTooShort": "zbyt krotki title",
+        "titleTooLong": "zbyt dlugi title",
+        "metaDescriptionMissing": "brak meta description",
+        "metaDescriptionTooShort": "zbyt krotki meta description",
+        "metaDescriptionTooLong": "zbyt dlugi meta description",
+        "h1Missing": "brak H1",
+        "multipleH1": "wiele H1",
+        "h2Missing": "brak H2",
+        "canonicalMissing": "brak canonical",
+        "canonicalToOtherUrl": "canonical wskazuje inny URL",
+        "canonicalToNon200": "target canonical ma status inny niz 200",
+        "canonicalToRedirect": "target canonical robi przekierowanie",
+        "noindexLike": "strona wyglada na noindex-like",
+        "nonIndexableLike": "strona wyglada na nieindeksowalna",
+        "thinContent": "zbyt plytka tresc",
+        "duplicateContent": "zduplikowana tresc",
+        "missingAltText": "brak alt textu",
+        "oversized": "zbyt duza strona"
+      },
+      "metrics": {
+        "clicks": "{{value}} klikniec",
+        "impressions": "{{value}} wyswietlen",
+        "ctr": "CTR {{value}}",
+        "position": "pozycja {{value}}",
+        "internalLinks": "{{value}} linkow wewnetrznych",
+        "linkingPages": "{{value}} stron linkujacych"
+      },
+      "tokens": {
+        "noMeaningfulTrafficSignal": "brak istotnego sygnalu ruchowego",
+        "limitedIssueDepth": "ograniczony zakres problemow"
+      }
+    },
+    "priorityLevel": {
+      "critical": "Krytyczny",
+      "high": "Wysoki",
+      "medium": "Sredni",
+      "low": "Niski"
+    },
+    "impactLevel": {
+      "high": "Wysoki",
+      "medium": "Sredni",
+      "low": "Niski"
+    },
+    "effortLevel": {
+      "high": "Wysoki",
+      "medium": "Sredni",
+      "low": "Niski"
+    },
+    "types": {
+      "QUICK_WINS": {
+        "title": "Quick wins",
+        "description": "Strony juz rankujace w zakresie 4-15 z potencjalem ruchowym i naprawialnymi problemami snippetowymi lub on-page."
+      },
+      "HIGH_IMPRESSIONS_LOW_CTR": {
+        "title": "Wysokie impressions, niski CTR",
+        "description": "Strony z dobra widocznoscia, ale slabym wynikiem snippetu."
+      },
+      "TRAFFIC_WITH_TECHNICAL_ISSUES": {
+        "title": "Ruch z problemami technicznymi",
+        "description": "Strony juz dowozace popyt, ale nadal obciazone dlugiem technicznym."
+      },
+      "IMPORTANT_BUT_WEAK": {
+        "title": "Wazne, ale slabe",
+        "description": "Widoczne w wyszukiwarce strony z cienkimi sygnalami jakosci, brakami contentowymi lub slabym snippetem."
+      },
+      "LOW_HANGING_FRUIT": {
+        "title": "Low-hanging fruit",
+        "description": "Relatywnie tanie poprawki z praktycznym potencjalem."
+      },
+      "HIGH_RISK_PAGES": {
+        "title": "Strony wysokiego ryzyka",
+        "description": "Widoczne strony narazone na noindex, canonical albo ryzyko indexability."
+      },
+      "UNDERLINKED_OPPORTUNITIES": {
+        "title": "Niedolinkowane szanse",
+        "description": "Obiecujace strony bez wystarczajacego wsparcia internal linking."
+      }
+    },
+    "groupCount": "{{count}} stron",
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac szans"
+    },
+    "empty": {
+      "topPriorityTitle": "Brak priorytetowych URL-i dla biezacego widoku",
+      "topPriorityDescription": "Poszerz filtry albo przelacz zakres GSC.",
+      "groupsTitle": "Brak szans dla biezacego widoku",
+      "groupsDescription": "Poluzuj jeden lub wiecej filtrow, aby poszerzyc biezacy wycinek szans."
+    }
+  },
+  "siteOpportunities": {
+    "title": "Szanse SEO",
+    "description": "Uzywaj aktywnego crawla jako zrodla prawdy dla najwazniejszych szans SEO dostepnych teraz.",
+    "recordsTitle": "Rekordy szans",
+    "recordsDescription": "Przegladaj aktualnie wykryte URL-e z szansami z aktywnego crawla w workspace witryny.",
+    "loading": "Ladowanie aktualnych szans SEO...",
+    "errorTitle": "Nie udalo sie pobrac aktualnych szans SEO",
+    "emptyTitle": "Brak szans SEO dla biezacego widoku",
+    "emptyDescription": "Poszerz filtry albo przelacz aktywny crawl, aby sprawdzic inny aktualny wycinek danych.",
+    "noActiveCrawlTitle": "Wybierz aktywny crawl, aby sprawdzic szanse SEO",
+    "noActiveCrawlDescription": "Widok szans SEO czyta dane z aktywnego crawla w workspace witryny.",
+    "compareReady": "Compare gotowe",
+    "compareWaiting": "Brak baseline",
+    "openRecords": "Otworz rekordy",
+    "openOverview": "Otworz przeglad",
+    "openChanges": "Otworz Zmiany",
+    "openActiveCrawl": "Otworz aktywny crawl",
+    "openInActivePages": "Otworz w aktywnych stronach",
+    "exportPages": "Eksportuj strony z priorytetem",
+    "exportOpportunities": "Eksportuj opportunities CSV",
+    "quickFiltersTitle": "Szybkie filtry szans SEO",
+    "filtersDescription": "Filtruj aktywny snapshot szans bez przechodzenia do compare.",
+    "recordsPerGroup": "Rekordy na grupe",
+    "visibleRecords": "Widoczne rekordy",
+    "topRecordsTitle": "Top rekordy szans",
+    "topRecordsDescription": "Najmocniejsze URL-e z szansami wykryte teraz w aktywnym crawlu.",
+    "groupsTitle": "Grupy szans",
+    "groupsDescription": "Widok grupowy pokazuje, ktore typy szans dominuja w aktywnym snapshotcie.",
+    "groupsEmptyTitle": "Brak grup szans dla biezacego widoku",
+    "groupsEmptyDescription": "Zresetuj jeden lub wiecej filtrow, aby poszerzyc aktualny wycinek szans.",
+    "recordsTableTitle": "Rekordy szans",
+    "recordsTableDescription": "Przegladaj aktualnie wykryte URL-e i przechodz do Zmian dopiero wtedy, gdy potrzebujesz delty.",
+    "detailsTitle": "Wybrany rekord",
+    "detailsEmpty": "Wybierz rekord, aby sprawdzic jego aktualny ruch, priorytet i uzasadnienie.",
+    "inspectRecord": "Sprawdz",
+    "navRecords": "Rekordy"
+  },
+  "sitePages": {
+    "description": "Sprawdz aktualny snapshot stron dla {{domain}}.",
+    "loading": "Ladowanie stron aktywnego crawla...",
+    "actions": {
+      "openChanges": "Otworz Zmiany",
+      "openActiveCrawl": "Otworz aktywny crawl",
+      "openInJobPages": "Otworz w stronach zadania"
+    },
+    "context": {
+      "active": "Aktywny",
+      "status": "Status"
+    },
+    "summary": {
+      "activePages": "Strony aktywnego crawla",
+      "matchingRows": "Pasujace rekordy",
+      "metadataGaps": "Braki metadata",
+      "renderIssues": "Render / JS",
+      "gscCoverage": "Pokrycie GSC",
+      "taxonomyCoverage": "Pokrycie taksonomii"
+    },
+    "summaryHints": {
+      "activePages": "Strony snapshotu z crawla #{{crawlId}}.",
+      "matchingRows": "Rekordy pasujace do biezacych filtrow i sortowania.",
+      "metadataGaps": "{{missingTitle}} bez title, {{missingMeta}} bez meta, {{missingH1}} bez H1.",
+      "renderIssues": "{{rendered}} renderowanych, {{jsHeavy}} JS-heavy-like.",
+      "gscCoverage": "{{count}} szans GSC w aktywnym crawlu.",
+      "taxonomyCoverageReady": "Klasyfikator {{version}}.",
+      "taxonomyCoverageWaiting": "Oczekiwanie na podsumowanie taksonomii."
+    },
+    "quickFiltersTitle": "Szybkie filtry",
+    "filters": {
+      "title": "Filtry current-state",
+      "description": "Filtruj strony aktywnego crawla bez wychodzenia z biezacego snapshotu.",
+      "expandedState": "Filtry current-state rozwiniete",
+      "compactState": "Filtry current-state zwiniete"
+    },
+    "inspectRecord": "Sprawdz",
+    "details": {
+      "title": "Szczegoly strony",
+      "responseTime": "Czas odpowiedzi",
+      "clicks": "klikniec",
+      "impressions": "wyswietlen"
+    },
+    "empty": {
+      "noActiveTitle": "Wybierz aktywny crawl, aby sprawdzic strony",
+      "noActiveDescription": "Widok stron current-state czyta dane z aktywnego crawla w site workspace.",
+      "unavailableTitle": "Widok stron niedostepny",
+      "unavailableDescription": "Aktywny crawl nie zwrocil payloadu stron.",
+      "filteredTitle": "Brak stron pasujacych do biezacych filtrow",
+      "filteredDescription": "Wyczysc jeden lub wiecej filtrow, aby poszerzyc aktualny wycinek snapshotu.",
+      "detailsTitle": "Otworz strone, aby sprawdzic szczegoly",
+      "detailsDescription": "Panel szczegolow podaza za biezacym wyborem w aktywnym wycinku crawla."
+    },
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac stron"
+    }
+  },
+  "siteAudit": {
+    "description": "Sprawdz aktualny stan audytu z aktywnego crawla.",
+    "loading": "Ladowanie audytu witryny...",
+    "actions": {
+      "openChanges": "Otworz Zmiany",
+      "openActiveCrawl": "Otworz aktywny crawl",
+      "exportAudit": "Eksportuj audit.csv",
+      "openLinks": "Otworz Linki",
+      "openPages": "Otworz Strony"
+    },
+    "context": {
+      "active": "Aktywny",
+      "notSelected": "nie wybrano"
+    },
+    "quickFilters": {
+      "title": "Grupy audytu"
+    },
+    "summary": {
+      "auditedPages": "Przeaudytowane strony",
+      "openSections": "Otwarte sekcje",
+      "problemRows": "Wiersze problemow",
+      "pagesIssues": "Problemy stron",
+      "linksIssues": "Problemy linkow",
+      "technicalIssues": "Problemy techniczne"
+    },
+    "filters": {
+      "title": "Filtry audytu",
+      "description": "Filtruj aktualne sekcje audytu bez gubienia kontekstu aktywnego crawla.",
+      "searchLabel": "Szukaj sekcji",
+      "searchPlaceholder": "title, linki, schema...",
+      "minimumCount": "Minimalna liczba",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "pageSize": "Rozmiar strony",
+      "openOnly": "Tylko otwarte",
+      "showAllState": "Pokazywanie otwartych i pustych sekcji",
+      "showOpenOnlyState": "Pokazywanie tylko otwartych sekcji",
+      "sort": {
+        "count": "Liczba",
+        "label": "Etykieta"
+      }
+    },
+    "empty": {
+      "noActiveTitle": "Wybierz aktywny crawl, aby sprawdzic audyt",
+      "noActiveDescription": "Widok audytu opiera sie na aktualnym aktywnym crawlu. Gdy crawl zostanie wybrany, pojawia sie tutaj karty podsumowania i drilldown sekcji.",
+      "unavailableTitle": "Audyt niedostepny",
+      "unavailableDescription": "Backend zwrocil pusty payload audytu.",
+      "filteredTitle": "Brak sekcji audytu pasujacych do biezacych filtrow",
+      "filteredDescription": "Wyczysc jeden lub wiecej filtrow albo zwieksz rozmiar strony, aby sprawdzic szerszy wycinek aktualnego audytu."
+    },
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac audytu"
+    }
+  },
+  "internalLinking": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Internal linking intelligence",
+      "title": "Internal linking dla zadania #{{jobId}}",
+      "description": "Sprawdzaj strony orphan-like, wazne URL-e z za slabym wsparciem, ryzyka anchorow i lekkie proxy link equity z aktualnego grafu linkow.",
+      "loadingOverview": "Ladowanie przegladu internal linking...",
+      "loadingIssues": "Ladowanie problemow internal linking...",
+      "export": "Eksportuj internal linking CSV"
+    },
+    "common": {
+      "openPages": "Otworz strony",
+      "openOpportunities": "Otworz szanse"
+    },
+    "quickFilters": {
+      "title": "Presety internal linking",
+      "orphanLike": "Orphan-like",
+      "weaklyLinkedImportant": "Slabo linkowane wazne strony",
+      "anchorDiversity": "Niska roznorodnosc anchorow",
+      "exactMatch": "Koncentracja exact-match",
+      "boilerplateDominated": "Dominacja boilerplate",
+      "lowLinkEquity": "Niski link equity"
+    },
+    "filters": {
+      "title": "Filtry internal linking",
+      "description": "Trzymaj wycinek problemow, sortowanie i query w URL.",
+      "dateRange": "Zakres GSC / priorytetu",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "issueType": "Typ problemu",
+      "priorityLevel": "Poziom priorytetu",
+      "opportunityType": "Typ szansy",
+      "urlContains": "URL zawiera",
+      "urlContainsPlaceholder": "https://example.com/sciezka",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "sort": {
+        "internalLinkingScore": "Internal linking score",
+        "priorityScore": "Priority score",
+        "linkEquity": "Link equity",
+        "followLinks": "Linki follow",
+        "anchorDiversity": "Roznorodnosc anchorow",
+        "exactMatchRatio": "Udzial exact-match",
+        "issueCount": "Liczba problemow",
+        "url": "URL"
+      }
+    },
+    "summary": {
+      "issuePages": "Strony z problemami",
+      "orphanLike": "Orphan-like",
+      "weaklyLinkedImportant": "Slabo linkowane wazne",
+      "anchorDiversity": "Niska roznorodnosc",
+      "exactMatch": "Koncentracja exact-match",
+      "boilerplateDominated": "Dominacja boilerplate",
+      "lowLinkEquity": "Niski link equity",
+      "medianLinkEquity": "Mediana link equity"
+    },
+    "table": {
+      "url": "URL",
+      "importance": "Waznosc",
+      "internalSupport": "Wsparcie internal linking",
+      "anchors": "Anchory",
+      "rationale": "Uzasadnienie"
+    },
+    "metrics": {
+      "followLinks": "Linki follow / strony linkujace",
+      "bodyLike": "Linki / strony body-like",
+      "boilerplateLike": "Linki / strony boilerplate-like",
+      "nofollow": "Linki nofollow",
+      "linkEquity": "Link equity",
+      "anchorDiversity": "Roznorodnosc anchorow",
+      "uniqueAnchors": "Unikalne anchory",
+      "exactMatchRatio": "Udzial exact-match"
+    },
+    "issueTypes": {
+      "ORPHAN_LIKE": {
+        "title": "Orphan-like",
+        "description": "URL-e bez wsparcia follow z crawlowanych stron."
+      },
+      "WEAKLY_LINKED_IMPORTANT": {
+        "title": "Slabo linkowane wazne strony",
+        "description": "Wazne URL-e z za malym wsparciem internal linking."
+      },
+      "LOW_ANCHOR_DIVERSITY": {
+        "title": "Niska roznorodnosc anchorow",
+        "description": "Anchory przychodzace do strony sa zbyt powtarzalne."
+      },
+      "EXACT_MATCH_ANCHOR_CONCENTRATION": {
+        "title": "Koncentracja exact-match",
+        "description": "Za duza czesc anchorow wyglada jak exact-match."
+      },
+      "BOILERPLATE_DOMINATED": {
+        "title": "Dominacja boilerplate",
+        "description": "Wsparcie internal linking dominuja prawdopodobnie linki nav/footer."
+      },
+      "LOW_LINK_EQUITY": {
+        "title": "Niski link equity",
+        "description": "Wazny URL siedzi nisko w proxy strukturalnego link equity."
+      }
+    },
+    "errors": {
+      "overviewTitle": "Nie udalo sie pobrac przegladu internal linking",
+      "issuesTitle": "Nie udalo sie pobrac problemow internal linking"
+    },
+    "empty": {
+      "title": "Brak problemow internal linking dla biezacego widoku",
+      "description": "Poluzuj jeden lub wiecej filtrow, aby poszerzyc aktualny wycinek internal linking."
+    }
+  },
+  "siteInternalLinking": {
+    "title": "Linkowanie wewnetrzne",
+    "description": "Uzywaj aktywnego crawla do oceny aktualnego stanu linkowania wewnetrznego.",
+    "issuesTitle": "Problemy linkowania wewnetrznego",
+    "issuesDescription": "Przegladaj aktualne problemy z aktywnego crawla w workspace witryny.",
+    "loading": "Ladowanie aktualnego linkowania wewnetrznego...",
+    "errorTitle": "Nie udalo sie pobrac aktualnego linkowania wewnetrznego",
+    "emptyTitle": "Brak problemow linkowania dla biezacego widoku",
+    "emptyDescription": "Poluzuj jeden lub wiecej filtrow, aby poszerzyc aktualny wycinek linkowania.",
+    "noActiveCrawlTitle": "Wybierz aktywny crawl, aby sprawdzic linkowanie wewnetrzne",
+    "noActiveCrawlDescription": "Widok linkowania czyta dane z aktywnego crawla w workspace witryny.",
+    "compareReady": "Compare gotowe",
+    "compareWaiting": "Brak baseline",
+    "openIssues": "Otworz problemy",
+    "openOverview": "Otworz przeglad",
+    "openChanges": "Otworz Zmiany",
+    "openActiveCrawl": "Otworz aktywny crawl",
+    "openInActiveSnapshot": "Otworz w aktywnym snapshocie",
+    "export": "Eksportuj internal linking CSV",
+    "quickFiltersTitle": "Szybkie filtry linkowania",
+    "filtersDescription": "Filtruj aktywny snapshot linkowania bez przechodzenia do compare.",
+    "visibleIssues": "Widoczne problemy",
+    "previewTitle": "Podglad problemow",
+    "previewDescription": "Najwazniejsze wiersze problemow z aktywnego crawla teraz.",
+    "issuesTableTitle": "Problemy linkowania wewnetrznego",
+    "issuesTableDescription": "Przegladaj aktualne problemy, a Zmiany otwieraj tylko wtedy, gdy potrzebujesz delty.",
+    "detailsTitle": "Wybrany problem",
+    "detailsEmpty": "Wybierz wiersz problemu, aby sprawdzic biezacy kontekst linkowania.",
+    "inspectIssue": "Sprawdz",
+    "navIssues": "Problemy"
+  },
+  "cannibalization": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Cannibalization i query overlap",
+      "title": "Cannibalization dla zadania #{{jobId}}",
+      "description": "Sprawdzaj klastry URL-i nachodzace na te same query z GSC, oceniaj istnienie dominujacego URL-a albo jego brak i przechodz do dopasowanych stron.",
+      "loading": "Ladowanie klastrow cannibalization...",
+      "loadingDetails": "Ladowanie szczegolow overlapu...",
+      "export": "Eksportuj cannibalization CSV"
+    },
+    "quickFilters": {
+      "title": "Presety cannibalization",
+      "highImpact": "Wysoki impact",
+      "mergeCandidate": "Kandydat do merge",
+      "splitIntent": "Split intent",
+      "noPrimary": "Brak primary"
+    },
+    "filters": {
+      "title": "Filtry cannibalization",
+      "description": "Trzymaj wycinek klastrow, filtry i sortowanie w URL.",
+      "dateRange": "Zakres GSC",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "severity": "Severity",
+      "impactLevel": "Impact",
+      "recommendationType": "Rekomendacja",
+      "clearPrimary": "Primary URL",
+      "hasPrimary": "Jest clear primary",
+      "noPrimary": "Brak clear primary",
+      "urlContains": "URL albo query zawiera",
+      "urlContainsPlaceholder": "https://example.com/sciezka albo wspolne query",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc"
+    },
+    "summary": {
+      "clusters": "Klastry",
+      "pagesInConflicts": "Strony w konfliktach",
+      "highSeverity": "Wysoka severity",
+      "highImpact": "Wysoki impact",
+      "noPrimary": "Brak primary",
+      "mergeCandidates": "Kandydaci do merge",
+      "splitIntent": "Split intent",
+      "averageOverlap": "Sredni overlap"
+    },
+    "actions": {
+      "openPage": "Otworz strone",
+      "inspectOverlap": "Sprawdz overlap",
+      "openInPages": "Otworz w stronach",
+      "openCompetitor": "Otworz konkurenta",
+      "focusCompetitor": "Skup konkurenta"
+    },
+    "badges": {
+      "primary": "Primary",
+      "clickShare": "{{value}} clicks",
+      "impressionShare": "{{value}} impressions",
+      "currentUrlLeads": "Biezacy URL prowadzi",
+      "competitorLeads": "Konkurent prowadzi",
+      "noClearLeader": "Brak wyraznego lidera",
+      "overlap": "{{value}} overlap"
+    },
+    "metrics": {
+      "candidateQueries": "{{queryCount}} query / {{sharedCount}} wspolnych / {{exclusiveCount}} ekskluzywnych",
+      "candidateTraffic": "{{impressions}} impressions / {{clicks}} clicks / {{position}}",
+      "competingUrls": "{{count}} konkurujace URL-e",
+      "strongestOverlap": "{{value}} najsilniejszy overlap",
+      "strongestSharedQueries": "{{count}} wspolne query z najsilniejszym konkurentem",
+      "overlapTraffic": "{{sharedCount}} wspolne query / {{impressions}} impressions / {{clicks}} clicks",
+      "clusterSummary": "{{urlsCount}} URL-e / {{sharedQueriesCount}} wspolne query",
+      "clusterTraffic": "{{impressions}} impressions / {{clicks}} clicks",
+      "clusterOverlap": "{{value}} overlap"
+    },
+    "details": {
+      "focusedOverlap": "Skupiony overlap",
+      "notInCluster": "Ten URL nie nalezy obecnie do klastra cannibalization.",
+      "noOverlapsTitle": "Brak overlapow",
+      "noOverlapsDescription": "Ten URL ma dane GSC, ale zaden overlap nie przeszedl progow istotnosci."
+    },
+    "table": {
+      "cluster": "Klaster",
+      "dominantUrl": "Dominujacy URL",
+      "noPrimary": "Brak wyraznego primary URL-a",
+      "primaryConfidenceLabel": "Pewnosc primary",
+      "sampleQueries": "Przykladowe query",
+      "competingUrls": "Konkurujace URL-e",
+      "rationale": "Uzasadnienie"
+    },
+    "sort": {
+      "severity": "Severity",
+      "impact": "Impact",
+      "overlap": "Weighted overlap",
+      "sharedQueries": "Wspolne query",
+      "sharedImpressions": "Wspolne impressions",
+      "sharedClicks": "Wspolne clicks",
+      "urlsCount": "URL-e w klastrze",
+      "primaryConfidence": "Pewnosc primary",
+      "recommendation": "Rekomendacja"
+    },
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "recommendations": {
+      "MERGE_CANDIDATE": "Kandydat do merge",
+      "SPLIT_INTENT_CANDIDATE": "Kandydat do split intent",
+      "REINFORCE_PRIMARY_URL": "Wzmocnij primary URL",
+      "QUERY_CLUSTER_WITHOUT_CLEAR_PRIMARY": "Klaster bez clear primary",
+      "LOW_VALUE_OVERLAP": "Niskowartosciowy overlap",
+      "HIGH_IMPACT_CANNIBALIZATION": "Cannibalization o wysokim impact"
+    },
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac cannibalization",
+      "detailsTitle": "Nie udalo sie pobrac szczegolow cannibalization"
+    },
+    "empty": {
+      "title": "Brak klastrow cannibalization dla biezacego widoku",
+      "description": "Poluzuj jeden lub wiecej filtrow, aby poszerzyc aktualny wycinek overlapu."
+    }
+  },
+  "trends": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Snapshoty i trendy",
+      "title": "Trendy dla zadania #{{jobId}}",
+      "description": "Porownuj crawl joby tej samej witryny i zestawiaj zaimportowane zakresy GSC bez wychodzenia z kontekstu zadania.",
+      "loadingOverview": "Ladowanie opcji porownania...",
+      "exportCrawlCompare": "Eksportuj crawl compare CSV",
+      "exportGscCompare": "Eksportuj GSC compare CSV"
+    },
+    "common": {
+      "openPages": "Otworz strony",
+      "openOpportunities": "Otworz szanse",
+      "openGsc": "Otworz GSC",
+      "openTopQueries": "Otworz top queries"
+    },
+    "errors": {
+      "overviewTitle": "Nie udalo sie pobrac przegladu trends",
+      "crawlTitle": "Nie udalo sie pobrac porownania crawl",
+      "gscTitle": "Nie udalo sie pobrac porownania GSC"
+    },
+    "crawl": {
+      "title": "Porownanie crawl jobow",
+      "description": "Porownaj biezacy crawl ze starsza baza tej samej witryny i przegladnij deterministyczne delty zmian per URL.",
+      "siteLabel": "Witryna",
+      "loading": "Ladowanie porownania crawl...",
+      "emptyBaselineTitle": "Brak bazowego crawl joba",
+      "emptyBaselineDescription": "Uruchom wczesniejszy crawl tej samej witryny, aby odblokowac porownanie job-to-job.",
+      "emptyTitle": "Brak zmian crawl dla biezacych filtrow",
+      "emptyDescription": "Poluzuj filtry porownania albo wybierz inny baseline.",
+      "summary": {
+        "shared": "Wspolne URL-e",
+        "new": "Nowe URL-e",
+        "missing": "Znikniete URL-e",
+        "improved": "URL-e poprawione",
+        "worsened": "URL-e pogorszone",
+        "unchanged": "URL-e bez zmian",
+        "resolvedIssues": "Rozwiazane problemy",
+        "addedIssues": "Dodane problemy"
+      },
+      "quickFilters": {
+        "title": "Presety crawl compare",
+        "improved": "Poprawione",
+        "worsened": "Pogorszone",
+        "new": "Nowe",
+        "missing": "Brakujace",
+        "resolvedIssues": "Rozwiazane problemy",
+        "newIssues": "Nowe problemy",
+        "priorityGain": "Wzrost priorytetu",
+        "priorityDrop": "Spadek priorytetu"
+      },
+      "filters": {
+        "title": "Filtry crawl compare",
+        "description": "Trzymaj baseline, zakres i filtry zmian w query params.",
+        "baselineJob": "Baseline job",
+        "gscRange": "Zakres priority/GSC",
+        "last28Days": "Ostatnie 28 dni",
+        "last90Days": "Ostatnie 90 dni",
+        "changeType": "Typ zmiany",
+        "resolvedIssuesMin": "Min. rozwiazanych problemow",
+        "addedIssuesMin": "Min. dodanych problemow",
+        "urlContains": "URL zawiera"
+      },
+      "changeType": {
+        "improved": "Poprawione",
+        "worsened": "Pogorszone",
+        "unchanged": "Bez zmian",
+        "new": "Nowe",
+        "missing": "Brakujace"
+      },
+      "table": {
+        "url": "URL",
+        "change": "Zmiana",
+        "issues": "Problemy",
+        "priority": "Priorytet",
+        "content": "Content / render",
+        "internalLinking": "Internal linking",
+        "resolved": "Rozwiazane",
+        "added": "Dodane",
+        "delta": "Delta",
+        "wordCount": "Liczba slow",
+        "schemaCount": "Liczba schema",
+        "responseTime": "Czas odpowiedzi",
+        "links": "Linki",
+        "linkingPages": "Strony linkujace"
+      }
+    },
+    "gsc": {
+      "title": "Porownanie GSC",
+      "description": "Porownaj zaimportowane zakresy Search Console dla biezacego joba i przejrzyj delty metryk per URL.",
+      "loading": "Ladowanie porownania GSC...",
+      "emptyTitle": "Brak wierszy GSC dla biezacych filtrow",
+      "emptyDescription": "Poluzuj filtry trendu albo zaimportuj brakujacy zakres.",
+      "summary": {
+        "clicksDelta": "Delta clicks",
+        "impressionsDelta": "Delta impressions",
+        "ctrDelta": "Delta CTR",
+        "positionDelta": "Delta pozycji",
+        "topQueriesDelta": "Delta top queries",
+        "improved": "URL-e poprawione",
+        "worsened": "URL-e pogorszone",
+        "flat": "URL-e flat"
+      },
+      "quickFilters": {
+        "title": "Presety GSC compare",
+        "clicksUp": "Clicks w gore",
+        "clicksDown": "Clicks w dol",
+        "impressionsUp": "Impressions w gore",
+        "ctrDown": "CTR w dol",
+        "positionImproved": "Pozycja poprawiona",
+        "positionWorsened": "Pozycja pogorszona"
+      },
+      "filters": {
+        "title": "Filtry GSC compare",
+        "description": "Trzymaj oba zakresy i filtry trendu w URL dla deep-linkow.",
+        "baselineRange": "Zakres bazowy",
+        "targetRange": "Zakres docelowy",
+        "last28Days": "Ostatnie 28 dni",
+        "last90Days": "Ostatnie 90 dni",
+        "overallTrend": "Trend ogolny",
+        "urlContains": "URL zawiera",
+        "sortBy": "Sortuj po",
+        "sortOrder": "Kolejnosc",
+        "sort": {
+          "clicksDelta": "Delta clicks",
+          "impressionsDelta": "Delta impressions",
+          "ctrDelta": "Delta CTR",
+          "positionDelta": "Delta pozycji",
+          "topQueriesDelta": "Delta top queries",
+          "overallTrend": "Trend ogolny",
+          "url": "URL"
+        }
+      },
+      "trend": {
+        "improved": "Poprawa",
+        "worsened": "Spadek",
+        "flat": "Flat"
+      },
+      "table": {
+        "url": "URL",
+        "trend": "Trend",
+        "clicks": "Clicks",
+        "impressions": "Impressions",
+        "ctr": "CTR",
+        "position": "Pozycja"
+      }
+    }
+  },
+  "gsc": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Google Search Console",
+      "title": "Szanse GSC dla zadania #{{jobId}}",
+      "description": "Podlacz jedno property, zaimportuj Search Analytics dla zcrawlowanych URL-i i pracuj na styku problemow technicznych oraz realnego popytu z wyszukiwarki.",
+      "loading": "Ladowanie danych Google Search Console...",
+      "loadingOpportunities": "Ladowanie szans GSC...",
+      "exportPages": "Eksportuj strony z GSC",
+      "exportQueries": "Eksportuj top queries"
+    },
+    "connection": {
+      "title": "Polaczenie i import",
+      "description": "Ten lokalny flow podpina jedno property Search Console dla biezacej witryny i trzyma tokeny na dysku do developmentu.",
+      "selectedProperty": "Wybrane property",
+      "connect": "Podlacz GSC",
+      "saveProperty": "Zapisz property",
+      "saving": "Zapisywanie property...",
+      "siteWorkspaceHint": "Potrzebujesz flow na poziomie witryny?",
+      "openSiteWorkspace": "Otworz workspace GSC witryny",
+      "topQueriesLimit": "Maks. top queries / URL",
+      "topQueriesLimitTooltip": "Ogranicza, ile wierszy query zapisujemy dla jednego dopasowanego URL-a podczas importu. To nie zwieksza liczby URL-i z query.",
+      "topQueriesLimitHint": "Przyklad: 1 zapisze tylko najmocniejsze query dla kazdego dopasowanego URL-a. Puste pole = domyslny limit backendu.",
+      "importCurrentRange": "Importuj aktywny zakres",
+      "importAll": "Importuj 28d + 90d",
+      "importing": "Importowanie...",
+      "oauthSuccess": "OAuth zakonczony. Wybierz pasujace property i uruchom import.",
+      "lastImport": "Ostatni import zakonczyl sie o {{date}}",
+      "rangeSummary": "Zakres {{range}}",
+      "pagesWithTopQueries": "Strony z top queries: {{count}}",
+      "storedTopQueries": "Zapisane top queries: {{count}}",
+      "failedPages": "Nieudane strony: {{count}}",
+      "importErrors": "Bledy importu: {{count}}",
+      "matchingNote": "Jesli w GSC widzisz wiecej URL-i niz w panelu, ten widok zapisuje tylko crawlowane strony wewnetrzne i dopasowuje query po wariancie URL-a. Roznice typu trailing slash, protokol, query params albo bledy importu moga wykluczyc strone."
+    },
+    "summary": {
+      "importedPages": "Zaimportowane strony",
+      "activeRange": "Aktywny zakres: {{range}}",
+      "pagesWithImpressions": "Strony z impressions",
+      "pagesWithClicks": "Strony z clicks",
+      "totalTopQueries": "Lacznie top queries",
+      "opportunitiesImpressions": "Problemy + impressions",
+      "opportunitiesClicks": "Problemy + clicks",
+      "pagesWithTopQueries": "Strony z top queries",
+      "lastImportedAt": "Ostatni import"
+    },
+    "quickFilters": {
+      "title": "Presety szans GSC",
+      "impressionsWithIssue": "Impressions + problem",
+      "clicksWithIssue": "Clicks + problem",
+      "lowCtrHighImpressions": "Niski CTR / wysokie impressions",
+      "highImpressionsWeakPosition": "Wysokie impressions / slaba pozycja"
+    },
+    "filters": {
+      "title": "Filtry szans",
+      "description": "Trzymaj aktywny zakres w URL, lacz stan techniczny z progami GSC i przechodz od razu do top queries.",
+      "dateRange": "Zakres dat",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "hasTechnicalIssue": "Ma problem techniczny",
+      "hasGscData": "Ma dane GSC",
+      "minImpressions": "Min. impressions",
+      "minClicks": "Min. clicks",
+      "maxCtr": "Maks. CTR (%)",
+      "minPosition": "Min. pozycja",
+      "minTopQueries": "Min. top queries"
+    },
+    "table": {
+      "url": "URL",
+      "technical": "Stan techniczny",
+      "clicks": "Clicks",
+      "impressions": "Impressions",
+      "ctr": "CTR",
+      "position": "Pozycja",
+      "topQueriesCount": "Top queries",
+      "technicalCount": "{{count}} problemow technicznych"
+    },
+    "topQueries": {
+      "title": "Top queries per URL",
+      "description": "Wybierz URL z tabeli szans, aby sprawdzic konkretne zapytania stojace za dana strona.",
+      "openPages": "Otworz widok stron",
+      "filtersTitle": "Filtry top queries",
+      "filtersDescription": "Filtruj i sortuj zaimportowane query dla wybranego URL-a.",
+      "queryContains": "Query zawiera",
+      "queryExcludes": "Wyklucz fraze",
+      "queryPlaceholder": "fraza brandowa",
+      "minImpressions": "Min. impressions",
+      "minClicks": "Min. clicks",
+      "maxCtr": "Maks. CTR (%)",
+      "minPosition": "Min. pozycja",
+      "loading": "Ladowanie top queries...",
+      "close": "Zamknij top queries",
+      "summaryClicks": "Clicks",
+      "summaryImpressions": "Impressions",
+      "summaryCtr": "CTR",
+      "summaryPosition": "Pozycja",
+      "summaryIssues": "Problemy techniczne",
+      "table": {
+        "query": "Query",
+        "clicks": "Clicks",
+        "impressions": "Impressions",
+        "ctr": "CTR",
+        "position": "Pozycja"
+      }
+    },
+    "errors": {
+      "summaryTitle": "Nie udalo sie pobrac podsumowania GSC",
+      "propertyTitle": "Nie udalo sie zapisac property",
+      "importTitle": "Import GSC nie udal sie",
+      "opportunitiesTitle": "Nie udalo sie pobrac szans GSC",
+      "topQueriesTitle": "Nie udalo sie pobrac top queries"
+    },
+    "empty": {
+      "opportunitiesTitle": "Brak URL-i pasujacych do biezacych filtrow GSC",
+      "opportunitiesDescription": "Poszerz jeden lub wiecej progow albo przelacz aktywny zakres GSC.",
+      "topQueriesTitle": "Wybierz URL, aby zobaczyc top queries",
+      "topQueriesDescription": "Skorzystaj z tabeli szans powyzej, aby przejsc od problemu technicznego do popytu z Search Console.",
+      "topQueriesNoRowsTitle": "Brak top queries dla wybranego URL-a",
+      "topQueriesNoRowsDescription": "Zaimportuj szerszy zakres albo poluzuj aktywne filtry query."
+    }
+  },
+  "links": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "page": {
+      "eyebrow": "Linki",
+      "title": "Graf linkow dla zadania #{{jobId}}",
+      "description": "Przechodz miedzy wewnetrznymi, zewnetrznymi i problematycznymi wycinkami bez utraty stanu po odswiezeniu.",
+      "exportFull": "Eksportuj pelny CSV",
+      "exportCurrentView": "Eksportuj biezacy widok CSV",
+      "loading": "Ladowanie linkow..."
+    },
+    "quickFilters": {
+      "title": "Szybkie filtry linkow",
+      "external": "Zewnetrzne",
+      "internal": "Wewnetrzne",
+      "nofollow": "Nofollow",
+      "missingAnchor": "Brak anchor text",
+      "brokenInternal": "Uszkodzone wewnetrzne",
+      "redirectingInternal": "Przekierowujace wewnetrzne",
+      "unresolvedInternal": "Nierozwiazane wewnetrzne",
+      "toNoindexLike": "Do noindex-like",
+      "toCanonicalized": "Do canonicalized",
+      "redirectChain": "Lancuch redirectow"
+    },
+    "filters": {
+      "title": "Filtry",
+      "description": "Mapuja sie bezposrednio na filtry backendowe, lacznie ze stanami deep-linkow z audytu.",
+      "isInternal": "Jest wewnetrzny",
+      "isNofollow": "Jest nofollow",
+      "targetDomain": "Docelowa domena",
+      "targetDomainPlaceholder": "example.com",
+      "hasAnchor": "Ma anchor",
+      "brokenInternal": "Uszkodzone wewnetrzne",
+      "redirectingInternal": "Przekierowujace wewnetrzne",
+      "unresolvedInternal": "Nierozwiazane wewnetrzne",
+      "toNoindexLike": "Do noindex-like",
+      "toCanonicalized": "Do canonicalized",
+      "redirectChain": "Lancuch redirectow"
+    },
+    "table": {
+      "sourceUrl": "Zrodlowy URL",
+      "targetUrl": "Docelowy URL",
+      "targetDomain": "Docelowa domena",
+      "anchorText": "Anchor text",
+      "targetStatus": "Status docelowy",
+      "redirectHops": "Liczba redirectow",
+      "finalUrl": "Final URL",
+      "internal": "Wewnetrzny",
+      "nofollow": "Nofollow",
+      "signals": "Sygnaly"
+    },
+    "signals": {
+      "brokenInternal": "Uszkodzone wewnetrzne",
+      "redirectingInternal": "Przekierowujace wewnetrzne",
+      "unresolvedInternal": "Nierozwiazane wewnetrzne",
+      "toNoindexLike": "Do noindex-like",
+      "toCanonicalized": "Do canonicalized",
+      "redirectChain": "Lancuch redirectow",
+      "noAnchor": "Brak anchor"
+    },
+    "urlActions": {
+      "openSource": "Otworz zrodlo",
+      "copySource": "Kopiuj zrodlo",
+      "openTarget": "Otworz cel",
+      "copyTarget": "Kopiuj cel"
+    },
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac linkow"
+    },
+    "empty": {
+      "title": "Brak linkow pasujacych do biezacych filtrow",
+      "description": "Wyczysc jeden lub wiecej filtrow, aby poszerzyc aktualny wycinek linkow."
+    }
+  },
+  "audit": {
+    "invalidIdTitle": "Nieprawidlowe id zadania",
+    "invalidIdMessage": "Trasa nie zawiera poprawnego numerycznego id zadania.",
+    "loading": "Ladowanie audytu dla zadania #{{jobId}}...",
+    "errors": {
+      "requestTitle": "Nie udalo sie pobrac audytu"
+    },
+    "empty": {
+      "title": "Audyt niedostepny",
+      "description": "Backend zwrocil pusta odpowiedz audytu."
+    },
+    "page": {
+      "eyebrow": "Audyt",
+      "title": "Audyt techniczny dla zadania #{{jobId}}",
+      "description": "Liczniki u gory, sekcje problemow ponizej i bezposrednie przejscia do pasujacych tabel stron lub linkow.",
+      "export": "Eksportuj audit.csv"
+    },
+    "sectionRecords": "{{count}} rekordow",
+    "sectionEmpty": {
+      "title": "Brak rekordow",
+      "description": "Ta sekcja jest obecnie pusta dla wybranego zadania."
+    },
+    "summary": {
+      "total_pages": "Lacznie stron",
+      "titleMetaIssues": "Problemy title / meta",
+      "headingIssues": "Problemy naglowkow",
+      "renderInsights": "Problemy renderu",
+      "schemaInsights": "Wnioski schema",
+      "xRobots": "Strony z X-Robots",
+      "canonicalIndexabilityIssues": "Canonical / indexability",
+      "broken_internal_links": "Uszkodzone linki wewnetrzne",
+      "contentIssues": "Problemy contentu",
+      "mediaIssues": "Problemy mediow",
+      "redirecting_internal_links": "Przekierowujace linki"
+    },
+    "sections": {
+      "pages_missing_title": "Strony bez title",
+      "pages_title_too_short": "Strony z za krotkim title",
+      "pages_title_too_long": "Strony z za dlugim title",
+      "pages_missing_meta_description": "Strony bez meta description",
+      "pages_meta_description_too_short": "Strony z za krotkim meta description",
+      "pages_meta_description_too_long": "Strony z za dlugim meta description",
+      "pages_missing_h1": "Strony bez H1",
+      "pages_multiple_h1": "Strony z wieloma H1",
+      "pages_missing_h2": "Strony bez H2",
+      "pages_duplicate_title": "Duplikaty title",
+      "pages_duplicate_meta_description": "Duplikaty meta description",
+      "pages_missing_canonical": "Strony bez canonical",
+      "pages_self_canonical": "Strony z self canonical",
+      "pages_canonical_to_other_url": "Strony z canonical do innego URL",
+      "pages_canonical_to_non_200": "Strony z canonical do non-200",
+      "pages_canonical_to_redirect": "Strony z canonical do redirectu",
+      "pages_noindex_like": "Strony typu noindex-like",
+      "pages_non_indexable_like": "Strony typu non-indexable-like",
+      "broken_internal_links": "Uszkodzone linki wewnetrzne",
+      "unresolved_internal_targets": "Nierozwiazane cele wewnetrzne",
+      "redirecting_internal_links": "Przekierowujace linki wewnetrzne",
+      "internal_links_to_noindex_like_pages": "Linki wewnetrzne do stron noindex-like",
+      "internal_links_to_canonicalized_pages": "Linki wewnetrzne do stron canonicalized",
+      "redirect_chains_internal": "Wewnetrzne lancuchy redirectow",
+      "pages_thin_content": "Strony z thin content",
+      "pages_duplicate_content": "Grupy duplikatow contentu",
+      "js_heavy_like_pages": "Strony JS-heavy-like",
+      "rendered_pages": "Renderowane strony",
+      "pages_with_render_errors": "Strony z bledem renderu",
+      "pages_with_schema": "Strony ze schema",
+      "pages_missing_schema": "Strony bez schema",
+      "pages_with_x_robots_tag": "Strony z X-Robots-Tag",
+      "pages_with_schema_types_summary": "Podsumowanie typow schema",
+      "pages_with_missing_alt_images": "Strony z obrazkami bez alt",
+      "pages_with_no_images": "Strony bez obrazkow",
+      "oversized_pages": "Za duze strony"
+    },
+    "table": {
+      "url": "URL",
+      "status": "Status",
+      "title": "Title",
+      "details": "Detale",
+      "value": "Wartosc",
+      "count": "Liczba",
+      "pages": "Strony",
+      "open": "Otworz",
+      "sourceUrl": "Zrodlowy URL",
+      "targetUrl": "Docelowy URL",
+      "targetStatus": "Status docelowy",
+      "redirectHops": "Liczba redirectow",
+      "finalUrl": "Final URL",
+      "signals": "Sygnaly",
+      "robotsMeta": "Robots meta"
+    },
+    "details": {
+      "titleLength": "Dlugosc title: {{count}}",
+      "metaLength": "Dlugosc meta: {{count}}",
+      "h1Count": "Liczba H1: {{count}}",
+      "h2Count": "Liczba H2: {{count}}",
+      "wordCount": "Liczba slow: {{count}}",
+      "missingAlt": "Obrazki bez alt: {{count}}",
+      "htmlSize": "Rozmiar HTML: {{size}}",
+      "canonical": "Canonical: {{value}}",
+      "canonicalTargetStatus": "Status celu canonical: {{count}}",
+      "xRobots": "X-Robots: {{value}}",
+      "rendered": "Renderowane przez Playwright",
+      "jsHeavyLike": "Oznaczone jako JS-heavy-like",
+      "renderError": "Blad renderu: {{value}}",
+      "schemaTypes": "Typy schema: {{value}}"
+    }
+  },
+  "pagesCompare": {
+    "loading": "Ladowanie compare stron...",
+    "errorTitle": "Nie udalo sie pobrac compare stron",
+    "emptyTitle": "Brak URL-i pasujacych do compare",
+    "emptyDescription": "Dostosuj filtry albo zmien baseline crawl, aby zobaczyc inny wycinek zmian.",
+    "compareUnavailableTitle": "Compare stron jest niedostepne",
+    "compareUnavailableDescription": "Wybierz inny baseline crawl, aby porownac aktywny snapshot.",
+    "eyebrow": "Compare snapshotow",
+    "title": "Zmiany stron",
+    "description": "Aktywny crawl z {{active}} porownany z baseline crawl z {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Otworz aktualne strony",
+      "openActiveCrawl": "Otworz aktywny crawl"
+    },
+    "summary": {
+      "activeUrls": "URL-e aktywne",
+      "newUrls": "Nowe URL-e",
+      "missingUrls": "Znikniete URL-e",
+      "changedUrls": "Zmienione URL-e",
+      "improvedUrls": "Poprawione URL-e",
+      "worsenedUrls": "Pogorszone URL-e",
+      "statusChanged": "Zmieniony status",
+      "priorityDown": "Pogorszony priorytet"
+    },
+    "quickFilters": {
+      "title": "Szybkie filtry compare",
+      "newUrls": "Nowe URL-e",
+      "missingUrls": "Znikniete URL-e",
+      "changed": "Zmienione",
+      "statusChanged": "Status zmieniony",
+      "titleChanged": "Title zmieniony",
+      "h1Changed": "H1 zmienione",
+      "canonicalChanged": "Canonical zmieniony",
+      "noindexChanged": "Noindex zmieniony",
+      "priorityUp": "Priorytet w gore",
+      "priorityDown": "Priorytet w dol",
+      "linksUp": "Linkowanie w gore",
+      "linksDown": "Linkowanie w dol",
+      "contentUp": "Content w gore",
+      "contentDown": "Content w dol"
+    },
+    "filters": {
+      "title": "Filtry compare",
+      "description": "Aktywny snapshot pozostaje baza tabeli, a compare doklada delty ponad nim.",
+      "dateRange": "Zakres GSC",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "changeType": "Typ zmiany",
+      "urlContains": "URL zawiera",
+      "statusChanged": "Status zmieniony",
+      "titleChanged": "Title zmieniony",
+      "metaDescriptionChanged": "Meta description zmienione",
+      "h1Changed": "H1 zmienione",
+      "canonicalChanged": "Canonical zmieniony",
+      "noindexChanged": "Noindex zmieniony",
+      "priorityTrend": "Trend priorytetu",
+      "internalLinkingTrend": "Trend internal linking",
+      "contentTrend": "Trend dlugosci contentu",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "sort": {
+        "changeType": "Typ zmiany",
+        "priorityDelta": "Delta priorytetu",
+        "wordCountDelta": "Delta liczby slow",
+        "responseTimeDelta": "Delta czasu odpowiedzi",
+        "internalLinksDelta": "Delta linkow wewnetrznych",
+        "url": "URL"
+      }
+    },
+    "changeType": {
+      "new": "Nowy w aktywnym crawlu",
+      "missing": "Brak vs baseline",
+      "improved": "Poprawione",
+      "worsened": "Pogorszone",
+      "unchanged": "Bez zmian"
+    },
+    "trend": {
+      "improved": "Poprawa",
+      "worsened": "Pogorszenie",
+      "flat": "Plasko"
+    },
+    "changedFields": {
+      "status_code": "Status",
+      "title": "Title",
+      "meta_description": "Meta description",
+      "h1": "H1",
+      "canonical_url": "Canonical",
+      "noindex_like": "Noindex",
+      "word_count": "Liczba slow",
+      "response_time_ms": "Czas odpowiedzi",
+      "incoming_internal_links": "Linki wewnetrzne",
+      "incoming_internal_linking_pages": "Linkujace strony",
+      "priority_score": "Priorytet"
+    },
+    "table": {
+      "url": "URL",
+      "openActivePages": "Otworz aktywne strony",
+      "openOpportunitiesCompare": "Otworz compare szans",
+      "active": "Aktywny crawl",
+      "baseline": "Baseline crawl",
+      "status": "Status",
+      "titleLabel": "Title",
+      "h1Label": "H1",
+      "canonicalLabel": "Canonical",
+      "noindexLabel": "Noindex-like",
+      "delta": "Delta",
+      "priorityDelta": "Priorytet",
+      "wordCountDelta": "Liczba slow",
+      "responseTimeDelta": "Czas odpowiedzi",
+      "internalLinksDelta": "Linki wewnetrzne",
+      "linkingPagesDelta": "Linkujace strony",
+      "rationale": "Dlaczego sie zmienilo",
+      "responseTime": "Czas odpowiedzi aktywnego"
+    }
+  },
+  "auditCompare": {
+    "loading": "Ladowanie compare audytu...",
+    "errorTitle": "Nie udalo sie pobrac compare audytu",
+    "emptyTitle": "Brak sekcji audytu pasujacych do compare",
+    "emptyDescription": "Sprobuj innego statusu compare albo wybierz inny baseline crawl.",
+    "compareUnavailableTitle": "Compare audytu jest niedostepne",
+    "compareUnavailableDescription": "Wybierz baseline crawl, aby porownac z nim aktywny audyt.",
+    "eyebrow": "Compare snapshotow",
+    "title": "Zmiany audytu",
+    "description": "Rozwiazane, nowe i zmienione obszary problemow miedzy aktywnym crawlem z {{active}} i baseline crawlem z {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Otworz aktualny audyt",
+      "openActiveCrawl": "Otworz aktywny crawl"
+    },
+    "summary": {
+      "resolvedSections": "Sekcje rozwiazane",
+      "newSections": "Sekcje nowe",
+      "improvedSections": "Sekcje poprawione",
+      "worsenedSections": "Sekcje pogorszone",
+      "resolvedIssues": "Problemy rozwiazane",
+      "newIssues": "Problemy nowe",
+      "activeIssues": "Problemy aktywne",
+      "baselineIssues": "Problemy w baseline"
+    },
+    "quickFilters": {
+      "title": "Szybkie filtry audytu",
+      "resolved": "Rozwiazane",
+      "new": "Nowe",
+      "improved": "Poprawione",
+      "worsened": "Pogorszone",
+      "unchanged": "Bez zmian"
+    },
+    "filters": {
+      "title": "Filtry compare audytu",
+      "description": "Filtruj sekcje compare bez gubienia kontekstu workspace witryny.",
+      "status": "Status sekcji"
+    },
+    "area": {
+      "pages": "Strony",
+      "links": "Linki",
+      "duplicates": "Duplikaty"
+    },
+    "status": {
+      "resolved": "Rozwiazane",
+      "new": "Nowe",
+      "improved": "Poprawione",
+      "worsened": "Pogorszone",
+      "unchanged": "Bez zmian"
+    },
+    "table": {
+      "section": "Sekcja",
+      "status": "Status",
+      "counts": "Liczby",
+      "changes": "Zmiany",
+      "active": "Aktywny",
+      "baseline": "Baseline",
+      "delta": "Delta",
+      "resolvedItems": "Rozwiazane elementy",
+      "newItems": "Nowe elementy",
+      "sampleResolved": "Przyklady rozwiazanych",
+      "sampleNew": "Przyklady nowych"
+    }
+  },
+  "opportunitiesCompare": {
+    "loading": "Ladowanie compare szans...",
+    "errorTitle": "Nie udalo sie pobrac compare szans",
+    "emptyTitle": "Brak zmian szans pasujacych do biezacego widoku",
+    "emptyDescription": "Dostosuj filtry albo przelacz baseline crawl, aby zobaczyc inny zestaw roboczy.",
+    "compareUnavailableTitle": "Compare szans jest niedostepne",
+    "compareUnavailableDescription": "Wybierz baseline crawl, aby porownac zmiany priorytetow szans.",
+    "eyebrow": "Compare snapshotow",
+    "title": "Zmiany szans SEO",
+    "description": "Sprawdz, ktore szanse i priorytety pojawily sie, zniknely albo przesunely miedzy aktywnym crawlem z {{active}} i baseline crawlem z {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Otworz aktualne szanse SEO",
+      "openActiveCrawl": "Otworz aktywny crawl"
+    },
+    "summary": {
+      "activeUrls": "URL-e z szansami",
+      "actionableUrls": "URL-e warte dzialania",
+      "newOpportunities": "Nowe szanse",
+      "resolvedOpportunities": "Rozwiazane szanse",
+      "priorityUp": "Priorytet w gore",
+      "priorityDown": "Priorytet w dol",
+      "enteredActionable": "Weszly do dzialania",
+      "leftActionable": "Wypadly z dzialania"
+    },
+    "quickFilters": {
+      "title": "Szybkie filtry szans",
+      "newOpportunities": "Nowe szanse",
+      "resolvedOpportunities": "Rozwiazane szanse",
+      "priorityUp": "Priorytet w gore",
+      "priorityDown": "Priorytet w dol",
+      "enteredActionable": "Weszly do dzialania",
+      "leftActionable": "Wypadly z dzialania"
+    },
+    "filters": {
+      "title": "Filtry compare szans",
+      "description": "Skup sie na URL-ach, ktorych priorytet zmienil kolejnosc pracy.",
+      "dateRange": "Zakres GSC",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "changeKind": "Typ highlightu",
+      "opportunityType": "Typ szansy",
+      "urlContains": "URL zawiera",
+      "urlContainsPlaceholder": "https://example.com/sciezka",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "sort": {
+        "priorityDelta": "Delta priorytetu",
+        "activePriority": "Aktywny priorytet",
+        "activeOpportunityCount": "Aktywna liczba szans",
+        "changeType": "Typ zmiany",
+        "url": "URL"
+      }
+    },
+    "highlights": {
+      "NEW_URL": "Nowy URL",
+      "MISSING_URL": "Znikniety URL",
+      "NEW_OPPORTUNITY": "Nowa szansa",
+      "RESOLVED_OPPORTUNITY": "Rozwiazana szansa",
+      "PRIORITY_UP": "Priorytet w gore",
+      "PRIORITY_DOWN": "Priorytet w dol",
+      "ENTERED_ACTIONABLE": "Weszlo do dzialania",
+      "LEFT_ACTIONABLE": "Wypadlo z dzialania"
+    },
+    "actionable": {
+      "entered": "Weszlo do pasma dzialania",
+      "left": "Wypadlo z pasma dzialania",
+      "steady": "Pozostalo w tym samym pasmie"
+    },
+    "table": {
+      "url": "URL",
+      "openPagesCompare": "Otworz compare stron",
+      "openActivePages": "Otworz aktywne strony",
+      "priority": "Priorytet",
+      "active": "Aktywny",
+      "baseline": "Baseline",
+      "delta": "Delta",
+      "activeLevel": "Aktywny poziom",
+      "baselineLevel": "Poziom baseline",
+      "opportunities": "Szanse",
+      "activeCount": "Aktywna liczba",
+      "baselineCount": "Liczba baseline",
+      "newTypes": "Nowe typy",
+      "resolvedTypes": "Rozwiazane typy",
+      "rationale": "Dlaczego sie zmienilo",
+      "actionable": "Status dzialania"
+    }
+  },
+  "internalLinkingCompare": {
+    "loading": "Ladowanie compare internal linking...",
+    "errorTitle": "Nie udalo sie pobrac compare internal linking",
+    "emptyTitle": "Brak zmian internal linking pasujacych do biezacego widoku",
+    "emptyDescription": "Dostosuj filtry compare albo wybierz inny baseline crawl.",
+    "compareUnavailableTitle": "Compare internal linking jest niedostepne",
+    "compareUnavailableDescription": "Wybierz baseline crawl, aby porownac zmiany strukturalne.",
+    "eyebrow": "Compare snapshotow",
+    "title": "Zmiany linkowania wewnetrznego",
+    "description": "Sledz poprawy i regresje strukturalne miedzy aktywnym crawlem z {{active}} i baseline crawlem z {{baseline}}.",
+    "actions": {
+      "openCurrentState": "Otworz aktualne linkowanie wewnetrzne",
+      "openActiveCrawl": "Otworz aktywny crawl"
+    },
+    "summary": {
+      "issueUrls": "URL-e z problemami",
+      "newOrphanLike": "Nowe orphan-like",
+      "resolvedOrphanLike": "Rozwiazane orphan-like",
+      "weaklyLinkedImproved": "Weak important poprawione",
+      "weaklyLinkedWorsened": "Weak important pogorszone",
+      "linkingPagesUp": "Linkujace strony w gore",
+      "anchorImproved": "Anchor diversity poprawione",
+      "boilerplateWorsened": "Boilerplate pogorszone"
+    },
+    "quickFilters": {
+      "title": "Szybkie filtry internal linking",
+      "newOrphanLike": "Nowe orphan-like",
+      "resolvedOrphanLike": "Rozwiazane orphan-like",
+      "weaklyLinkedImproved": "Weak important poprawione",
+      "weaklyLinkedWorsened": "Weak important pogorszone",
+      "linkingPagesUp": "Linkujace strony w gore",
+      "linkingPagesDown": "Linkujace strony w dol"
+    },
+    "filters": {
+      "title": "Filtry compare internal linking",
+      "description": "Porownuj typy problemow i sygnaly strukturalne bez wychodzenia z workspace witryny.",
+      "dateRange": "Zakres GSC",
+      "last28Days": "Ostatnie 28 dni",
+      "last90Days": "Ostatnie 90 dni",
+      "changeType": "Typ zmiany",
+      "compareKind": "Typ highlightu",
+      "issueType": "Typ problemu",
+      "urlContains": "URL zawiera",
+      "urlContainsPlaceholder": "https://example.com/sciezka",
+      "sortBy": "Sortuj po",
+      "sortOrder": "Kolejnosc",
+      "sort": {
+        "internalLinkingDelta": "Delta internal linking",
+        "linkEquityDelta": "Delta link equity",
+        "linkingPagesDelta": "Delta linkujacych stron",
+        "anchorDiversityDelta": "Delta anchor diversity",
+        "boilerplateDelta": "Delta boilerplate",
+        "changeType": "Typ zmiany",
+        "url": "URL"
+      }
+    },
+    "highlights": {
+      "NEW_ORPHAN_LIKE": "Nowe orphan-like",
+      "RESOLVED_ORPHAN_LIKE": "Rozwiazane orphan-like",
+      "WEAKLY_LINKED_IMPROVED": "Weak important poprawione",
+      "WEAKLY_LINKED_WORSENED": "Weak important pogorszone",
+      "LINK_EQUITY_IMPROVED": "Link equity poprawione",
+      "LINK_EQUITY_WORSENED": "Link equity pogorszone",
+      "LINKING_PAGES_UP": "Linkujace strony w gore",
+      "LINKING_PAGES_DOWN": "Linkujace strony w dol",
+      "ANCHOR_DIVERSITY_IMPROVED": "Anchor diversity poprawione",
+      "ANCHOR_DIVERSITY_WORSENED": "Anchor diversity pogorszone",
+      "BOILERPLATE_IMPROVED": "Boilerplate poprawione",
+      "BOILERPLATE_WORSENED": "Boilerplate pogorszone"
+    },
+    "table": {
+      "url": "URL",
+      "openPagesCompare": "Otworz compare stron",
+      "openActiveInternalLinking": "Otworz aktywne internal linking",
+      "issues": "Problemy",
+      "activeIssues": "Problemy aktywne",
+      "baselineIssues": "Problemy baseline",
+      "newIssues": "Nowe problemy",
+      "resolvedIssues": "Rozwiazane problemy",
+      "delta": "Delta",
+      "internalLinkingDelta": "Internal linking",
+      "linkEquityDelta": "Link equity",
+      "linkingPagesDelta": "Linkujace strony",
+      "anchorDelta": "Anchor diversity",
+      "boilerplateDelta": "Boilerplate share",
+      "rationale": "Dlaczego sie zmienilo",
+      "currentBoilerplate": "Boilerplate share aktywnego"
+    }
+  }
+}

@@ -19,9 +19,21 @@ router = APIRouter(prefix="/crawl-jobs", tags=["crawl-jobs"])
 
 @router.get("", response_model=list[CrawlJobListItemResponse])
 def list_crawl_jobs(
-    sort_by: Literal["id", "created_at"] = Query(default="id"),
+    sort_by: Literal[
+        "id",
+        "created_at",
+        "status",
+        "started_at",
+        "finished_at",
+        "total_pages",
+        "total_internal_links",
+        "total_external_links",
+        "total_errors",
+    ] = Query(default="id"),
     sort_order: Literal["asc", "desc"] = Query(default="desc"),
     limit: int = Query(default=100, ge=1, le=500),
+    status_filter: Literal["pending", "running", "finished", "failed", "stopped"] | None = Query(default=None),
+    search: str | None = Query(default=None),
     session: Session = Depends(get_db),
 ) -> list[CrawlJobListItemResponse]:
     jobs = crawl_job_service.list_crawl_jobs(
@@ -29,6 +41,8 @@ def list_crawl_jobs(
         sort_by=sort_by,
         sort_order=sort_order,
         limit=limit,
+        status_filter=status_filter,
+        search=search,
     )
     return [CrawlJobListItemResponse.model_validate(item) for item in jobs]
 
@@ -46,6 +60,9 @@ def create_crawl_job(
             max_urls=payload.max_urls,
             max_depth=payload.max_depth,
             delay=payload.delay,
+            render_mode=payload.render_mode,
+            render_timeout_ms=payload.render_timeout_ms,
+            max_rendered_pages_per_job=payload.max_rendered_pages_per_job,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -61,6 +78,9 @@ def create_crawl_job(
         max_urls=payload.max_urls,
         max_depth=payload.max_depth,
         delay=payload.delay,
+        render_mode=payload.render_mode,
+        render_timeout_ms=payload.render_timeout_ms,
+        max_rendered_pages_per_job=payload.max_rendered_pages_per_job,
     )
     return CrawlJobResponse.model_validate(crawl_job)
 

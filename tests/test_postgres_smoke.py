@@ -16,7 +16,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.db.models import CrawlJob, CrawlJobStatus, Page, Site
 
-pytestmark = pytest.mark.postgres_smoke
+pytestmark = [pytest.mark.postgres_smoke, pytest.mark.integration, pytest.mark.slow]
 
 
 def require_postgres_smoke_enabled() -> None:
@@ -166,11 +166,26 @@ def test_postgres_schema_constraints_and_mutable_json(postgres_database_url: str
     assert "uq_pages_crawl_job_id_normalized_url" in page_unique_constraints
 
     page_index_names = {item["name"] for item in inspector.get_indexes("pages")}
-    assert {"ix_pages_crawl_job_id", "ix_pages_status_code", "ix_pages_is_internal", "ix_pages_depth"}.issubset(
-        page_index_names
-    )
+    assert {
+        "ix_pages_crawl_job_id",
+        "ix_pages_status_code",
+        "ix_pages_is_internal",
+        "ix_pages_depth",
+        "ix_pages_page_type",
+        "ix_pages_page_bucket",
+    }.issubset(page_index_names)
     page_columns = {item["name"] for item in inspector.get_columns("pages")}
-    assert {"canonical_url", "robots_meta", "content_type", "response_time_ms"}.issubset(page_columns)
+    assert {
+        "canonical_url",
+        "robots_meta",
+        "content_type",
+        "response_time_ms",
+        "page_type",
+        "page_bucket",
+        "page_type_confidence",
+        "page_type_version",
+        "page_type_rationale",
+    }.issubset(page_columns)
 
     link_index_names = {item["name"] for item in inspector.get_indexes("links")}
     assert {"ix_links_crawl_job_id", "ix_links_source_page_id", "ix_links_target_domain", "ix_links_is_internal"}.issubset(

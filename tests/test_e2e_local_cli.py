@@ -11,6 +11,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import pytest
+
+
+pytestmark = [pytest.mark.e2e, pytest.mark.integration, pytest.mark.slow]
+
 
 class LocalSiteHandler(BaseHTTPRequestHandler):
     ROOT_HTML = """

@@ -21,8 +21,8 @@ export async function listCrawlJobs(params: JobsListQueryParams): Promise<CrawlJ
   return apiRequest<CrawlJobListItem[]>(`/crawl-jobs${suffix}`)
 }
 
-export async function createCrawlJob(payload: CrawlJobCreateInput): Promise<{ id: number }> {
-  return apiRequest<{ id: number }>('/crawl-jobs', {
+export async function createCrawlJob(payload: CrawlJobCreateInput): Promise<{ id: number; site_id: number }> {
+  return apiRequest<{ id: number; site_id: number }>('/crawl-jobs', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -66,7 +66,10 @@ export function useCreateCrawlJobMutation() {
   return useMutation({
     mutationFn: createCrawlJob,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.jobsRoot })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.jobsRoot }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.sitesRoot }),
+      ])
     },
   })
 }
