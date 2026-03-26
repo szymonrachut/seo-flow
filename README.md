@@ -230,52 +230,6 @@ API domyslnie:
 http://127.0.0.1:8000
 ```
 
-## Izolowany worktree local flow
-Ten repo moze dzialac rownolegle w kilku `git worktree`, ale kazdy worktree powinien miec wlasny lokalny runtime.
-
-Nowe komendy developerskie:
-```bash
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command init-worktree-env
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command clone-worktree-db
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command start-worktree
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command stop-worktree
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command info-worktree
-```
-
-Co robi `init-worktree-env`:
-- wylicza deterministyczny `WORKTREE_INSTANCE_ID` z katalogu worktree,
-- ustawia izolowany `COMPOSE_PROJECT_NAME`,
-- ustawia osobne porty dla PostgreSQL / API / frontendu,
-- aktualizuje tylko lokalne, gitignore'owane pliki `.env`, `frontend/.env.local` i `.local/worktree/*`,
-- ustawia osobne sciezki dla lokalnych plikow GSC (`.local/worktree/gsc/*`).
-
-Typowy flow dla nowego worktree:
-```bash
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command init-worktree-env
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command clone-worktree-db
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command start-worktree
-```
-
-`clone-worktree-db`:
-- wykrywa domyslny source worktree przez `git worktree list` albo przyjmuje `-SourceWorktreePath`,
-- robi logiczna kopie PostgreSQL `pg_dump | pg_restore` do izolowanej instancji tego worktree,
-- po restore uruchamia `alembic upgrade head` na bazie worktree.
-
-Przyklad z jawnym zrodlem:
-```bash
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command init-worktree-env -SourceWorktreePath ..\seo_crawler
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command clone-worktree-db -SourceWorktreePath ..\seo_crawler
-```
-
-`start-worktree` uruchamia:
-- bootstrap `.venv`,
-- izolowany PostgreSQL tego worktree,
-- migracje,
-- backend w osobnym oknie PowerShell,
-- frontend Vite w osobnym oknie PowerShell.
-
-`stop-worktree` zatrzymuje lokalne procesy backend/frontend zapisane w `.local/worktree/runtime.env` oraz wykonuje `docker compose down` tylko dla tego worktree.
-
 ## Daily run
 Terminal 1:
 ```bash
@@ -318,20 +272,20 @@ npm run dev
 Minimalna konfiguracja `.env`:
 ```env
 FRONTEND_APP_URL=http://127.0.0.1:5173
-GSC_CLIENT_SECRETS_PATH=.local/worktree/gsc/credentials.json
-GSC_TOKEN_PATH=.local/worktree/gsc/token.json
-GSC_OAUTH_STATE_PATH=.local/worktree/gsc/oauth_state.json
+GSC_CLIENT_SECRETS_PATH=.local/gsc/credentials.json
+GSC_TOKEN_PATH=.local/gsc/token.json
+GSC_OAUTH_STATE_PATH=.local/gsc/oauth_state.json
 GSC_OAUTH_REDIRECT_URI=http://127.0.0.1:8000/gsc/oauth/callback
 GSC_DEFAULT_TOP_QUERIES_LIMIT=20
 GSC_METRICS_ROW_LIMIT=25000
 ```
 
 Domyslne pliki lokalne:
-- `.local/worktree/gsc/credentials.json`
-- `.local/worktree/gsc/token.json`
-- `.local/worktree/gsc/oauth_state.json`
+- `.local/gsc/credentials.json`
+- `.local/gsc/token.json`
+- `.local/gsc/oauth_state.json`
 
-Pliki w `.local/worktree/gsc/` sa ignorowane przez git i sa przeznaczone tylko do lokalnego developmentu konkretnego worktree.
+Pliki w `.local/gsc/` sa ignorowane przez git i sa przeznaczone tylko do lokalnego developmentu.
 
 ### Jak przygotowac Google credentials
 1. W Google Cloud utworz lub wybierz projekt.
@@ -340,7 +294,7 @@ Pliki w `.local/worktree/gsc/` sa ignorowane przez git i sa przeznaczone tylko d
 4. Dodaj redirect URI:
    - `http://127.0.0.1:8000/gsc/oauth/callback`
 5. Pobierz JSON i zapisz go jako:
-   - `.local/worktree/gsc/credentials.json`
+   - `.local/gsc/credentials.json`
 
 ## GSC local flow po ETAPIE 11.2
 1. Otworz `/sites` i wejdz do workspace witryny.

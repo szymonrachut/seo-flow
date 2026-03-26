@@ -36,11 +36,6 @@ Czytaj w tej kolejnosci:
 Backend:
 ```bash
 powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command bootstrap
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command init-worktree-env
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command clone-worktree-db
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command start-worktree
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command stop-worktree
-powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command info-worktree
 powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command db-up
 powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command db-reset
 powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command migrate
