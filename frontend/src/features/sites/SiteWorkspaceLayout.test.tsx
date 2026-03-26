@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, test, vi } from 'vitest'
@@ -1347,6 +1347,13 @@ describe('SiteWorkspaceLayout', () => {
     expect(screen.getByTestId('location-probe')).toHaveTextContent(
       '/sites/5/opportunities?active_crawl_id=11&baseline_crawl_id=10',
     )
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Inspect' })[0])
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Selected record')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Open in active pages' })).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   test('renders top-level internal linking current-state and dedicated issues subroute', async () => {
@@ -1378,9 +1385,15 @@ describe('SiteWorkspaceLayout', () => {
         .getAllByRole('link', { name: 'Open Changes' })
         .map((link) => link.getAttribute('href')),
     ).toContain('/sites/5/changes/internal-linking?active_crawl_id=11&baseline_crawl_id=10')
-    expect(screen.getByText('Orphan-like with weak link equity.')).toBeInTheDocument()
     expect(screen.getByTestId('location-probe')).toHaveTextContent(
       '/sites/5/internal-linking/issues?active_crawl_id=11&baseline_crawl_id=10',
     )
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Inspect' })[0])
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Selected issue')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Open in active snapshot' })).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

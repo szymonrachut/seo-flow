@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { buildApiUrl } from '../../api/client'
 import { DataTable } from '../../components/DataTable'
+import { DetailModal } from '../../components/DetailModal'
 import { DataViewHeader } from '../../components/DataViewHeader'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
@@ -171,6 +172,7 @@ export function SiteOpportunitiesCurrentPage({ mode = 'overview' }: SiteOpportun
   const { site, activeCrawlId, baselineCrawlId } = useSiteWorkspaceContext()
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const currentLanguage = i18n.resolvedLanguage ?? i18n.language
 
   useDocumentTitle(
@@ -217,8 +219,10 @@ export function SiteOpportunitiesCurrentPage({ mode = 'overview' }: SiteOpportun
     : []
 
   useEffect(() => {
-    if (selectedRecordId && effectRecords.some((record) => record.page_id === selectedRecordId)) return
-    setSelectedRecordId(effectRecords[0]?.page_id ?? null)
+    if (selectedRecordId === null) return
+    if (effectRecords.some((record) => record.page_id === selectedRecordId)) return
+    setSelectedRecordId(null)
+    setIsDetailsOpen(false)
   }, [effectRecords, selectedRecordId])
 
   if (!activeCrawlId || !site.active_crawl) {
@@ -243,7 +247,12 @@ export function SiteOpportunitiesCurrentPage({ mode = 'overview' }: SiteOpportun
   const totalPages = Math.max(1, Math.ceil(visibleRecords.length / pageSize))
   const currentPage = Math.min(page, totalPages)
   const paginatedRecords = visibleRecords.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  const selectedRecord = visibleRecords.find((record) => record.page_id === selectedRecordId) ?? visibleRecords[0] ?? null
+  const selectedRecord = visibleRecords.find((record) => record.page_id === selectedRecordId) ?? null
+
+  function openRecordDetails(pageId: number) {
+    setSelectedRecordId(pageId)
+    setIsDetailsOpen(true)
+  }
 
   const quickFilterItems = [
     { label: t('opportunities.quickFilters.highPriority'), isActive: quickFilters.has('HIGH_PRIORITY'), onClick: () => toggleQuickFilter('HIGH_PRIORITY') },
@@ -312,7 +321,7 @@ export function SiteOpportunitiesCurrentPage({ mode = 'overview' }: SiteOpportun
       header: t('common.open'),
       minWidth: 120,
       cell: (row: OpportunityRecord) => (
-        <button type="button" onClick={() => setSelectedRecordId(row.page_id)} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+        <button type="button" onClick={() => openRecordDetails(row.page_id)} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
           {t('siteOpportunities.inspectRecord')}
         </button>
       ),
@@ -411,123 +420,121 @@ export function SiteOpportunitiesCurrentPage({ mode = 'overview' }: SiteOpportun
         </label>
       </FilterPanel>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="space-y-6">
-          {mode === 'overview' ? (
-            <>
-              <section className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-stone-950">{t('siteOpportunities.topRecordsTitle')}</h2>
-                    <p className="mt-1 text-sm text-stone-600">{t('siteOpportunities.topRecordsDescription')}</p>
-                  </div>
-                  <Link to={recordsPath} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
-                    {t('siteOpportunities.openRecords')}
-                  </Link>
-                </div>
-                <div className="mt-4">
-                  {visibleRecords.length === 0 ? <EmptyState title={t('siteOpportunities.emptyTitle')} description={t('siteOpportunities.emptyDescription')} /> : <DataTable columns={recordColumns} rows={visibleRecords.slice(0, 6)} rowKey={(row) => row.page_id} />}
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-stone-950">{t('siteOpportunities.groupsTitle')}</h2>
-                  <p className="mt-1 text-sm text-stone-600">{t('siteOpportunities.groupsDescription')}</p>
-                </div>
-                {visibleGroups.length === 0 ? (
-                  <EmptyState title={t('siteOpportunities.groupsEmptyTitle')} description={t('siteOpportunities.groupsEmptyDescription')} />
-                ) : (
-                  visibleGroups.map((group) => (
-                    <section key={group.type} className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
-                      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-stone-950">{t(`opportunities.types.${group.type}.title`)}</h3>
-                          <p className="mt-1 text-sm text-stone-600">{t(`opportunities.types.${group.type}.description`)}</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="inline-flex rounded-full bg-stone-100 px-3 py-1.5 text-sm font-semibold text-stone-700">{t('opportunities.groupCount', { count: group.count })}</span>
-                          <Link to={appendPathQuery(recordsPath, { opportunity_type: group.type })} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
-                            {t('siteOpportunities.openRecords')}
-                          </Link>
-                        </div>
-                      </div>
-                      <div className="mt-4 space-y-2">
-                        {group.top_pages.map((page) => (
-                          <button key={`${group.type}-${page.page_id}`} type="button" onClick={() => setSelectedRecordId(page.page_id)} className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50/85 px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-100">
-                            <span className="max-w-[70%] truncate text-sm font-medium text-stone-900" title={page.url}>{page.url}</span>
-                            <span className="text-xs font-medium text-stone-600">{page.priority_score}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </section>
-                  ))
-                )}
-              </section>
-            </>
-          ) : (
+      <div className="space-y-6">
+        {mode === 'overview' ? (
+          <>
             <section className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-stone-950">{t('siteOpportunities.recordsTableTitle')}</h2>
-                  <p className="mt-1 text-sm text-stone-600">{t('siteOpportunities.recordsTableDescription')}</p>
+                  <h2 className="text-lg font-semibold text-stone-950">{t('siteOpportunities.topRecordsTitle')}</h2>
+                  <p className="mt-1 text-sm text-stone-600">{t('siteOpportunities.topRecordsDescription')}</p>
                 </div>
-                <Link to={overviewPath} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
-                  {t('siteOpportunities.openOverview')}
+                <Link to={recordsPath} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+                  {t('siteOpportunities.openRecords')}
                 </Link>
               </div>
               <div className="mt-4">
-                {paginatedRecords.length === 0 ? (
-                  <EmptyState title={t('siteOpportunities.emptyTitle')} description={t('siteOpportunities.emptyDescription')} />
-                ) : (
-                  <>
-                    <DataTable columns={recordColumns} rows={paginatedRecords} rowKey={(row) => row.page_id} />
-                    <div className="mt-4">
-                      <PaginationControls page={currentPage} pageSize={pageSize} totalItems={visibleRecords.length} totalPages={totalPages} onPageChange={(nextPage) => updateParams({ page: nextPage })} onPageSizeChange={(nextPageSize) => updateParams({ page_size: nextPageSize, page: 1 })} />
-                    </div>
-                  </>
-                )}
+                {visibleRecords.length === 0 ? <EmptyState title={t('siteOpportunities.emptyTitle')} description={t('siteOpportunities.emptyDescription')} /> : <DataTable columns={recordColumns} rows={visibleRecords.slice(0, 6)} rowKey={(row) => row.page_id} />}
               </div>
             </section>
-          )}
-        </div>
 
-        <aside className="rounded-[28px] border border-stone-300 bg-white/90 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.18em] text-teal-700">{t('siteOpportunities.detailsTitle')}</p>
-          {selectedRecord ? (
-            <div className="mt-3 space-y-4">
+            <section className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold text-stone-950 [overflow-wrap:anywhere]" title={selectedRecord.url}>{selectedRecord.url}</h2>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {selectedRecord.opportunity_types.map((type) => (
-                    <span key={`${selectedRecord.page_id}-${type}-badge`} className="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[11px] font-medium text-teal-700">
-                      {t(`opportunities.types.${type}.title`)}
-                    </span>
-                  ))}
-                </div>
+                <h2 className="text-lg font-semibold text-stone-950">{t('siteOpportunities.groupsTitle')}</h2>
+                <p className="mt-1 text-sm text-stone-600">{t('siteOpportunities.groupsDescription')}</p>
               </div>
-              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
-                <p>{t('opportunities.metrics.clicks')}: {formatNullable(selectedRecord.clicks)}</p>
-                <p>{t('opportunities.metrics.impressions')}: {formatNullable(selectedRecord.impressions)}</p>
-                <p>{t('opportunities.metrics.ctr')}: {formatPercent(selectedRecord.ctr)}</p>
-                <p>{t('opportunities.metrics.position')}: {formatPosition(selectedRecord.position)}</p>
-                <p>{t('opportunities.metrics.internalLinks')}: {selectedRecord.incoming_internal_links}</p>
+              {visibleGroups.length === 0 ? (
+                <EmptyState title={t('siteOpportunities.groupsEmptyTitle')} description={t('siteOpportunities.groupsEmptyDescription')} />
+              ) : (
+                visibleGroups.map((group) => (
+                  <section key={group.type} className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-stone-950">{t(`opportunities.types.${group.type}.title`)}</h3>
+                        <p className="mt-1 text-sm text-stone-600">{t(`opportunities.types.${group.type}.description`)}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="inline-flex rounded-full bg-stone-100 px-3 py-1.5 text-sm font-semibold text-stone-700">{t('opportunities.groupCount', { count: group.count })}</span>
+                        <Link to={appendPathQuery(recordsPath, { opportunity_type: group.type })} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+                          {t('siteOpportunities.openRecords')}
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      {group.top_pages.map((page) => (
+                        <button key={`${group.type}-${page.page_id}`} type="button" onClick={() => openRecordDetails(page.page_id)} className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50/85 px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-100">
+                          <span className="max-w-[70%] truncate text-sm font-medium text-stone-900" title={page.url}>{page.url}</span>
+                          <span className="text-xs font-medium text-stone-600">{page.priority_score}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                ))
+              )}
+            </section>
+          </>
+        ) : (
+          <section className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-stone-950">{t('siteOpportunities.recordsTableTitle')}</h2>
+                <p className="mt-1 text-sm text-stone-600">{t('siteOpportunities.recordsTableDescription')}</p>
               </div>
-              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700 [overflow-wrap:anywhere]">
-                {localizeOpportunityRationale(selectedRecord.rationale, currentLanguage, t)}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link to={`/jobs/${activeCrawlId}/pages?url_contains=${encodeURIComponent(selectedRecord.url)}&sort_by=priority_score&sort_order=desc`} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
-                  {t('siteOpportunities.openInActivePages')}
-                </Link>
-                <UrlActions url={selectedRecord.url} />
-              </div>
+              <Link to={overviewPath} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+                {t('siteOpportunities.openOverview')}
+              </Link>
             </div>
-          ) : (
-            <p className="mt-3 text-sm text-stone-600">{t('siteOpportunities.detailsEmpty')}</p>
-          )}
-        </aside>
+            <div className="mt-4">
+              {paginatedRecords.length === 0 ? (
+                <EmptyState title={t('siteOpportunities.emptyTitle')} description={t('siteOpportunities.emptyDescription')} />
+              ) : (
+                <>
+                  <DataTable columns={recordColumns} rows={paginatedRecords} rowKey={(row) => row.page_id} />
+                  <div className="mt-4">
+                    <PaginationControls page={currentPage} pageSize={pageSize} totalItems={visibleRecords.length} totalPages={totalPages} onPageChange={(nextPage) => updateParams({ page: nextPage })} onPageSizeChange={(nextPageSize) => updateParams({ page_size: nextPageSize, page: 1 })} />
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+        )}
       </div>
+
+      {isDetailsOpen && selectedRecord ? (
+        <DetailModal
+          titleId="site-opportunities-details-title"
+          title={selectedRecord.url}
+          eyebrow={t('siteOpportunities.detailsTitle')}
+          closeLabel={t('common.close')}
+          onClose={() => setIsDetailsOpen(false)}
+        >
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-1.5">
+              {selectedRecord.opportunity_types.map((type) => (
+                <span key={`${selectedRecord.page_id}-${type}-badge`} className="inline-flex rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[11px] font-medium text-teal-700">
+                  {t(`opportunities.types.${type}.title`)}
+                </span>
+              ))}
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+              <p>{t('opportunities.metrics.clicks')}: {formatNullable(selectedRecord.clicks)}</p>
+              <p>{t('opportunities.metrics.impressions')}: {formatNullable(selectedRecord.impressions)}</p>
+              <p>{t('opportunities.metrics.ctr')}: {formatPercent(selectedRecord.ctr)}</p>
+              <p>{t('opportunities.metrics.position')}: {formatPosition(selectedRecord.position)}</p>
+              <p>{t('opportunities.metrics.internalLinks')}: {selectedRecord.incoming_internal_links}</p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700 [overflow-wrap:anywhere] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+              {localizeOpportunityRationale(selectedRecord.rationale, currentLanguage, t)}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link to={`/jobs/${activeCrawlId}/pages?url_contains=${encodeURIComponent(selectedRecord.url)}&sort_by=priority_score&sort_order=desc`} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+                {t('siteOpportunities.openInActivePages')}
+              </Link>
+              <UrlActions url={selectedRecord.url} />
+            </div>
+          </div>
+        </DetailModal>
+      ) : null}
     </div>
   )
 }

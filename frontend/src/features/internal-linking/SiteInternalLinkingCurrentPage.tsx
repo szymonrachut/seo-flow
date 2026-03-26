@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { buildApiUrl } from '../../api/client'
 import { DataTable } from '../../components/DataTable'
+import { DetailModal } from '../../components/DetailModal'
 import { DataViewHeader } from '../../components/DataViewHeader'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
@@ -146,6 +147,7 @@ export function SiteInternalLinkingCurrentPage({ mode = 'overview' }: SiteIntern
   const { site, activeCrawlId, baselineCrawlId } = useSiteWorkspaceContext()
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   useDocumentTitle(
     mode === 'overview'
@@ -187,8 +189,10 @@ export function SiteInternalLinkingCurrentPage({ mode = 'overview' }: SiteIntern
   const visibleRows = applyQuickFilters(issuesQuery.data?.items ?? [], quickFilters)
 
   useEffect(() => {
-    if (selectedIssueId && visibleRows.some((row) => row.page_id === selectedIssueId)) return
-    setSelectedIssueId(visibleRows[0]?.page_id ?? null)
+    if (selectedIssueId === null) return
+    if (visibleRows.some((row) => row.page_id === selectedIssueId)) return
+    setSelectedIssueId(null)
+    setIsDetailsOpen(false)
   }, [selectedIssueId, visibleRows])
 
   if (!activeCrawlId || !site.active_crawl) {
@@ -213,11 +217,16 @@ export function SiteInternalLinkingCurrentPage({ mode = 'overview' }: SiteIntern
     return <EmptyState title={t('siteInternalLinking.emptyTitle')} description={t('siteInternalLinking.emptyDescription')} />
   }
 
-  const selectedIssue = visibleRows.find((row) => row.page_id === selectedIssueId) ?? visibleRows[0] ?? null
+  const selectedIssue = visibleRows.find((row) => row.page_id === selectedIssueId) ?? null
   const overviewPath = buildSiteInternalLinkingPath(site.id, routeContext)
   const issuesPath = buildSiteInternalLinkingIssuesPath(site.id, routeContext)
   const changesPath = buildSiteChangesInternalLinkingPath(site.id, routeContext)
   const exportHref = buildExportHref(activeCrawlId, searchParams)
+
+  function openIssueDetails(pageId: number) {
+    setSelectedIssueId(pageId)
+    setIsDetailsOpen(true)
+  }
 
   const quickFilterItems = ISSUE_TYPES.map((issueType) => ({
     label: t(`internalLinking.issueTypes.${issueType}.title`),
@@ -275,7 +284,7 @@ export function SiteInternalLinkingCurrentPage({ mode = 'overview' }: SiteIntern
       header: t('common.open'),
       minWidth: 120,
       cell: (row: InternalLinkingIssueRow) => (
-        <button type="button" onClick={() => setSelectedIssueId(row.page_id)} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+        <button type="button" onClick={() => openIssueDetails(row.page_id)} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
           {t('siteInternalLinking.inspectIssue')}
         </button>
       ),
@@ -378,71 +387,67 @@ export function SiteInternalLinkingCurrentPage({ mode = 'overview' }: SiteIntern
         </label>
       </FilterPanel>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="space-y-6">
-          <section className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-stone-950">{mode === 'overview' ? t('siteInternalLinking.previewTitle') : t('siteInternalLinking.issuesTableTitle')}</h2>
-                <p className="mt-1 text-sm text-stone-600">{mode === 'overview' ? t('siteInternalLinking.previewDescription') : t('siteInternalLinking.issuesTableDescription')}</p>
-              </div>
-              <Link to={mode === 'overview' ? issuesPath : overviewPath} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
-                {mode === 'overview' ? t('siteInternalLinking.openIssues') : t('siteInternalLinking.openOverview')}
-              </Link>
-            </div>
-            <div className="mt-4">
-              {visibleRows.length === 0 ? (
-                <EmptyState title={t('siteInternalLinking.emptyTitle')} description={t('siteInternalLinking.emptyDescription')} />
-              ) : (
-                <>
-                  <DataTable columns={columns} rows={mode === 'overview' ? visibleRows.slice(0, 8) : visibleRows} rowKey={(row) => row.page_id} sortBy={params.sort_by} sortOrder={params.sort_order as SortOrder} onSortChange={(sortBy, sortOrder) => updateParams({ sort_by: sortBy, sort_order: sortOrder, page: 1 })} />
-                  {mode === 'issues' ? (
-                    <div className="mt-4">
-                      <PaginationControls page={issues.page} pageSize={issues.page_size} totalItems={issues.total_items} totalPages={issues.total_pages} onPageChange={(nextPage) => updateParams({ page: nextPage })} onPageSizeChange={(nextPageSize) => updateParams({ page_size: nextPageSize, page: 1 })} />
-                    </div>
-                  ) : null}
-                </>
-              )}
-            </div>
-          </section>
+      <section className="rounded-3xl border border-stone-300 bg-white/85 p-5 shadow-sm">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-950">{mode === 'overview' ? t('siteInternalLinking.previewTitle') : t('siteInternalLinking.issuesTableTitle')}</h2>
+            <p className="mt-1 text-sm text-stone-600">{mode === 'overview' ? t('siteInternalLinking.previewDescription') : t('siteInternalLinking.issuesTableDescription')}</p>
+          </div>
+          <Link to={mode === 'overview' ? issuesPath : overviewPath} className="inline-flex rounded-full border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+            {mode === 'overview' ? t('siteInternalLinking.openIssues') : t('siteInternalLinking.openOverview')}
+          </Link>
         </div>
-
-        <aside className="rounded-[28px] border border-stone-300 bg-white/90 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.18em] text-teal-700">{t('siteInternalLinking.detailsTitle')}</p>
-          {selectedIssue ? (
-            <div className="mt-3 space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold text-stone-950 [overflow-wrap:anywhere]" title={selectedIssue.url}>{selectedIssue.url}</h2>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {selectedIssue.issue_types.map((issueType) => (
-                    <span key={`${selectedIssue.page_id}-${issueType}-badge`} className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium ${issueTone(issueType)}`}>
-                      {t(`internalLinking.issueTypes.${issueType}.title`)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
-                <p>{t('opportunities.metrics.clicks')}: {formatNullable(selectedIssue.clicks)}</p>
-                <p>{t('opportunities.metrics.impressions')}: {formatNullable(selectedIssue.impressions)}</p>
-                <p>{t('opportunities.metrics.position')}: {formatPosition(selectedIssue.position)}</p>
-                <p>{t('internalLinking.metrics.followLinks')}: {selectedIssue.incoming_follow_links} / {selectedIssue.incoming_follow_linking_pages}</p>
-                <p>{t('internalLinking.metrics.linkEquity')}: {selectedIssue.link_equity_score.toFixed(1)} / #{selectedIssue.link_equity_rank}</p>
-              </div>
-              <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700 [overflow-wrap:anywhere]">
-                {selectedIssue.rationale}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link to={`/jobs/${activeCrawlId}/internal-linking?url_contains=${encodeURIComponent(selectedIssue.url)}`} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
-                  {t('siteInternalLinking.openInActiveSnapshot')}
-                </Link>
-                <UrlActions url={selectedIssue.url} />
-              </div>
-            </div>
+        <div className="mt-4">
+          {visibleRows.length === 0 ? (
+            <EmptyState title={t('siteInternalLinking.emptyTitle')} description={t('siteInternalLinking.emptyDescription')} />
           ) : (
-            <p className="mt-3 text-sm text-stone-600">{t('siteInternalLinking.detailsEmpty')}</p>
+            <>
+              <DataTable columns={columns} rows={mode === 'overview' ? visibleRows.slice(0, 8) : visibleRows} rowKey={(row) => row.page_id} sortBy={params.sort_by} sortOrder={params.sort_order as SortOrder} onSortChange={(sortBy, sortOrder) => updateParams({ sort_by: sortBy, sort_order: sortOrder, page: 1 })} />
+              {mode === 'issues' ? (
+                <div className="mt-4">
+                  <PaginationControls page={issues.page} pageSize={issues.page_size} totalItems={issues.total_items} totalPages={issues.total_pages} onPageChange={(nextPage) => updateParams({ page: nextPage })} onPageSizeChange={(nextPageSize) => updateParams({ page_size: nextPageSize, page: 1 })} />
+                </div>
+              ) : null}
+            </>
           )}
-        </aside>
-      </div>
+        </div>
+      </section>
+
+      {isDetailsOpen && selectedIssue ? (
+        <DetailModal
+          titleId="site-internal-linking-details-title"
+          title={selectedIssue.url}
+          eyebrow={t('siteInternalLinking.detailsTitle')}
+          closeLabel={t('common.close')}
+          onClose={() => setIsDetailsOpen(false)}
+        >
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-1.5">
+              {selectedIssue.issue_types.map((issueType) => (
+                <span key={`${selectedIssue.page_id}-${issueType}-badge`} className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium ${issueTone(issueType)}`}>
+                  {t(`internalLinking.issueTypes.${issueType}.title`)}
+                </span>
+              ))}
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+              <p>{t('opportunities.metrics.clicks')}: {formatNullable(selectedIssue.clicks)}</p>
+              <p>{t('opportunities.metrics.impressions')}: {formatNullable(selectedIssue.impressions)}</p>
+              <p>{t('opportunities.metrics.position')}: {formatPosition(selectedIssue.position)}</p>
+              <p>{t('internalLinking.metrics.followLinks')}: {selectedIssue.incoming_follow_links} / {selectedIssue.incoming_follow_linking_pages}</p>
+              <p>{t('internalLinking.metrics.linkEquity')}: {selectedIssue.link_equity_score.toFixed(1)} / #{selectedIssue.link_equity_rank}</p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700 [overflow-wrap:anywhere] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+              {selectedIssue.rationale}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link to={`/jobs/${activeCrawlId}/internal-linking?url_contains=${encodeURIComponent(selectedIssue.url)}`} className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100">
+                {t('siteInternalLinking.openInActiveSnapshot')}
+              </Link>
+              <UrlActions url={selectedIssue.url} />
+            </div>
+          </div>
+        </DetailModal>
+      ) : null}
     </div>
   )
 }

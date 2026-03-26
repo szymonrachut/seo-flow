@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     crawl_default_render_timeout_ms: int = 8_000
     crawl_default_max_rendered_pages_per_job: int = 25
 
-    gsc_client_secrets_path: str = ".local/gsc/credentials.json"
-    gsc_token_path: str = ".local/gsc/token.json"
-    gsc_oauth_state_path: str = ".local/gsc/oauth_state.json"
+    gsc_client_secrets_path: str = ".local/worktree/gsc/credentials.json"
+    gsc_token_path: str = ".local/worktree/gsc/token.json"
+    gsc_oauth_state_path: str = ".local/worktree/gsc/oauth_state.json"
     gsc_oauth_redirect_uri: str = "http://127.0.0.1:8000/gsc/oauth/callback"
     gsc_default_top_queries_limit: int = 20
     gsc_metrics_row_limit: int = 25_000
