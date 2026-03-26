@@ -182,7 +182,48 @@ def _run_crawl_job(
         logger.info("Crawl job %s finished with status=%s", crawl_job_id, crawl_job.status.value)
         logger.info("Stats: %s", crawl_job.stats_json)
 
+    if not failed_error:
+        _maybe_auto_generate_first_content_assets(crawl_job_id)
+
     return crawl_job_id
+
+
+def _maybe_auto_generate_first_content_assets(crawl_job_id: int) -> None:
+    try:
+        from app.services import content_generator_service
+
+        summary = content_generator_service.auto_generate_first_site_content_assets_for_crawl(crawl_job_id)
+    except Exception as exc:  # pragma: no cover - defensive runtime fallback
+        logger.exception(
+            "Automatic content asset generation failed after crawl_job_id=%s: %s",
+            crawl_job_id,
+            exc,
+        )
+        return
+
+    if summary["triggered"] and summary["success"]:
+        logger.info(
+            "Auto-generated first content assets for crawl_job_id=%s site_id=%s basis_crawl_job_id=%s.",
+            summary["crawl_job_id"],
+            summary["site_id"],
+            summary["basis_crawl_job_id"],
+        )
+        return
+    if summary["triggered"]:
+        logger.warning(
+            "Auto-generation failed for crawl_job_id=%s site_id=%s code=%s message=%s.",
+            summary["crawl_job_id"],
+            summary["site_id"],
+            summary["error_code"],
+            summary["error_message"],
+        )
+        return
+
+    logger.info(
+        "Skipped auto-generation after crawl_job_id=%s: %s.",
+        summary["crawl_job_id"],
+        summary["skip_reason"],
+    )
 
 
 def run_crawl(

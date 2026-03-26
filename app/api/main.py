@@ -15,6 +15,7 @@ from app.api.routes import (
     opportunities,
     pages,
     site_competitive_gap,
+    site_content_generator_assets,
     site_content_recommendations,
     site_compare,
     sites,
@@ -41,6 +42,7 @@ app.add_middleware(
 app.include_router(crawl_jobs.router)
 app.include_router(sites.router)
 app.include_router(site_competitive_gap.router)
+app.include_router(site_content_generator_assets.router)
 app.include_router(site_content_recommendations.router)
 app.include_router(site_compare.router)
 app.include_router(pages.router)

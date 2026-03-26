@@ -19,6 +19,7 @@ export type ContentRecommendationType =
   | 'EXPAND_EXISTING_PAGE'
   | 'MISSING_STRUCTURAL_PAGE_TYPE'
   | 'INTERNAL_LINKING_SUPPORT'
+export type ContentGeneratorAssetStatus = 'pending' | 'running' | 'ready' | 'failed'
 export type ContentRecommendationSegment =
   | 'create_new_page'
   | 'expand_existing_page'
@@ -361,6 +362,39 @@ export interface SiteDetail {
   active_crawl: CrawlJobDetail | null
   baseline_crawl: CrawlJobDetail | null
   crawl_history: SiteCrawlListItem[]
+}
+
+export interface SiteContentGeneratorAsset {
+  site_id: number
+  has_assets: boolean
+  can_regenerate: boolean
+  active_crawl_id: number | null
+  active_crawl_status: JobStatus | null
+  status: ContentGeneratorAssetStatus | null
+  basis_crawl_job_id: number | null
+  surfer_custom_instructions: string | null
+  seowriting_details_to_include: string | null
+  introductory_hook_brief: string | null
+  source_urls: string[]
+  source_pages_hash: string | null
+  prompt_version: string | null
+  llm_provider: string | null
+  llm_model: string | null
+  generated_at: string | null
+  last_error_code: string | null
+  last_error_message: string | null
+}
+
+export interface GenerateSiteContentGeneratorAssetsInput {
+  output_language?: string
+}
+
+export interface GenerateSiteContentGeneratorAssetsResponse {
+  success: boolean
+  generation_triggered: boolean
+  asset: SiteContentGeneratorAsset
+  error_code: string | null
+  error_message: string | null
 }
 
 export interface SiteContentRecommendationsContext {

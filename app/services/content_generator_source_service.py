@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models import GscTopQuery
+from app.db.models import CrawlJobStatus, GscTopQuery
 from app.services import priority_service, seo_analysis, site_service
 from app.services.content_gap_candidate_service import DEFAULT_GSC_DATE_RANGE
 
@@ -78,6 +78,12 @@ def select_site_content_generator_sources(
         raise ContentGeneratorSourceServiceError(
             f"Site {site_id} does not have an active crawl snapshot.",
             code="active_crawl_missing",
+        )
+    active_status = active_crawl.status.value if isinstance(active_crawl.status, CrawlJobStatus) else str(active_crawl.status)
+    if active_status != CrawlJobStatus.FINISHED.value:
+        raise ContentGeneratorSourceServiceError(
+            f"Active crawl {active_crawl.id} must be finished before content assets can be generated.",
+            code="active_crawl_not_finished",
         )
 
     records = seo_analysis.build_page_records(session, active_crawl.id)
