@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -14,7 +15,7 @@ from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.db.models import CrawlJob, CrawlJobStatus, Page, Site
+from app.db.models import CrawlJob, CrawlJobStatus, Page, Site, SiteContentGeneratorAsset
 
 pytestmark = [pytest.mark.postgres_smoke, pytest.mark.integration, pytest.mark.slow]
 
@@ -261,6 +262,143 @@ def test_postgres_schema_constraints_and_mutable_json(postgres_database_url: str
         with pytest.raises(IntegrityError):
             session.commit()
         session.rollback()
+
+    engine.dispose()
+
+
+def test_postgres_site_content_generator_assets_schema_and_orm_smoke(postgres_database_url: str) -> None:
+    engine = create_engine(postgres_database_url)
+    truncate_application_tables(engine)
+    inspector = inspect(engine)
+
+    assert "site_content_generator_assets" in set(inspector.get_table_names())
+
+    asset_columns = {item["name"] for item in inspector.get_columns("site_content_generator_assets")}
+    assert {
+        "id",
+        "site_id",
+        "basis_crawl_job_id",
+        "status",
+        "surfer_custom_instructions",
+        "seowriting_details_to_include",
+        "introductory_hook_brief",
+        "source_urls_json",
+        "source_pages_hash",
+        "prompt_version",
+        "llm_provider",
+        "llm_model",
+        "generated_at",
+        "last_error_code",
+        "last_error_message",
+        "created_at",
+        "updated_at",
+    }.issubset(asset_columns)
+
+    asset_unique_constraints = {item["name"] for item in inspector.get_unique_constraints("site_content_generator_assets")}
+    assert "uq_site_content_generator_assets_site_id" in asset_unique_constraints
+
+    asset_index_names = {item["name"] for item in inspector.get_indexes("site_content_generator_assets")}
+    assert {
+        "ix_site_content_generator_assets_site_id",
+        "ix_site_content_generator_assets_basis_crawl_job_id",
+    }.issubset(asset_index_names)
+
+    asset_foreign_keys = {
+        (tuple(item["constrained_columns"]), item["referred_table"])
+        for item in inspector.get_foreign_keys("site_content_generator_assets")
+    }
+    assert {
+        (("site_id",), "sites"),
+        (("basis_crawl_job_id",), "crawl_jobs"),
+    }.issubset(asset_foreign_keys)
+
+    asset_check_constraints = {
+        item["name"]: item.get("sqltext", "")
+        for item in inspector.get_check_constraints("site_content_generator_assets")
+    }
+    assert "ck_site_content_generator_assets_status" in asset_check_constraints
+    assert all(
+        status in asset_check_constraints["ck_site_content_generator_assets_status"]
+        for status in ("pending", "running", "ready", "failed")
+    )
+
+    SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
+    with SessionLocal() as session:
+        site = Site(root_url="https://example.com/", domain="example.com")
+        session.add(site)
+        session.flush()
+
+        first_job = CrawlJob(
+            site_id=site.id,
+            status=CrawlJobStatus.FINISHED,
+            settings_json={"max_urls": 10},
+            stats_json={},
+        )
+        second_job = CrawlJob(
+            site_id=site.id,
+            status=CrawlJobStatus.FINISHED,
+            settings_json={"max_urls": 20},
+            stats_json={},
+        )
+        session.add_all([first_job, second_job])
+        session.flush()
+
+        asset = SiteContentGeneratorAsset(
+            site_id=site.id,
+            basis_crawl_job_id=first_job.id,
+            status=" pending ",
+            surfer_custom_instructions="Keep it practical.",
+            seowriting_details_to_include="Mention local trust signals.",
+            introductory_hook_brief="Start from the customer's pain point.",
+            source_urls_json=["https://example.com/a"],
+            source_pages_hash="abc123",
+            prompt_version="content-generator-assets-v1",
+            llm_provider=None,
+            llm_model=None,
+        )
+        session.add(asset)
+        session.commit()
+        session.refresh(asset)
+
+        assert asset.status == "pending"
+        assert asset.source_urls_json == ["https://example.com/a"]
+        initial_updated_at = asset.updated_at
+
+        time.sleep(0.02)
+        asset.status = "running"
+        session.commit()
+        session.refresh(asset)
+
+        assert asset.status == "running"
+        assert asset.updated_at > initial_updated_at
+        running_updated_at = asset.updated_at
+
+        time.sleep(0.02)
+        asset.source_urls_json.append("https://example.com/b")
+        asset.status = "ready"
+        session.commit()
+        session.refresh(asset)
+
+        assert asset.source_urls_json == ["https://example.com/a", "https://example.com/b"]
+        assert asset.status == "ready"
+        assert asset.updated_at > running_updated_at
+
+        duplicate_asset = SiteContentGeneratorAsset(
+            site_id=site.id,
+            basis_crawl_job_id=second_job.id,
+            status="pending",
+        )
+        session.add(duplicate_asset)
+        with pytest.raises(IntegrityError):
+            session.commit()
+        session.rollback()
+
+        with pytest.raises(ValueError):
+            SiteContentGeneratorAsset(
+                site_id=site.id,
+                basis_crawl_job_id=second_job.id,
+                status="unsupported",
+            )
 
     engine.dispose()
 

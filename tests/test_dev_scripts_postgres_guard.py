@@ -17,7 +17,7 @@ def get_powershell_executable() -> str:
     return executable
 
 
-def run_dev_script(command: str, workdir: Path) -> subprocess.CompletedProcess[str]:
+def run_dev_script(command: str, workdir: Path, *extra_args: str) -> subprocess.CompletedProcess[str]:
     powershell_executable = get_powershell_executable()
     project_root = Path(__file__).resolve().parents[1]
     args = [powershell_executable]
@@ -31,6 +31,7 @@ def run_dev_script(command: str, workdir: Path) -> subprocess.CompletedProcess[s
             command,
         ]
     )
+    args.extend(extra_args)
     completed = subprocess.run(
         args,
         cwd=workdir,
@@ -185,3 +186,31 @@ def test_trusted_lock_changes_only_on_explicit_refresh(tmp_path: Path) -> None:
 
     refreshed_lock = read_env_file(lock_path)
     assert refreshed_lock["POSTGRES_PASSWORD"] == "next-pass"
+
+
+def test_init_worktree_env_generates_isolated_ports_and_paths(tmp_path: Path) -> None:
+    env_path = tmp_path / ".env"
+    frontend_env_path = tmp_path / "frontend" / ".env.local"
+    frontend_env_path.parent.mkdir(parents=True, exist_ok=True)
+
+    write_env_file(env_path)
+    frontend_env_path.write_text("VITE_API_BASE_URL=http://localhost:8000\n", encoding="utf-8")
+
+    run_dev_script("init-worktree-env", tmp_path)
+
+    env_values = read_env_file(env_path)
+    frontend_values = read_env_file(frontend_env_path)
+    state_values = read_env_file(tmp_path / ".local" / "worktree" / "instance.env")
+
+    assert env_values["WORKTREE_INSTANCE_ID"]
+    assert env_values["COMPOSE_PROJECT_NAME"].startswith("seo-flow-")
+    assert env_values["WORKTREE_STATE_DIR"] == ".local/worktree"
+    assert env_values["POSTGRES_PORT"] != "5432"
+    assert env_values["API_PORT"] != "8000"
+    assert env_values["POSTGRES_DB"].startswith("seo_")
+    assert env_values["GSC_CLIENT_SECRETS_PATH"] == ".local/worktree/gsc/credentials.json"
+    assert env_values["GSC_TOKEN_PATH"] == ".local/worktree/gsc/token.json"
+    assert env_values["GSC_OAUTH_STATE_PATH"] == ".local/worktree/gsc/oauth_state.json"
+    assert frontend_values["VITE_API_BASE_URL"] == f"http://127.0.0.1:{env_values['API_PORT']}"
+    assert state_values["WORKTREE_INSTANCE_ID"] == env_values["WORKTREE_INSTANCE_ID"]
+    assert state_values["POSTGRES_PORT"] == env_values["POSTGRES_PORT"]

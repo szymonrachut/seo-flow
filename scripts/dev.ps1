@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("bootstrap", "playwright-install", "db-up", "db-down", "db-reset", "db-logs", "db-wait", "db-sync-env", "db-refresh-lock", "db-align-password", "migrate", "crawl", "test", "test-quick", "test-backend-full", "test-crawler", "smoke-postgres", "api", "flow")]
+    [ValidateSet("bootstrap", "playwright-install", "init-worktree-env", "clone-worktree-db", "start-worktree", "stop-worktree", "info-worktree", "db-up", "db-down", "db-reset", "db-logs", "db-wait", "db-sync-env", "db-refresh-lock", "db-align-password", "migrate", "crawl", "test", "test-quick", "test-backend-full", "test-crawler", "smoke-postgres", "api", "flow")]
     [string]$Command = "flow",
     [string]$StartUrl = "https://example.com",
     [int]$MaxUrls = 300,
@@ -8,7 +8,9 @@ param(
     [ValidateSet("never", "auto", "always")]
     [string]$RenderMode = "auto",
     [int]$RenderTimeoutMs = 8000,
-    [int]$MaxRenderedPages = 25
+    [int]$MaxRenderedPages = 25,
+    [string]$SourceWorktreePath = "",
+    [switch]$CopyGscCredentials
 )
 
 Set-StrictMode -Version Latest
@@ -31,6 +33,98 @@ function Invoke-Checked {
     if ($LASTEXITCODE -ne 0) {
         throw "Command failed: $Exe $($Args -join ' ')"
     }
+}
+
+function Get-ProjectRootPath {
+    return (Get-Location).Path
+}
+
+function ConvertTo-Slug {
+    param(
+        [Parameter(Mandatory = $true)][string]$Value,
+        [int]$MaxLength = 24
+    )
+    $slug = $Value.ToLowerInvariant()
+    $slug = [regex]::Replace($slug, "[^a-z0-9]+", "-")
+    $slug = $slug.Trim("-")
+    if ([string]::IsNullOrWhiteSpace($slug)) {
+        $slug = "instance"
+    }
+    if ($slug.Length -gt $MaxLength) {
+        $slug = $slug.Substring(0, $MaxLength).Trim("-")
+    }
+    if ([string]::IsNullOrWhiteSpace($slug)) {
+        $slug = "instance"
+    }
+    return $slug
+}
+
+function Get-StableHashHex {
+    param([Parameter(Mandatory = $true)][string]$Value)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
+        $hashBytes = $sha256.ComputeHash($bytes)
+    }
+    finally {
+        $sha256.Dispose()
+    }
+    return ([System.BitConverter]::ToString($hashBytes)).Replace("-", "").ToLowerInvariant()
+}
+
+function Get-StableOffset {
+    param(
+        [Parameter(Mandatory = $true)][string]$Seed,
+        [int]$Modulo = 1000
+    )
+    $hashHex = Get-StableHashHex -Value $Seed
+    $prefix = $hashHex.Substring(0, 8)
+    $value = [Convert]::ToUInt32($prefix, 16)
+    return [int]($value % $Modulo)
+}
+
+function Get-WorktreeMetadata {
+    $rootPath = Get-ProjectRootPath
+    $leafName = Split-Path -Leaf $rootPath
+    $slug = ConvertTo-Slug -Value $leafName
+    $hashHex = Get-StableHashHex -Value $rootPath
+    $shortHash = $hashHex.Substring(0, 8)
+    $instanceId = "$slug-$shortHash"
+    $offset = Get-StableOffset -Seed $rootPath
+    $postgresPort = 5600 + $offset
+    $apiPort = 8600 + $offset
+    $frontendPort = 5100 + $offset
+    $composeProjectName = "seo-flow-$instanceId"
+    if ($composeProjectName.Length -gt 48) {
+        $composeProjectName = $composeProjectName.Substring(0, 48).Trim("-")
+    }
+    $databaseSlug = (ConvertTo-Slug -Value $instanceId -MaxLength 40).Replace("-", "_")
+    $databaseName = "seo_$databaseSlug"
+    if ($databaseName.Length -gt 63) {
+        $databaseName = $databaseName.Substring(0, 63).Trim("_")
+    }
+    return @{
+        "RootPath" = $rootPath
+        "LeafName" = $leafName
+        "InstanceId" = $instanceId
+        "Slug" = $slug
+        "Hash" = $shortHash
+        "ComposeProjectName" = $composeProjectName
+        "PostgresPort" = "$postgresPort"
+        "ApiPort" = "$apiPort"
+        "FrontendPort" = "$frontendPort"
+        "DatabaseName" = $databaseName
+        "StateDir" = ".local/worktree"
+        "GscDir" = ".local/worktree/gsc"
+    }
+}
+
+function Get-WorktreeStateFilePath {
+    return Join-Path ".local\worktree" "instance.env"
+}
+
+function Get-WorktreeRuntimeFilePath {
+    return Join-Path ".local\worktree" "runtime.env"
 }
 
 function Import-EnvFile {
@@ -66,6 +160,21 @@ function Read-EnvFileValues {
     }
 
     return $values
+}
+
+function Write-KeyValueFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][hashtable]$Values
+    )
+    $directory = Split-Path -Parent $Path
+    if ($directory -and -not (Test-Path $directory)) {
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    }
+    $lines = foreach ($key in ($Values.Keys | Sort-Object)) {
+        "$key=$($Values[$key])"
+    }
+    Set-Content -Path $Path -Value $lines -Encoding ascii
 }
 
 function Get-EnvValueOrDefault {
@@ -391,11 +500,12 @@ function Ensure-PostgresCredentialLock {
 }
 
 function Get-ComposeDbContainerId {
+    param([hashtable]$Context = $(Get-ComposeContext))
     Ensure-Docker
     $previousErrorActionPreference = $ErrorActionPreference
     try {
         $ErrorActionPreference = "Continue"
-        $output = & docker compose ps -q db 2>&1
+        $output = & docker @(Get-ComposeArgs -Context $Context -AdditionalArgs @("ps", "-q", "db")) 2>&1
         $exitCode = $LASTEXITCODE
     }
     finally {
@@ -416,9 +526,10 @@ function Get-ComposeDbContainerId {
 function Invoke-DbContainerSql {
     param(
         [Parameter(Mandatory = $true)][string]$Sql,
-        [string]$Database = "postgres"
+        [string]$Database = "postgres",
+        [hashtable]$Context = $(Get-ComposeContext)
     )
-    $containerId = Get-ComposeDbContainerId
+    $containerId = Get-ComposeDbContainerId -Context $Context
     if (-not $containerId) {
         return @{
             "ExitCode" = 1
@@ -533,6 +644,37 @@ function Ensure-Docker {
     }
 }
 
+function Get-ComposeContext {
+    param([string]$RootPath = (Get-ProjectRootPath))
+    $resolvedRoot = (Resolve-Path $RootPath).Path
+    return @{
+        "RootPath" = $resolvedRoot
+        "EnvPath" = (Join-Path $resolvedRoot ".env")
+        "ComposeFilePath" = (Join-Path $resolvedRoot "docker-compose.yml")
+    }
+}
+
+function Get-ComposeArgs {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Context,
+        [Parameter(Mandatory = $true)][string[]]$AdditionalArgs
+    )
+    return @(
+        "compose",
+        "--project-directory", $Context["RootPath"],
+        "--env-file", $Context["EnvPath"],
+        "-f", $Context["ComposeFilePath"]
+    ) + $AdditionalArgs
+}
+
+function Invoke-ComposeCommand {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Context,
+        [Parameter(Mandatory = $true)][string[]]$Args
+    )
+    Invoke-Checked -Exe "docker" -Args (Get-ComposeArgs -Context $Context -AdditionalArgs $Args)
+}
+
 function Ensure-EnvFile {
     if (-not (Test-Path ".env")) {
         if (-not (Test-Path ".env.example")) {
@@ -540,6 +682,255 @@ function Ensure-EnvFile {
         }
         Copy-Item ".env.example" ".env"
         Write-Host "Created .env from .env.example"
+    }
+}
+
+function Ensure-FrontendEnvFile {
+    if (-not (Test-Path "frontend\.env.local")) {
+        if (-not (Test-Path "frontend\.env.example")) {
+            throw "frontend/.env.local and frontend/.env.example are both missing."
+        }
+        Copy-Item "frontend\.env.example" "frontend\.env.local"
+        Write-Host "Created frontend/.env.local from frontend/.env.example"
+    }
+}
+
+function Get-GitWorktreeEntries {
+    $gitExe = Get-Command git -ErrorAction SilentlyContinue
+    if (-not $gitExe) {
+        return @()
+    }
+
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $output = & git worktree list --porcelain 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($exitCode -ne 0) {
+        return @()
+    }
+
+    $entries = New-Object System.Collections.Generic.List[hashtable]
+    $current = $null
+    foreach ($line in ($output | ForEach-Object { $_.ToString() })) {
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            if ($null -ne $current) {
+                $entries.Add($current)
+                $current = $null
+            }
+            continue
+        }
+        if ($line.StartsWith("worktree ")) {
+            if ($null -ne $current) {
+                $entries.Add($current)
+            }
+            $current = @{
+                "Path" = $line.Substring(9).Trim()
+                "Branch" = ""
+            }
+            continue
+        }
+        if ($null -eq $current) {
+            continue
+        }
+        if ($line.StartsWith("branch ")) {
+            $current["Branch"] = $line.Substring(7).Trim()
+        }
+    }
+    if ($null -ne $current) {
+        $entries.Add($current)
+    }
+    return @($entries)
+}
+
+function Resolve-PrimarySourceWorktreePath {
+    param([string]$ExplicitPath = "")
+    if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) {
+        return (Resolve-Path $ExplicitPath).Path
+    }
+
+    $currentRoot = Get-ProjectRootPath
+    $entries = Get-GitWorktreeEntries
+    if ($entries.Count -eq 0) {
+        throw "Could not detect another worktree automatically. Pass -SourceWorktreePath explicitly."
+    }
+
+    $otherEntries = @($entries | Where-Object { $_["Path"] -ne $currentRoot })
+    if ($otherEntries.Count -eq 0) {
+        throw "No secondary source worktree was detected. Pass -SourceWorktreePath explicitly."
+    }
+
+    $preferred = $otherEntries | Where-Object {
+        $_["Branch"] -eq "refs/heads/main" -or $_["Branch"] -eq "refs/heads/master"
+    } | Select-Object -First 1
+    if ($preferred) {
+        return $preferred["Path"]
+    }
+
+    return $otherEntries[0]["Path"]
+}
+
+function Copy-GscCredentialSeedIfAvailable {
+    param(
+        [Parameter(Mandatory = $true)][string]$TargetCredentialsPath,
+        [string]$SourceRootPath = ""
+    )
+    if (Test-Path $TargetCredentialsPath) {
+        return $false
+    }
+
+    $candidates = New-Object System.Collections.Generic.List[string]
+    $candidates.Add((Join-Path ".local\gsc" "credentials.json"))
+    if (-not [string]::IsNullOrWhiteSpace($SourceRootPath)) {
+        $candidates.Add((Join-Path $SourceRootPath ".local\worktree\gsc\credentials.json"))
+        $candidates.Add((Join-Path $SourceRootPath ".local\gsc\credentials.json"))
+    }
+
+    foreach ($candidate in $candidates) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path $candidate)) {
+            $targetDir = Split-Path -Parent $TargetCredentialsPath
+            if ($targetDir -and -not (Test-Path $targetDir)) {
+                New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+            }
+            Copy-Item $candidate $TargetCredentialsPath -Force
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Initialize-WorktreeEnv {
+    param(
+        [switch]$Quiet,
+        [string]$SourceRootPath = "",
+        [switch]$SkipGscSeedCopy
+    )
+    Ensure-EnvFile
+    Ensure-FrontendEnvFile
+
+    $metadata = Get-WorktreeMetadata
+    $envValues = Read-EnvFileValues -Path ".env"
+    $credentialValues = Get-PostgresCredentialValues -Values $envValues
+    $managedEnvValues = @{
+        "WORKTREE_INSTANCE_ID" = $metadata["InstanceId"]
+        "WORKTREE_STATE_DIR" = $metadata["StateDir"]
+        "COMPOSE_PROJECT_NAME" = $metadata["ComposeProjectName"]
+        "POSTGRES_USER" = $credentialValues["POSTGRES_USER"]
+        "POSTGRES_PASSWORD" = $credentialValues["POSTGRES_PASSWORD"]
+        "POSTGRES_DB" = $metadata["DatabaseName"]
+        "POSTGRES_HOST" = "127.0.0.1"
+        "POSTGRES_PORT" = $metadata["PostgresPort"]
+        "API_PORT" = $metadata["ApiPort"]
+        "FRONTEND_APP_URL" = "http://127.0.0.1:$($metadata["FrontendPort"])"
+        "GSC_CLIENT_SECRETS_PATH" = ".local/worktree/gsc/credentials.json"
+        "GSC_TOKEN_PATH" = ".local/worktree/gsc/token.json"
+        "GSC_OAUTH_STATE_PATH" = ".local/worktree/gsc/oauth_state.json"
+        "GSC_OAUTH_REDIRECT_URI" = "http://127.0.0.1:$($metadata["ApiPort"])/gsc/oauth/callback"
+    }
+    $managedEnvValues["DATABASE_URL"] = Build-PostgresDatabaseUrl `
+        -User $managedEnvValues["POSTGRES_USER"] `
+        -Password $managedEnvValues["POSTGRES_PASSWORD"] `
+        -DbHost $managedEnvValues["POSTGRES_HOST"] `
+        -Port $managedEnvValues["POSTGRES_PORT"] `
+        -Database $managedEnvValues["POSTGRES_DB"]
+
+    Update-EnvFileValues -Path ".env" -Values $managedEnvValues -Keys @(
+        "WORKTREE_INSTANCE_ID",
+        "WORKTREE_STATE_DIR",
+        "COMPOSE_PROJECT_NAME",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_DB",
+        "POSTGRES_HOST",
+        "POSTGRES_PORT",
+        "DATABASE_URL",
+        "API_PORT",
+        "FRONTEND_APP_URL",
+        "GSC_CLIENT_SECRETS_PATH",
+        "GSC_TOKEN_PATH",
+        "GSC_OAUTH_STATE_PATH",
+        "GSC_OAUTH_REDIRECT_URI"
+    ) | Out-Null
+
+    Update-EnvFileValues -Path "frontend\.env.local" -Values @{
+        "VITE_API_BASE_URL" = "http://127.0.0.1:$($metadata["ApiPort"])"
+    } -Keys @("VITE_API_BASE_URL") | Out-Null
+
+    $stateDir = $metadata["StateDir"]
+    if (-not (Test-Path $stateDir)) {
+        New-Item -ItemType Directory -Path $stateDir -Force | Out-Null
+    }
+    if (-not (Test-Path $metadata["GscDir"])) {
+        New-Item -ItemType Directory -Path $metadata["GscDir"] -Force | Out-Null
+    }
+
+    $resolvedSourceRoot = $SourceRootPath
+    if ([string]::IsNullOrWhiteSpace($resolvedSourceRoot)) {
+        try {
+            $resolvedSourceRoot = Resolve-PrimarySourceWorktreePath
+        }
+        catch {
+            $resolvedSourceRoot = ""
+        }
+    }
+    $gscSeedCopied = $false
+    if (-not $SkipGscSeedCopy) {
+        $gscSeedCopied = Copy-GscCredentialSeedIfAvailable -TargetCredentialsPath ".local\worktree\gsc\credentials.json" -SourceRootPath $resolvedSourceRoot
+    }
+
+    Write-KeyValueFile -Path (Get-WorktreeStateFilePath) -Values @{
+        "WORKTREE_INSTANCE_ID" = $metadata["InstanceId"]
+        "COMPOSE_PROJECT_NAME" = $metadata["ComposeProjectName"]
+        "POSTGRES_DB" = $metadata["DatabaseName"]
+        "POSTGRES_PORT" = $metadata["PostgresPort"]
+        "API_PORT" = $metadata["ApiPort"]
+        "FRONTEND_PORT" = $metadata["FrontendPort"]
+        "FRONTEND_URL" = "http://127.0.0.1:$($metadata["FrontendPort"])"
+        "API_URL" = "http://127.0.0.1:$($metadata["ApiPort"])"
+        "DATABASE_URL" = $managedEnvValues["DATABASE_URL"]
+        "ROOT_PATH" = $metadata["RootPath"]
+        "GSC_SEED_COPIED" = ($(if ($gscSeedCopied) { "1" } else { "0" }))
+    }
+
+    if (-not $Quiet) {
+        Write-Host "Initialized isolated worktree environment for $($metadata["InstanceId"])." -ForegroundColor Green
+    }
+}
+
+function Get-FrontendPort {
+    $frontendValues = Read-EnvFileValues -Path "frontend\.env.local"
+    $metadata = Get-WorktreeMetadata
+    if ($frontendValues.ContainsKey("VITE_DEV_PORT")) {
+        return [string]$frontendValues["VITE_DEV_PORT"]
+    }
+    return $metadata["FrontendPort"]
+}
+
+function Show-WorktreeInfo {
+    Initialize-WorktreeEnv -Quiet
+    $envValues = Read-EnvFileValues -Path ".env"
+    $frontendValues = Read-EnvFileValues -Path "frontend\.env.local"
+    $runtimeValues = Read-EnvFileValues -Path (Get-WorktreeRuntimeFilePath)
+    Write-Host "Worktree instance: $($envValues["WORKTREE_INSTANCE_ID"])" -ForegroundColor Cyan
+    Write-Host "Compose project:  $($envValues["COMPOSE_PROJECT_NAME"])"
+    Write-Host "Database URL:     $($envValues["DATABASE_URL"])"
+    Write-Host "Postgres port:    $($envValues["POSTGRES_PORT"])"
+    Write-Host "API URL:          http://127.0.0.1:$($envValues["API_PORT"])"
+    Write-Host "Frontend URL:     http://127.0.0.1:$(Get-FrontendPort)"
+    Write-Host "Frontend API:     $($frontendValues["VITE_API_BASE_URL"])"
+    Write-Host "State dir:        $($envValues["WORKTREE_STATE_DIR"])"
+    if ($runtimeValues.Count -gt 0) {
+        Write-Host "Runtime status:   started"
+        Write-Host "API PID:          $($runtimeValues["API_PID"])"
+        Write-Host "Frontend PID:     $($runtimeValues["FRONTEND_PID"])"
+    }
+    else {
+        Write-Host "Runtime status:   stopped"
     }
 }
 
@@ -645,6 +1036,144 @@ while True:
     }
 }
 
+function Wait-ForDatabaseUrl {
+    param(
+        [Parameter(Mandatory = $true)][string]$DatabaseUrl,
+        [int]$TimeoutSeconds = 90
+    )
+    $pythonExe = Get-PythonExe
+    $env:POSTGRES_WAIT_DATABASE_URL = $DatabaseUrl
+    $env:POSTGRES_WAIT_TIMEOUT = [string]$TimeoutSeconds
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $output = @'
+import os
+import time
+import psycopg
+from sqlalchemy.engine import make_url
+
+database_url = os.environ["POSTGRES_WAIT_DATABASE_URL"]
+sa_url = make_url(database_url)
+psycopg_url = sa_url.set(drivername="postgresql").render_as_string(hide_password=False)
+deadline = time.time() + int(os.environ.get("POSTGRES_WAIT_TIMEOUT", "90"))
+
+while True:
+    try:
+        with psycopg.connect(psycopg_url, connect_timeout=3):
+            print("postgres-ready")
+            break
+    except Exception:
+        if time.time() >= deadline:
+            raise
+        time.sleep(1)
+'@ | & $pythonExe - 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+        Remove-Item Env:POSTGRES_WAIT_DATABASE_URL -ErrorAction SilentlyContinue
+        Remove-Item Env:POSTGRES_WAIT_TIMEOUT -ErrorAction SilentlyContinue
+    }
+    if ($exitCode -ne 0) {
+        if ($output) {
+            $output | ForEach-Object { Write-Host $_.ToString() }
+        }
+        throw "PostgreSQL health check failed for the requested database URL."
+    }
+}
+
+function Get-ExternalWorktreeContext {
+    param([string]$RootPath)
+    $resolvedRoot = Resolve-PrimarySourceWorktreePath -ExplicitPath $RootPath
+    $context = Get-ComposeContext -RootPath $resolvedRoot
+    if (-not (Test-Path $context["EnvPath"])) {
+        throw "Source worktree .env is missing at $($context["EnvPath"])."
+    }
+    $envValues = Read-EnvFileValues -Path $context["EnvPath"]
+    return @{
+        "RootPath" = $resolvedRoot
+        "ComposeContext" = $context
+        "EnvValues" = $envValues
+    }
+}
+
+function Ensure-ExternalDbUp {
+    param([Parameter(Mandatory = $true)][hashtable]$WorktreeContext)
+    Ensure-Docker
+    Invoke-ComposeCommand -Context $WorktreeContext["ComposeContext"] -Args @("up", "-d", "db")
+    $databaseUrl = ""
+    if ($WorktreeContext["EnvValues"].ContainsKey("DATABASE_URL")) {
+        $databaseUrl = [string]$WorktreeContext["EnvValues"]["DATABASE_URL"]
+    }
+    if ([string]::IsNullOrWhiteSpace($databaseUrl)) {
+        throw "Source worktree .env is missing DATABASE_URL."
+    }
+    Wait-ForDatabaseUrl -DatabaseUrl $databaseUrl
+}
+
+function Clone-WorktreeDb {
+    Initialize-WorktreeEnv -Quiet
+    Ensure-EnvFile
+    Ensure-PostgresCredentialLock
+    Import-EnvFile
+
+    $targetContext = Get-ComposeContext
+    $targetContainerId = $null
+    $sourceWorktree = Get-ExternalWorktreeContext -RootPath $SourceWorktreePath
+    if ($sourceWorktree["RootPath"] -eq (Get-ProjectRootPath)) {
+        throw "Source and target worktree cannot be the same path."
+    }
+
+    Db-Up
+    Wait-ForPostgres
+    Ensure-ExternalDbUp -WorktreeContext $sourceWorktree
+
+    $sourceContainerId = Get-ComposeDbContainerId -Context $sourceWorktree["ComposeContext"]
+    if (-not $sourceContainerId) {
+        throw "Could not resolve the source PostgreSQL container."
+    }
+    $targetContainerId = Get-ComposeDbContainerId -Context $targetContext
+    if (-not $targetContainerId) {
+        throw "Could not resolve the target PostgreSQL container."
+    }
+
+    $sourceEnvValues = $sourceWorktree["EnvValues"]
+    $sourceUser = Get-EnvValueOrDefault -Values $sourceEnvValues -Name "POSTGRES_USER" -DefaultValue "postgres"
+    $sourceDatabase = Get-EnvValueOrDefault -Values $sourceEnvValues -Name "POSTGRES_DB" -DefaultValue "seo_crawler"
+
+    $targetValues = Read-EnvFileValues -Path ".env"
+    $targetUser = Get-EnvValueOrDefault -Values $targetValues -Name "POSTGRES_USER" -DefaultValue "postgres"
+    $targetDatabase = Get-EnvValueOrDefault -Values $targetValues -Name "POSTGRES_DB" -DefaultValue "seo_crawler"
+
+    Write-Host "Cloning PostgreSQL data from $($sourceWorktree["RootPath"]) into this worktree..." -ForegroundColor Cyan
+    $resetSql = @"
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO $targetUser;
+GRANT ALL ON SCHEMA public TO public;
+"@
+    $resetResult = Invoke-DbContainerSql -Sql $resetSql -Database $targetDatabase -Context $targetContext
+    if ($resetResult["ExitCode"] -ne 0) {
+        if ($resetResult["OutputText"]) {
+            Write-Host $resetResult["OutputText"]
+        }
+        throw "Failed to reset the target database before restore."
+    }
+
+    $dumpArgs = @("exec", "-u", "postgres", $sourceContainerId, "pg_dump", "--format=custom", "--no-owner", "--no-privileges", "-U", $sourceUser, "-d", $sourceDatabase)
+    $restoreArgs = @("exec", "-i", "-u", "postgres", $targetContainerId, "pg_restore", "--clean", "--if-exists", "--no-owner", "--no-privileges", "-U", $targetUser, "-d", $targetDatabase)
+    $dumpCommand = "docker " + (($dumpArgs | ForEach-Object { if ($_ -match "\s") { '"' + $_ + '"' } else { $_ } }) -join " ")
+    $restoreCommand = "docker " + (($restoreArgs | ForEach-Object { if ($_ -match "\s") { '"' + $_ + '"' } else { $_ } }) -join " ")
+    & powershell -NoProfile -Command "& { $ErrorActionPreference = 'Stop'; $dumpCommand | $restoreCommand }"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Worktree database clone failed during pg_dump / pg_restore."
+    }
+
+    Migrate
+    Write-Host "Cloned the source database into the isolated worktree database and applied migrations." -ForegroundColor Green
+}
+
 function Bootstrap {
     Ensure-EnvFile
     if (-not (Test-Path ".venv\Scripts\python.exe")) {
@@ -653,6 +1182,68 @@ function Bootstrap {
     $pythonExe = Get-PythonExe
     Invoke-Checked -Exe $pythonExe -Args @("-m", "pip", "install", "--upgrade", "pip")
     Invoke-Checked -Exe $pythonExe -Args @("-m", "pip", "install", "-e", ".[dev]")
+}
+
+function Start-Worktree {
+    Initialize-WorktreeEnv -Quiet
+    Bootstrap
+    Db-Up
+    Wait-ForPostgres
+    Migrate
+
+    $envValues = Read-EnvFileValues -Path ".env"
+    $frontendPort = Get-FrontendPort
+    $rootPath = Get-ProjectRootPath
+    $runtimePath = Get-WorktreeRuntimeFilePath
+    if (Test-Path $runtimePath) {
+        Stop-Worktree -KeepDatabase
+    }
+
+    $apiProcess = Start-Process powershell -ArgumentList @(
+        "-NoExit",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", "Set-Location '$rootPath'; powershell -ExecutionPolicy Bypass -File '.\scripts\dev.ps1' -Command api"
+    ) -WorkingDirectory $rootPath -PassThru
+
+    $frontendProcess = Start-Process powershell -ArgumentList @(
+        "-NoExit",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", "Set-Location '$rootPath\frontend'; npm run dev -- --host 127.0.0.1 --port $frontendPort"
+    ) -WorkingDirectory (Join-Path $rootPath "frontend") -PassThru
+
+    Write-KeyValueFile -Path $runtimePath -Values @{
+        "API_PID" = "$($apiProcess.Id)"
+        "FRONTEND_PID" = "$($frontendProcess.Id)"
+        "API_URL" = "http://127.0.0.1:$($envValues["API_PORT"])"
+        "FRONTEND_URL" = "http://127.0.0.1:$frontendPort"
+    }
+
+    Write-Host "Started isolated worktree runtime." -ForegroundColor Green
+    Show-WorktreeInfo
+}
+
+function Stop-Worktree {
+    param([switch]$KeepDatabase)
+    $runtimePath = Get-WorktreeRuntimeFilePath
+    if (Test-Path $runtimePath) {
+        $runtimeValues = Read-EnvFileValues -Path $runtimePath
+        foreach ($key in @("API_PID", "FRONTEND_PID")) {
+            if ($runtimeValues.ContainsKey($key)) {
+                $childPid = 0
+                if ([int]::TryParse([string]$runtimeValues[$key], [ref]$childPid) -and $childPid -gt 0) {
+                    $process = Get-Process -Id $childPid -ErrorAction SilentlyContinue
+                    if ($process) {
+                        Stop-Process -Id $childPid -Force -ErrorAction SilentlyContinue
+                    }
+                }
+            }
+        }
+        Remove-Item $runtimePath -Force -ErrorAction SilentlyContinue
+    }
+    if (-not $KeepDatabase) {
+        Db-Down
+    }
+    Write-Host "Stopped isolated worktree runtime." -ForegroundColor Green
 }
 
 function Playwright-Install {
@@ -665,12 +1256,12 @@ function Db-Up {
     Ensure-EnvFile
     Ensure-PostgresCredentialLock
     Import-EnvFile
-    Invoke-Checked -Exe "docker" -Args @("compose", "up", "-d", "db")
+    Invoke-ComposeCommand -Context (Get-ComposeContext) -Args @("up", "-d", "db")
 }
 
 function Db-Down {
     Ensure-Docker
-    Invoke-Checked -Exe "docker" -Args @("compose", "down")
+    Invoke-ComposeCommand -Context (Get-ComposeContext) -Args @("down", "--remove-orphans")
 }
 
 function Db-Reset {
@@ -679,15 +1270,15 @@ function Db-Reset {
     Ensure-PostgresCredentialLock
     Import-EnvFile
     Write-Host "Resetting the local PostgreSQL Docker volume. This removes local DB data." -ForegroundColor Yellow
-    Invoke-Checked -Exe "docker" -Args @("compose", "down", "-v", "--remove-orphans")
-    Invoke-Checked -Exe "docker" -Args @("compose", "up", "-d", "db")
+    Invoke-ComposeCommand -Context (Get-ComposeContext) -Args @("down", "-v", "--remove-orphans")
+    Invoke-ComposeCommand -Context (Get-ComposeContext) -Args @("up", "-d", "db")
     Wait-ForPostgres
     Write-Host "PostgreSQL volume recreated. Run migrate next." -ForegroundColor Green
 }
 
 function Db-Logs {
     Ensure-Docker
-    Invoke-Checked -Exe "docker" -Args @("compose", "logs", "-f", "db")
+    Invoke-ComposeCommand -Context (Get-ComposeContext) -Args @("logs", "-f", "db")
 }
 
 function Migrate {
@@ -788,7 +1379,11 @@ function Api {
     Ensure-PostgresCredentialLock
     Import-EnvFile
     $pythonExe = Get-PythonExe
-    Invoke-Checked -Exe $pythonExe -Args @("-m", "uvicorn", "app.api.main:app", "--reload")
+    $apiPort = $env:API_PORT
+    if ([string]::IsNullOrWhiteSpace($apiPort)) {
+        $apiPort = "8000"
+    }
+    Invoke-Checked -Exe $pythonExe -Args @("-m", "uvicorn", "app.api.main:app", "--reload", "--host", "127.0.0.1", "--port", "$apiPort")
 }
 
 function Flow {
@@ -803,6 +1398,11 @@ function Flow {
 switch ($Command) {
     "bootstrap" { Bootstrap }
     "playwright-install" { Playwright-Install }
+    "init-worktree-env" { Initialize-WorktreeEnv -SourceRootPath $SourceWorktreePath -SkipGscSeedCopy:(-not $CopyGscCredentials) }
+    "clone-worktree-db" { Clone-WorktreeDb }
+    "start-worktree" { Start-Worktree }
+    "stop-worktree" { Stop-Worktree }
+    "info-worktree" { Show-WorktreeInfo }
     "db-up" { Db-Up }
     "db-down" { Db-Down }
     "db-reset" { Db-Reset }

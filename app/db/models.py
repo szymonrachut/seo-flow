@@ -4,10 +4,23 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, Enum, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy import event
-from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.ext.mutable import MutableDict, MutableList
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.core.text_processing import prepare_visible_text
 from app.db.base import Base
@@ -34,6 +47,10 @@ def crawl_job_status_sqlalchemy_enum() -> Enum:
     )
 
 
+CONTENT_GENERATOR_ASSET_ALLOWED_STATUSES = frozenset({"pending", "running", "ready", "failed"})
+CONTENT_GENERATOR_ASSET_STATUS_PENDING = "pending"
+
+
 class Site(Base):
     __tablename__ = "sites"
 
@@ -49,6 +66,11 @@ class Site(Base):
         uselist=False,
     )
     content_strategy: Mapped["SiteContentStrategy | None"] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    content_generator_asset: Mapped["SiteContentGeneratorAsset | None"] = relationship(
         back_populates="site",
         cascade="all, delete-orphan",
         uselist=False,
@@ -101,6 +123,10 @@ class CrawlJob(Base):
     )
     semantic_profiles: Mapped[list["CrawlPageSemanticProfile"]] = relationship(
         back_populates="crawl_job",
+        cascade="all, delete-orphan",
+    )
+    content_generator_assets: Mapped[list["SiteContentGeneratorAsset"]] = relationship(
+        back_populates="basis_crawl_job",
         cascade="all, delete-orphan",
     )
     content_gap_candidates: Mapped[list["SiteContentGapCandidate"]] = relationship(
@@ -289,6 +315,55 @@ class SiteContentStrategy(Base):
     )
 
     site: Mapped[Site] = relationship(back_populates="content_strategy")
+
+
+class SiteContentGeneratorAsset(Base):
+    __tablename__ = "site_content_generator_assets"
+    __table_args__ = (
+        UniqueConstraint("site_id", name="uq_site_content_generator_assets_site_id"),
+        Index("ix_site_content_generator_assets_site_id", "site_id"),
+        Index("ix_site_content_generator_assets_basis_crawl_job_id", "basis_crawl_job_id"),
+        CheckConstraint(
+            "status IN ('pending', 'running', 'ready', 'failed')",
+            name="ck_site_content_generator_assets_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    basis_crawl_job_id: Mapped[int] = mapped_column(ForeignKey("crawl_jobs.id", ondelete="CASCADE"), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default=CONTENT_GENERATOR_ASSET_STATUS_PENDING)
+    surfer_custom_instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
+    seowriting_details_to_include: Mapped[str | None] = mapped_column(Text, nullable=True)
+    introductory_hook_brief: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_urls_json: Mapped[list[str] | None] = mapped_column(MutableList.as_mutable(JSON), nullable=True)
+    source_pages_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    llm_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    last_error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    @validates("status")
+    def _validate_status(self, _key: str, value: str) -> str:
+        if not isinstance(value, str):
+            raise ValueError("SiteContentGeneratorAsset.status must be a string.")
+        normalized_value = value.strip().lower()
+        if normalized_value not in CONTENT_GENERATOR_ASSET_ALLOWED_STATUSES:
+            allowed_values = ", ".join(sorted(CONTENT_GENERATOR_ASSET_ALLOWED_STATUSES))
+            raise ValueError(f"Unsupported SiteContentGeneratorAsset.status: {value!r}. Allowed values: {allowed_values}.")
+        return normalized_value
+
+    site: Mapped[Site] = relationship(back_populates="content_generator_asset")
+    basis_crawl_job: Mapped[CrawlJob] = relationship(back_populates="content_generator_assets")
 
 
 class SiteCompetitor(Base):

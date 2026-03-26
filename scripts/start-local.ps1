@@ -15,6 +15,32 @@ if (-not (Test-Path ".\frontend\.env.local")) {
     Write-Host "Created frontend/.env.local"
 }
 
+function Read-EnvValue {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [string]$DefaultValue = ""
+    )
+    if (-not (Test-Path $Path)) {
+        return $DefaultValue
+    }
+    foreach ($line in Get-Content $Path) {
+        $trimmed = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith("#")) {
+            continue
+        }
+        $separatorIndex = $trimmed.IndexOf("=")
+        if ($separatorIndex -lt 1) {
+            continue
+        }
+        $key = $trimmed.Substring(0, $separatorIndex).Trim()
+        if ($key -eq $Name) {
+            return $trimmed.Substring($separatorIndex + 1)
+        }
+    }
+    return $DefaultValue
+}
+
 function Invoke-DevCommand {
     param(
         [Parameter(Mandatory = $true)][string]$Command
@@ -67,10 +93,30 @@ Start-Process powershell -ArgumentList @(
 Start-Process powershell -ArgumentList @(
     "-NoExit",
     "-ExecutionPolicy", "Bypass",
-    "-Command", "Set-Location '$root\frontend'; npm run dev"
+    "-Command", "& {
+        Set-Location '$root\frontend'
+        `$frontendUrl = '$([string](Read-EnvValue -Path '.env' -Name 'FRONTEND_APP_URL' -DefaultValue 'http://127.0.0.1:5173'))'
+        if (`$frontendUrl -match ':(\d+)$') {
+            npm run dev -- --host 127.0.0.1 --port `$Matches[1]
+        }
+        else {
+            npm run dev
+        }
+    }"
 )
 
+$frontendUrl = "http://localhost:5173"
+$frontendApiUrl = Read-EnvValue -Path ".\frontend\.env.local" -Name "VITE_API_BASE_URL"
+if ($frontendApiUrl -match "http://127\.0\.0\.1:(\d+)") {
+    $apiPort = $Matches[1]
+    Write-Host "Frontend is configured to use API port $apiPort" -ForegroundColor DarkGray
+}
+$frontendAppUrl = Read-EnvValue -Path ".env" -Name "FRONTEND_APP_URL"
+if (-not [string]::IsNullOrWhiteSpace($frontendAppUrl)) {
+    $frontendUrl = $frontendAppUrl
+}
+
 Start-Sleep -Seconds 4
-Start-Process "http://localhost:5173"
+Start-Process $frontendUrl
 
 Write-Host "Project started. Backend and frontend are running in separate windows." -ForegroundColor Green
