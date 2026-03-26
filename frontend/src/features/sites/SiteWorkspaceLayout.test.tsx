@@ -978,6 +978,28 @@ describe('SiteWorkspaceLayout', () => {
   test('renders the current-first site overview with a lighter baseline helper', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
       const url = String(input)
+      if (url.includes('/sites/5/content-generator-assets')) {
+        return jsonResponse({
+          site_id: 5,
+          has_assets: false,
+          can_regenerate: false,
+          active_crawl_id: 11,
+          active_crawl_status: 'running',
+          status: null,
+          basis_crawl_job_id: null,
+          surfer_custom_instructions: null,
+          seowriting_details_to_include: null,
+          introductory_hook_brief: null,
+          source_urls: [],
+          source_pages_hash: null,
+          prompt_version: null,
+          llm_provider: null,
+          llm_model: null,
+          generated_at: null,
+          last_error_code: null,
+          last_error_message: null,
+        })
+      }
       if (url.includes('/sites/5') && !url.includes('/crawls')) {
         return jsonResponse(sitePayload)
       }
@@ -992,6 +1014,7 @@ describe('SiteWorkspaceLayout', () => {
     expect(screen.queryByLabelText('Baseline crawl')).not.toBeInTheDocument()
     expect(screen.getByText('Site state now')).toBeInTheDocument()
     expect(screen.getByText('Active snapshot KPIs')).toBeInTheDocument()
+    expect(screen.getByText('Instructions for content generators')).toBeInTheDocument()
     expect(screen.getByText('Key signals and next actions')).toBeInTheDocument()
     expect(screen.getByText('Compare ready')).toBeInTheDocument()
     expect(screen.getByText('Comparison stays under Changes.')).toBeInTheDocument()

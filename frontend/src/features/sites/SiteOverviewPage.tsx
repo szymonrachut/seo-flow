@@ -8,6 +8,7 @@ import { SummaryCards } from '../../components/SummaryCards'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import type { CrawlJobDetail, SiteCrawlListItem, SiteDetail } from '../../types/api'
 import { formatDateTime } from '../../utils/format'
+import { SiteContentGeneratorSection } from './SiteContentGeneratorSection'
 import { useSiteWorkspaceContext } from './context'
 import {
   buildSiteChangesPath,
@@ -373,6 +374,12 @@ export function SiteOverviewPage() {
           </div>
         )}
       </section>
+
+      <SiteContentGeneratorSection
+        siteId={site.id}
+        activeCrawlId={activeCrawlId}
+        activeCrawlStatus={activeCrawl?.status ?? null}
+      />
 
       <section className="rounded-[32px] border border-stone-300 bg-white/90 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950/82">
         <div>

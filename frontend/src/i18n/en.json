@@ -695,6 +695,54 @@
         "property": "Property",
         "noProperty": "No property connected"
       },
+      "contentGenerator": {
+        "eyebrow": "Content generators",
+        "title": "Instructions for content generators",
+        "description": "Keep the current site-level writing context close to the active snapshot so it can be reused in Surfer, SEO Writing.ai and future content workflows.",
+        "loadingTitle": "Loading generator instructions",
+        "loadingDescription": "Checking the current site-level asset for active crawl #{{crawlId}}.",
+        "loadingWithoutCrawlDescription": "Checking whether this site already has generator instructions ready in its persistent store.",
+        "busyTitle": "Instructions are being prepared",
+        "busyDescription": "The current site-level asset is being generated from crawl #{{crawlId}}.",
+        "emptyTitle": "No generator instructions yet",
+        "emptyDescription": "Generate the first reusable instructions from active crawl #{{crawlId}}.",
+        "emptyWithoutCrawlDescription": "Choose a finished active crawl before generating the first reusable instructions for this site.",
+        "noActiveCrawlHint": "A finished active crawl is required before generation can start.",
+        "waitForFinishedCrawl": "Generation becomes available after active crawl #{{crawlId}} finishes successfully.",
+        "activeCrawlInProgress": "Active crawl #{{crawlId}} is still running, so manual regeneration stays disabled until the snapshot finishes.",
+        "failedTitle": "Instruction generation failed",
+        "failedDescription": "The last generation attempt did not complete successfully. Review the error and retry when the active crawl is ready.",
+        "failedFallbackMessage": "The request returned a failed asset state. Review the latest error and retry when the active crawl is ready.",
+        "requestErrorTitle": "Generator instructions request failed",
+        "status": {
+          "ready": "Ready"
+        },
+        "actions": {
+          "generate": "Generate instructions for content generators",
+          "regenerate": "Generate instructions for content generators again",
+          "retry": "Try generating instructions again",
+          "generating": "Generating..."
+        },
+        "metadata": {
+          "generatedAt": "Generated at",
+          "basisCrawl": "Based on crawl",
+          "llmModel": "LLM model",
+          "promptVersion": "Prompt version",
+          "sourcePagesHash": "Source pages hash",
+          "sourceUrls": "Source URLs ({{count}})"
+        },
+        "failure": {
+          "errorCode": "Error code",
+          "basisCrawl": "Attempted on crawl",
+          "generatedAt": "Last generated at",
+          "activeStatus": "Asset status"
+        },
+        "blocks": {
+          "surferTitle": "Surfer Custom Instructions",
+          "seoWritingTitle": "SEO Writing.ai - Details to Include",
+          "hookTitle": "Introductory Hook Brief"
+        }
+      },
       "signals": {
         "title": "Key signals and next actions",
         "description": "These cards answer what needs attention now inside the active snapshot.",

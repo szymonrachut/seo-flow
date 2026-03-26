@@ -695,6 +695,54 @@
         "property": "Property",
         "noProperty": "Brak podpietego property"
       },
+      "contentGenerator": {
+        "eyebrow": "Generatory tresci",
+        "title": "Instrukcje dla generatorow tresci",
+        "description": "Trzymaj gotowy, site-level kontekst pisania blisko aktywnego snapshotu, aby od razu reuse'owac go w Surferze, SEO Writing.ai i kolejnych workflow tresciowych.",
+        "loadingTitle": "Ladowanie instrukcji dla generatorow",
+        "loadingDescription": "Sprawdzam aktualny site-level asset dla aktywnego crawla #{{crawlId}}.",
+        "loadingWithoutCrawlDescription": "Sprawdzam, czy ta witryna ma juz gotowe instrukcje zapisane w persistent store.",
+        "busyTitle": "Instrukcje sa teraz generowane",
+        "busyDescription": "Aktualny site-level asset jest generowany na podstawie crawla #{{crawlId}}.",
+        "emptyTitle": "Brak instrukcji dla generatorow",
+        "emptyDescription": "Wygeneruj pierwszy zestaw instrukcji reuse'owalnych z aktywnego crawla #{{crawlId}}.",
+        "emptyWithoutCrawlDescription": "Wybierz zakonczony aktywny crawl, zanim wygenerujesz pierwszy zestaw instrukcji dla tej witryny.",
+        "noActiveCrawlHint": "Do uruchomienia generacji potrzebny jest zakonczony aktywny crawl.",
+        "waitForFinishedCrawl": "Generacja bedzie dostepna po pomyslnym zakonczeniu aktywnego crawla #{{crawlId}}.",
+        "activeCrawlInProgress": "Aktywny crawl #{{crawlId}} nadal trwa, dlatego reczna regeneracja pozostaje zablokowana do czasu zakonczenia snapshotu.",
+        "failedTitle": "Generacja instrukcji nie powiodla sie",
+        "failedDescription": "Ostatnia proba generacji nie zakonczyla sie sukcesem. Sprawdz blad i sprobuj ponownie, gdy aktywny crawl bedzie gotowy.",
+        "failedFallbackMessage": "Zadanie zwrocilo nieudany stan assetu. Sprawdz ostatni blad i sprobuj ponownie, gdy aktywny crawl bedzie gotowy.",
+        "requestErrorTitle": "Nie udalo sie pobrac instrukcji dla generatorow",
+        "status": {
+          "ready": "Gotowe"
+        },
+        "actions": {
+          "generate": "Generuj instrukcje dla Generatorow tresci",
+          "regenerate": "Generuj instrukcje dla Generatorow tresci od nowa",
+          "retry": "Sprobuj wygenerowac instrukcje ponownie",
+          "generating": "Generowanie..."
+        },
+        "metadata": {
+          "generatedAt": "Wygenerowano",
+          "basisCrawl": "Na bazie crawla",
+          "llmModel": "Model LLM",
+          "promptVersion": "Wersja promptu",
+          "sourcePagesHash": "Hash stron zrodlowych",
+          "sourceUrls": "URL-e zrodlowe ({{count}})"
+        },
+        "failure": {
+          "errorCode": "Kod bledu",
+          "basisCrawl": "Proba na crawlu",
+          "generatedAt": "Ostatnio wygenerowano",
+          "activeStatus": "Status assetu"
+        },
+        "blocks": {
+          "surferTitle": "Surfer Custom Instructions",
+          "seoWritingTitle": "SEO Writing.ai - Details to Include",
+          "hookTitle": "Introductory Hook Brief"
+        }
+      },
       "signals": {
         "title": "Najwazniejsze sygnaly i najblizsze dzialania",
         "description": "Te karty odpowiadaja na pytanie, co wymaga uwagi teraz w aktywnym snapshocie.",

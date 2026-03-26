@@ -2,7 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { queryKeys } from '../../api/queryKeys'
 import { apiRequest } from '../../api/client'
-import type { SiteCrawlCreateInput, SiteCrawlListItem, SiteDetail, SiteListItem } from '../../types/api'
+import type {
+  GenerateSiteContentGeneratorAssetsInput,
+  GenerateSiteContentGeneratorAssetsResponse,
+  SiteContentGeneratorAsset,
+  SiteCrawlCreateInput,
+  SiteCrawlListItem,
+  SiteDetail,
+  SiteListItem,
+} from '../../types/api'
 import { buildQueryString } from '../../utils/searchParams'
 
 export interface SiteDetailQueryParams {
@@ -10,11 +18,19 @@ export interface SiteDetailQueryParams {
   baseline_crawl_id?: number
 }
 
+export interface SiteContentGeneratorAssetQueryParams {
+  active_crawl_id?: number
+}
+
 interface SiteDetailQueryOptions {
   enabled?: boolean
 }
 
 function buildSiteDetailSearch(params: SiteDetailQueryParams) {
+  return buildQueryString(params)
+}
+
+function buildSiteContentGeneratorAssetSearch(params: SiteContentGeneratorAssetQueryParams) {
   return buildQueryString(params)
 }
 
@@ -34,6 +50,22 @@ export async function listSiteCrawls(siteId: number) {
 
 export async function createSiteCrawl(siteId: number, payload: SiteCrawlCreateInput) {
   return apiRequest<{ id: number; site_id: number }>(`/sites/${siteId}/crawls`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getSiteContentGeneratorAsset(siteId: number, params: SiteContentGeneratorAssetQueryParams) {
+  const query = buildSiteContentGeneratorAssetSearch(params)
+  const suffix = query ? `?${query}` : ''
+  return apiRequest<SiteContentGeneratorAsset>(`/sites/${siteId}/content-generator-assets${suffix}`)
+}
+
+export async function generateSiteContentGeneratorAsset(
+  siteId: number,
+  payload: GenerateSiteContentGeneratorAssetsInput,
+) {
+  return apiRequest<GenerateSiteContentGeneratorAssetsResponse>(`/sites/${siteId}/content-generator-assets/generate`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -67,6 +99,20 @@ export function useSiteCrawlsQuery(siteId: number) {
   })
 }
 
+export function useSiteContentGeneratorAssetQuery(
+  siteId: number,
+  params: SiteContentGeneratorAssetQueryParams,
+  enabled = true,
+) {
+  const search = buildSiteContentGeneratorAssetSearch(params)
+
+  return useQuery({
+    queryKey: queryKeys.siteContentGeneratorAsset(siteId, search),
+    queryFn: () => getSiteContentGeneratorAsset(siteId, params),
+    enabled,
+  })
+}
+
 export function useCreateSiteCrawlMutation(siteId: number) {
   const queryClient = useQueryClient()
 
@@ -79,6 +125,21 @@ export function useCreateSiteCrawlMutation(siteId: number) {
         queryClient.invalidateQueries({ queryKey: ['sites', siteId] }),
         queryClient.invalidateQueries({ queryKey: queryKeys.jobsRoot }),
       ])
+    },
+  })
+}
+
+export function useGenerateSiteContentGeneratorAssetMutation(siteId: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: GenerateSiteContentGeneratorAssetsInput) =>
+      generateSiteContentGeneratorAsset(siteId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['sites', siteId, 'content-generator-assets'],
+        refetchType: 'none',
+      })
     },
   })
 }

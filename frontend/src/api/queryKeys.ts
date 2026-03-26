@@ -3,6 +3,8 @@ export const queryKeys = {
   sitesList: ['sites', 'list'] as const,
   siteDetail: (siteId: number, search: string) => ['sites', siteId, 'detail', search] as const,
   siteCrawls: (siteId: number) => ['sites', siteId, 'crawls'] as const,
+  siteContentGeneratorAsset: (siteId: number, search: string) =>
+    ['sites', siteId, 'content-generator-assets', search] as const,
   sitePagesCompare: (siteId: number, search: string) => ['sites', siteId, 'pages', 'compare', search] as const,
   siteAuditCompare: (siteId: number, search: string) => ['sites', siteId, 'audit', 'compare', search] as const,
   siteOpportunitiesCompare: (siteId: number, search: string) =>
