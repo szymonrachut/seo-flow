@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter, useLocation } from 'react-router-dom'
@@ -321,7 +321,7 @@ describe('SitePagesWorkspaceView', () => {
     expect(screen.queryByText((_, element) => element?.textContent === 'Compare: Ready to compare')).not.toBeInTheDocument()
     expect(screen.getByText('Active crawl pages')).toBeInTheDocument()
     expect(screen.getByText('Matching rows')).toBeInTheDocument()
-    expect(await screen.findByText('Alpha')).toBeInTheDocument()
+    expect((await screen.findAllByText('https://example.com/blog/alpha')).length).toBeGreaterThan(0)
     await user.click(screen.getByText('Export'))
     expect(screen.getByRole('link', { name: 'Export full CSV' })).toHaveAttribute(
       'href',
@@ -333,12 +333,29 @@ describe('SitePagesWorkspaceView', () => {
     )
     await user.click(screen.getByText('Operations'))
     expect(screen.getByRole('link', { name: 'Open active crawl' })).toHaveAttribute('href', '/jobs/11')
-    expect(screen.getByRole('link', { name: 'Open in job pages' })).toHaveAttribute(
+
+    await screen.findByRole('button', { name: 'Show all filters' })
+  })
+
+  test('opens page details in a modal and closes it again', async () => {
+    mockPagesRequests()
+
+    const { user } = renderPagesView('overview')
+
+    expect(await screen.findByRole('heading', { name: 'Pages' })).toBeInTheDocument()
+
+    await user.click(screen.getAllByRole('button', { name: 'Inspect' })[0])
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Page details')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Open in job pages' })).toHaveAttribute(
       'href',
       '/jobs/11/pages?url_contains=https%3A%2F%2Fexample.com%2Fblog%2Falpha',
     )
 
-    await screen.findByRole('button', { name: 'Show all filters' })
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   test('supports quick filter toggle on/off and multi-select in the URL', async () => {
@@ -379,12 +396,14 @@ describe('SitePagesWorkspaceView', () => {
   test('renders the records view with the denser page size', async () => {
     mockPagesRequests()
 
-    renderPagesView('records')
+    const { user } = renderPagesView('records')
 
     expect(await screen.findByRole('heading', { name: 'Pages Records' })).toBeInTheDocument()
     expect(screen.getByText('Matching rows')).toBeInTheDocument()
     expect(screen.getByText((_, element) => element?.textContent === 'Active: #11')).toBeInTheDocument()
     expect(screen.queryByText((_, element) => element?.textContent === 'Baseline: #10')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Open in job pages' })).toBeInTheDocument()
+
+    await user.click(screen.getAllByRole('button', { name: 'Inspect' })[0])
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
   })
 })

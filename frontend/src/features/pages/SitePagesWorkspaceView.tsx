@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { buildApiUrl } from '../../api/client'
 import { DataTable } from '../../components/DataTable'
+import { DetailModal } from '../../components/DetailModal'
 import { DataViewHeader } from '../../components/DataViewHeader'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
@@ -234,6 +235,7 @@ export function SitePagesWorkspaceView({ site, mode }: SitePagesWorkspaceViewPro
   const pageSize = mode === 'overview' ? 8 : DEFAULT_PAGE_SIZE
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedPageId, setSelectedPageId] = useState<number | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
 
   useDocumentTitle(
@@ -255,12 +257,17 @@ export function SitePagesWorkspaceView({ site, mode }: SitePagesWorkspaceViewPro
   useEffect(() => {
     if (!pagesQuery.data?.items.length) {
       setSelectedPageId(null)
+      setIsDetailsOpen(false)
       return
     }
-    if (selectedPageId && pagesQuery.data.items.some((page) => page.id === selectedPageId)) {
+    if (selectedPageId === null) {
       return
     }
-    setSelectedPageId(pagesQuery.data.items[0].id)
+    if (pagesQuery.data.items.some((page) => page.id === selectedPageId)) {
+      return
+    }
+    setSelectedPageId(null)
+    setIsDetailsOpen(false)
   }, [pagesQuery.data?.items, selectedPageId])
 
   function updateParams(updates: Record<string, string | number | boolean | undefined>) {
@@ -377,13 +384,18 @@ export function SitePagesWorkspaceView({ site, mode }: SitePagesWorkspaceViewPro
     )
   }
 
-  const selectedPage = pagesQuery.data.items.find((page) => page.id === selectedPageId) ?? pagesQuery.data.items[0] ?? null
+  const selectedPage = pagesQuery.data.items.find((page) => page.id === selectedPageId) ?? null
   const totals = summaryNumbers(site, taxonomyQuery.data, payload.total_items)
   const exportHref = (filtered: boolean) => buildExportHref(activeCrawlId, params, filtered)
   const routeContext = { activeCrawlId, baselineCrawlId: baselineCrawl?.id ?? site.baseline_crawl_id }
   const currentStatePath =
     mode === 'overview' ? buildSitePagesRecordsPath(site.id, routeContext) : buildSitePagesPath(site.id, routeContext)
   const changesPath = buildSiteChangesPagesPath(site.id, routeContext)
+
+  function openPageDetails(pageId: number) {
+    setSelectedPageId(pageId)
+    setIsDetailsOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -685,206 +697,195 @@ export function SitePagesWorkspaceView({ site, mode }: SitePagesWorkspaceViewPro
         ) : null}
       </FilterPanel>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <section className="space-y-4">
-          {payload.items.length === 0 ? (
-            <EmptyState
-              title={t('sitePages.empty.filteredTitle')}
-              description={t('sitePages.empty.filteredDescription')}
-            />
-          ) : (
-            <>
-              <DataTable
-                columns={[
-                  {
-                    key: 'url',
-                    header: t('pages.table.url'),
-                    sortKey: 'url',
-                    minWidth: 320,
-                    cell: (page: PageRecord) => (
-                      <div className="space-y-1.5">
-                        <p className="font-medium text-stone-900" title={page.url}>
-                          {page.url}
-                        </p>
-                        <p className="text-xs text-stone-500" title={page.normalized_url}>
-                          {page.normalized_url}
-                        </p>
-                        <UrlActions url={page.url} />
-                      </div>
-                    ),
-                  },
-                  {
-                    key: 'status',
-                    header: t('pages.table.status'),
-                    sortKey: 'status_code',
-                    minWidth: 90,
-                    cell: (page: PageRecord) => formatNullable(page.status_code),
-                  },
-                  {
-                    key: 'taxonomy',
-                    header: t('pages.table.taxonomy'),
-                    sortKey: 'page_type_confidence',
-                    minWidth: 220,
-                    cell: (page: PageRecord) => (
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-1.5">
-                          {renderBadge(t(`pages.taxonomy.pageTypes.${page.page_type}`), pageTypeTone(page.page_type))}
-                          {renderBadge(t(`pages.taxonomy.pageBuckets.${page.page_bucket}`), pageBucketTone(page.page_bucket))}
-                        </div>
-                        <p className="text-xs text-stone-600">
-                          {t('pages.taxonomy.confidence')}: {formatPercent(page.page_type_confidence)}
-                        </p>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: 'priority',
-                    header: t('pages.table.priority'),
-                    sortKey: 'priority_score',
-                    minWidth: 240,
-                    cell: (page: PageRecord) => (
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-1.5">
-                          {renderBadge(t('pages.priority.scoreBadge', { score: page.priority_score }), priorityTone(page.priority_level))}
-                          {renderBadge(t(`pages.priority.level.${page.priority_level}`), priorityTone(page.priority_level))}
-                          {page.primary_opportunity_type
-                            ? renderBadge(
-                                t(`opportunities.types.${page.primary_opportunity_type}.title`),
-                                opportunityTone(page.primary_opportunity_type),
-                              )
-                            : null}
-                        </div>
-                        <p className="text-xs text-stone-600">{page.priority_rationale}</p>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: 'signals',
-                    header: t('pages.table.signals'),
-                    minWidth: 200,
-                    cell: (page: PageRecord) => (
+      <section className="space-y-4">
+        {payload.items.length === 0 ? (
+          <EmptyState
+            title={t('sitePages.empty.filteredTitle')}
+            description={t('sitePages.empty.filteredDescription')}
+          />
+        ) : (
+          <>
+            <DataTable
+              columns={[
+                {
+                  key: 'url',
+                  header: t('pages.table.url'),
+                  sortKey: 'url',
+                  minWidth: 320,
+                  cell: (page: PageRecord) => (
+                    <div className="space-y-1.5">
+                      <p className="font-medium text-stone-900" title={page.url}>
+                        {page.url}
+                      </p>
+                      <p className="text-xs text-stone-500" title={page.normalized_url}>
+                        {page.normalized_url}
+                      </p>
+                      <UrlActions url={page.url} />
+                    </div>
+                  ),
+                },
+                {
+                  key: 'status',
+                  header: t('pages.table.status'),
+                  sortKey: 'status_code',
+                  minWidth: 90,
+                  cell: (page: PageRecord) => formatNullable(page.status_code),
+                },
+                {
+                  key: 'taxonomy',
+                  header: t('pages.table.taxonomy'),
+                  sortKey: 'page_type_confidence',
+                  minWidth: 220,
+                  cell: (page: PageRecord) => (
+                    <div className="space-y-2">
                       <div className="flex flex-wrap gap-1.5">
-                        {buildSignals(page, t).map((signal, index) => (
-                          <span key={`${signal.label}-${index}`}>{renderBadge(signal.label, signal.tone)}</span>
-                        ))}
+                        {renderBadge(t(`pages.taxonomy.pageTypes.${page.page_type}`), pageTypeTone(page.page_type))}
+                        {renderBadge(t(`pages.taxonomy.pageBuckets.${page.page_bucket}`), pageBucketTone(page.page_bucket))}
                       </div>
-                    ),
-                  },
-                  {
-                    key: 'details',
-                    header: t('common.open'),
-                    minWidth: 120,
-                    cell: (page: PageRecord) => (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPageId(page.id)}
-                        className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
-                      >
-                        {t('sitePages.inspectRecord')}
-                      </button>
-                    ),
-                  },
-                ]}
-                rows={payload.items}
-                rowKey={(page) => page.id}
-                sortBy={params.sort_by}
-                sortOrder={params.sort_order}
-                onSortChange={(sortBy, sortOrder) => updateParams({ sort_by: sortBy, sort_order: sortOrder, page: 1 })}
-              />
-              <PaginationControls
-                page={payload.page}
-                pageSize={payload.page_size}
-                totalItems={payload.total_items}
-                totalPages={payload.total_pages}
-                onPageChange={(page) => updateParams({ page })}
-                onPageSizeChange={(pageSize) => updateParams({ page_size: pageSize, page: 1 })}
-              />
-            </>
-          )}
-        </section>
-
-        <aside className="rounded-[28px] border border-stone-300 bg-white/90 p-5 shadow-sm">
-          {selectedPage ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-teal-700">{t('sitePages.details.title')}</p>
-                <h2 className="mt-2 text-lg font-semibold text-stone-950" title={selectedPage.url}>
-                  {selectedPage.url}
-                </h2>
-                <p className="mt-1 text-sm text-stone-600" title={selectedPage.normalized_url}>
-                  {selectedPage.normalized_url}
-                </p>
-              </div>
-              <div className="grid gap-3">
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('pages.table.status')}</p>
-                  <p className="mt-1 font-medium text-stone-900">{formatNullable(selectedPage.status_code)}</p>
-                </div>
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('pages.table.title')}</p>
-                  <p className="mt-1 text-sm text-stone-900">{selectedPage.title ?? '-'}</p>
-                  <p className="mt-1 text-xs text-stone-500">
-                    {selectedPage.title_length == null
-                      ? '-'
-                      : t('common.length', { count: Number(selectedPage.title_length) })}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('pages.table.metaDescription')}</p>
-                  <p className="mt-1 text-sm text-stone-900">{selectedPage.meta_description ?? '-'}</p>
-                  <p className="mt-1 text-xs text-stone-500">
-                    {selectedPage.meta_description_length == null
-                      ? '-'
-                      : t('common.length', { count: Number(selectedPage.meta_description_length) })}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('pages.table.canonical')}</p>
-                  <p className="mt-1 break-words text-sm text-stone-900">{selectedPage.canonical_url ?? '-'}</p>
-                  <p className="mt-1 text-xs text-stone-500">
-                    {selectedPage.robots_meta ?? '-'} | {selectedPage.x_robots_tag ?? '-'}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('pages.table.priority')}</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {renderBadge(t('pages.priority.scoreBadge', { score: selectedPage.priority_score }), priorityTone(selectedPage.priority_level))}
-                    {renderBadge(t(`pages.priority.level.${selectedPage.priority_level}`), priorityTone(selectedPage.priority_level))}
-                    {selectedPage.primary_opportunity_type
-                      ? renderBadge(
-                          t(`opportunities.types.${selectedPage.primary_opportunity_type}.title`),
-                          opportunityTone(selectedPage.primary_opportunity_type),
-                        )
-                      : null}
-                  </div>
-                  <p className="mt-2 text-xs text-stone-600">{selectedPage.priority_rationale}</p>
-                  <p className="mt-2 text-xs text-stone-600">
-                    {t('sitePages.details.responseTime')}: {formatResponseTime(selectedPage.response_time_ms)}
-                  </p>
-                  <p className="text-xs text-stone-600">
-                    {t('nav.gsc')}: {formatNullable(selectedPage.clicks_28d)} {t('sitePages.details.clicks')} /{' '}
-                    {formatNullable(selectedPage.impressions_28d)} {t('sitePages.details.impressions')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  to={`/jobs/${activeCrawlId}/pages?url_contains=${encodeURIComponent(selectedPage.url)}`}
-                  className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
-                >
-                  {t('sitePages.actions.openInJobPages')}
-                </Link>
-                <UrlActions url={selectedPage.url} />
-              </div>
-            </div>
-          ) : (
-            <EmptyState
-              title={t('sitePages.empty.detailsTitle')}
-              description={t('sitePages.empty.detailsDescription')}
+                      <p className="text-xs text-stone-600">
+                        {t('pages.taxonomy.confidence')}: {formatPercent(page.page_type_confidence)}
+                      </p>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'priority',
+                  header: t('pages.table.priority'),
+                  sortKey: 'priority_score',
+                  minWidth: 240,
+                  cell: (page: PageRecord) => (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {renderBadge(t('pages.priority.scoreBadge', { score: page.priority_score }), priorityTone(page.priority_level))}
+                        {renderBadge(t(`pages.priority.level.${page.priority_level}`), priorityTone(page.priority_level))}
+                        {page.primary_opportunity_type
+                          ? renderBadge(
+                              t(`opportunities.types.${page.primary_opportunity_type}.title`),
+                              opportunityTone(page.primary_opportunity_type),
+                            )
+                          : null}
+                      </div>
+                      <p className="text-xs text-stone-600">{page.priority_rationale}</p>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'signals',
+                  header: t('pages.table.signals'),
+                  minWidth: 200,
+                  cell: (page: PageRecord) => (
+                    <div className="flex flex-wrap gap-1.5">
+                      {buildSignals(page, t).map((signal, index) => (
+                        <span key={`${signal.label}-${index}`}>{renderBadge(signal.label, signal.tone)}</span>
+                      ))}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'details',
+                  header: t('common.open'),
+                  minWidth: 120,
+                  cell: (page: PageRecord) => (
+                    <button
+                      type="button"
+                      onClick={() => openPageDetails(page.id)}
+                      className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+                    >
+                      {t('sitePages.inspectRecord')}
+                    </button>
+                  ),
+                },
+              ]}
+              rows={payload.items}
+              rowKey={(page) => page.id}
+              sortBy={params.sort_by}
+              sortOrder={params.sort_order}
+              onSortChange={(sortBy, sortOrder) => updateParams({ sort_by: sortBy, sort_order: sortOrder, page: 1 })}
             />
-          )}
-        </aside>
-      </div>
+            <PaginationControls
+              page={payload.page}
+              pageSize={payload.page_size}
+              totalItems={payload.total_items}
+              totalPages={payload.total_pages}
+              onPageChange={(page) => updateParams({ page })}
+              onPageSizeChange={(pageSize) => updateParams({ page_size: pageSize, page: 1 })}
+            />
+          </>
+        )}
+      </section>
+
+      {isDetailsOpen && selectedPage ? (
+        <DetailModal
+          titleId="site-pages-details-title"
+          title={selectedPage.url}
+          subtitle={selectedPage.normalized_url}
+          eyebrow={t('sitePages.details.title')}
+          closeLabel={t('common.close')}
+          onClose={() => setIsDetailsOpen(false)}
+        >
+          <div className="grid gap-3">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">{t('pages.table.status')}</p>
+              <p className="mt-1 font-medium text-stone-900 dark:text-slate-100">{formatNullable(selectedPage.status_code)}</p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">{t('pages.table.title')}</p>
+              <p className="mt-1 text-sm text-stone-900 dark:text-slate-100">{selectedPage.title ?? '-'}</p>
+              <p className="mt-1 text-xs text-stone-500 dark:text-slate-400">
+                {selectedPage.title_length == null
+                  ? '-'
+                  : t('common.length', { count: Number(selectedPage.title_length) })}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">{t('pages.table.metaDescription')}</p>
+              <p className="mt-1 text-sm text-stone-900 dark:text-slate-100">{selectedPage.meta_description ?? '-'}</p>
+              <p className="mt-1 text-xs text-stone-500 dark:text-slate-400">
+                {selectedPage.meta_description_length == null
+                  ? '-'
+                  : t('common.length', { count: Number(selectedPage.meta_description_length) })}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">{t('pages.table.canonical')}</p>
+              <p className="mt-1 break-words text-sm text-stone-900 dark:text-slate-100">{selectedPage.canonical_url ?? '-'}</p>
+              <p className="mt-1 text-xs text-stone-500 dark:text-slate-400">
+                {selectedPage.robots_meta ?? '-'} | {selectedPage.x_robots_tag ?? '-'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">{t('pages.table.priority')}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {renderBadge(t('pages.priority.scoreBadge', { score: selectedPage.priority_score }), priorityTone(selectedPage.priority_level))}
+                {renderBadge(t(`pages.priority.level.${selectedPage.priority_level}`), priorityTone(selectedPage.priority_level))}
+                {selectedPage.primary_opportunity_type
+                  ? renderBadge(
+                      t(`opportunities.types.${selectedPage.primary_opportunity_type}.title`),
+                      opportunityTone(selectedPage.primary_opportunity_type),
+                    )
+                  : null}
+              </div>
+              <p className="mt-2 text-xs text-stone-600 dark:text-slate-300">{selectedPage.priority_rationale}</p>
+              <p className="mt-2 text-xs text-stone-600 dark:text-slate-300">
+                {t('sitePages.details.responseTime')}: {formatResponseTime(selectedPage.response_time_ms)}
+              </p>
+              <p className="text-xs text-stone-600 dark:text-slate-300">
+                {t('nav.gsc')}: {formatNullable(selectedPage.clicks_28d)} {t('sitePages.details.clicks')} /{' '}
+                {formatNullable(selectedPage.impressions_28d)} {t('sitePages.details.impressions')}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to={`/jobs/${activeCrawlId}/pages?url_contains=${encodeURIComponent(selectedPage.url)}`}
+                className="rounded-full border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-400 hover:bg-stone-100"
+              >
+                {t('sitePages.actions.openInJobPages')}
+              </Link>
+              <UrlActions url={selectedPage.url} />
+            </div>
+          </div>
+        </DetailModal>
+      ) : null}
     </div>
   )
 }
