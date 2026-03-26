@@ -568,6 +568,28 @@ function ConvertTo-SqlLiteral {
     return "'" + $Value.Replace("'", "''") + "'"
 }
 
+function Start-FrontendDevWindow {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProjectRoot,
+        [string]$FrontendPort
+    )
+
+    $frontendPath = Join-Path $ProjectRoot "frontend"
+    $command = "Set-Location '$frontendPath'; "
+    if ([string]::IsNullOrWhiteSpace($FrontendPort)) {
+        $command += "& npm.cmd 'run' 'dev'"
+    }
+    else {
+        $command += "& npm.cmd 'run' 'dev' '--' '--host' '127.0.0.1' '--port' '$FrontendPort' '--strictPort'"
+    }
+
+    return Start-Process powershell -ArgumentList @(
+        "-NoExit",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", "& { $command }"
+    ) -WorkingDirectory $frontendPath -PassThru
+}
+
 function Set-PostgresRolePassword {
     param(
         [Parameter(Mandatory = $true)][string]$User,
@@ -1206,11 +1228,7 @@ function Start-Worktree {
         "-Command", "Set-Location '$rootPath'; powershell -ExecutionPolicy Bypass -File '.\scripts\dev.ps1' -Command api"
     ) -WorkingDirectory $rootPath -PassThru
 
-    $frontendProcess = Start-Process powershell -ArgumentList @(
-        "-NoExit",
-        "-ExecutionPolicy", "Bypass",
-        "-Command", "Set-Location '$rootPath\frontend'; npm run dev -- --host=127.0.0.1 --port=$frontendPort --strictPort"
-    ) -WorkingDirectory (Join-Path $rootPath "frontend") -PassThru
+    $frontendProcess = Start-FrontendDevWindow -ProjectRoot $rootPath -FrontendPort $frontendPort
 
     Write-KeyValueFile -Path $runtimePath -Values @{
         "API_PID" = "$($apiProcess.Id)"

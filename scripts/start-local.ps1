@@ -60,6 +60,28 @@ function Ensure-FrontendDependencies {
     }
 }
 
+function Start-FrontendDevWindow {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProjectRoot,
+        [string]$FrontendPort
+    )
+
+    $frontendPath = Join-Path $ProjectRoot "frontend"
+    $command = "Set-Location '$frontendPath'; "
+    if ([string]::IsNullOrWhiteSpace($FrontendPort)) {
+        $command += "& npm.cmd 'run' 'dev'"
+    }
+    else {
+        $command += "& npm.cmd 'run' 'dev' '--' '--host' '127.0.0.1' '--port' '$FrontendPort' '--strictPort'"
+    }
+
+    Start-Process powershell -ArgumentList @(
+        "-NoExit",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", "& { $command }"
+    )
+}
+
 function Wait-ForHttpEndpoint {
     param(
         [Parameter(Mandatory = $true)][string]$Url,
@@ -128,6 +150,10 @@ catch {
 $frontendUrl = Read-EnvValue -Path ".env" -Name "FRONTEND_APP_URL" -DefaultValue "http://127.0.0.1:5173"
 $apiPort = Read-EnvValue -Path ".env" -Name "API_PORT" -DefaultValue "8000"
 $apiHealthUrl = "http://127.0.0.1:$apiPort/health"
+$frontendPort = ""
+if ($frontendUrl -match ":(\d+)$") {
+    $frontendPort = $Matches[1]
+}
 
 Ensure-FrontendDependencies
 
@@ -137,20 +163,7 @@ Start-Process powershell -ArgumentList @(
     "-Command", "Set-Location '$root'; powershell -ExecutionPolicy Bypass -File '.\scripts\dev.ps1' -Command api"
 )
 
-Start-Process powershell -ArgumentList @(
-    "-NoExit",
-    "-ExecutionPolicy", "Bypass",
-    "-Command", "& {
-        Set-Location '$root\frontend'
-        `$frontendUrl = '$([string](Read-EnvValue -Path '.env' -Name 'FRONTEND_APP_URL' -DefaultValue 'http://127.0.0.1:5173'))'
-        if (`$frontendUrl -match ':(\d+)$') {
-            npm run dev -- --host=127.0.0.1 --port=`$Matches[1] --strictPort
-        }
-        else {
-            npm run dev
-        }
-    }"
-)
+Start-FrontendDevWindow -ProjectRoot $root -FrontendPort $frontendPort
 
 $frontendApiUrl = Read-EnvValue -Path ".\frontend\.env.local" -Name "VITE_API_BASE_URL"
 if ($frontendApiUrl -match "http://127\.0\.0\.1:(\d+)") {
