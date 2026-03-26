@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     openai_model_competitor_extraction: str = "gpt-5-mini"
     openai_model_competitor_merge: str = "gpt-5.4-mini"
     openai_model_competitor_explanation: str = "gpt-5-mini"
+    openai_model_content_generator: str = "gpt-5.4-mini"
     content_gap_read_model_mode: Literal["legacy", "hybrid", "reviewed_preferred"] = "legacy"
     openai_timeout_seconds: float = 20.0
     openai_max_retries: int = 2
