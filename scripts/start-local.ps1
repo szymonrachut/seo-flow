@@ -41,6 +41,15 @@ function Read-EnvValue {
     return $DefaultValue
 }
 
+function Test-EnvFlagEnabled {
+    param(
+        [Parameter(Mandatory = $true)][string]$Value
+    )
+
+    $normalized = $Value.Trim().ToLowerInvariant()
+    return $normalized -in @("1", "true", "yes", "on")
+}
+
 function Ensure-FrontendDependencies {
     $frontendNodeModulesPath = Join-Path $root "frontend\node_modules"
     if (Test-Path $frontendNodeModulesPath) {
@@ -133,7 +142,13 @@ function Show-DatabaseAuthHint {
 }
 
 try {
-    Invoke-DevCommand -Command "db-up"
+    $skipDbUp = Test-EnvFlagEnabled -Value (Read-EnvValue -Path ".env" -Name "START_LOCAL_SKIP_DB_UP" -DefaultValue "false")
+    if ($skipDbUp) {
+        Write-Host "Using the existing PostgreSQL instance from DATABASE_URL. Skipping docker compose db-up." -ForegroundColor DarkGray
+    }
+    else {
+        Invoke-DevCommand -Command "db-up"
+    }
     Invoke-DevCommand -Command "db-wait"
     Invoke-DevCommand -Command "migrate"
 }

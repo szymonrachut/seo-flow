@@ -264,6 +264,8 @@ API domyslnie:
 http://127.0.0.1:8000
 ```
 
+Uwaga dla glownego worktree `main`: zostaw lokalne polaczenie z kanoniczna baza `seo-crawler-db` na `127.0.0.1:5432` z baza `seo_crawler`. Nie przepinaj `main` na izolowana baze worktree; osobne instancje PostgreSQL sa tylko dla dodatkowych worktree.
+
 ## Izolowany worktree local flow
 Ten repo moze dzialac rownolegle w kilku `git worktree`, ale kazdy worktree powinien miec wlasny lokalny runtime.
 

@@ -267,6 +267,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
 - Nie mieszaj danych wielu crawl snapshotow w podstawowych tabelach `pages`, `links`, audit ani `gsc_*`.
 - Nie zmieniaj lokalnego hasla roli Postgresa w skryptach, testach ani dokumentacji "pomocniczo".
 - Jesli lokalny PostgreSQL zwraca `password authentication failed`, traktuj to najpierw jako rozjazd starego Docker volume i `.env`, a nie jako powod do rotacji hasla.
+- `main` worktree ma zostac podpiety do kanonicznej lokalnej bazy `seo-crawler-db` na `127.0.0.1:5432`, z baza `seo_crawler`.
+- Dla `main` nie przepinaj `.env`, `DATABASE_URL`, `POSTGRES_PORT` ani `start-local.cmd` / `start-local.ps1` na izolowana baze worktree; `main` ma korzystac z kontenera `seo-crawler-db` na porcie `5432`, chyba ze uzytkownik wprost poprosi o inny target.
 - Traktuj `frontend/src/types/api.ts` jako czesc kontraktu.
 - Eksport ma reuse'owac read modele, nie osobna logike CSV.
 - Frontend ma wyswietlac i orkiestracyjnie spinac API, nie liczyc audytu sam.
