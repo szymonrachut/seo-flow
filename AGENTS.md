@@ -8,6 +8,8 @@ Najwazniejszy model mentalny:
 - `CrawlJob` jest snapshotem tej witryny w czasie.
 - `pages`, `links`, audit, opportunities, internal linking, cannibalization i zaimportowane dane GSC nadal sa logicznie liczone dla jednego konkretnego `crawl_job`.
 - `pages` maja tez trwala warstwe page taxonomy (`page_type`, `page_bucket`, confidence, version) liczona per snapshot.
+- `AI Review Editor` jest osobna warstwa site-level dla dokumentow redakcyjnych; kanoniczny current state dokumentu pochodzi z aktywnych `editor_document_blocks`.
+- `source_content` i `normalized_content` AI Review Editor sa reprezentacjami pochodnymi synchronizowanymi z aktywnych blokow.
 - `content recommendations` sa warstwa site-level liczona dynamicznie nad aktywnym snapshotem i own data only.
 - `competitive gap` jest warstwa site-level nad aktywnym snapshotem i manual competitors, ale ma juz snapshot-aware persisted warstwy Content Gap Review.
 - competitor sync zapisuje strony i extraction do osobnego store site-level, a po udanym syncu zapisuje tez raw candidates do `site_content_gap_candidates`.
@@ -84,6 +86,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
 - Domyslny backendowy smoke po wiekszosci lokalnych zmian to `powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command test-quick`.
 - Dla zmian w crawlerze najpierw uzyj `powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command test-crawler`; `tests/test_spider_scheduling.py` i `tests/test_e2e_local_cli.py` uruchamiaj tylko wtedy, gdy zmiana dotyka scheduler, stop flow, CLI albo pelnej orkiestracji crawl.
 - Dla zmian endpointu backendowego uruchom test warstwy serwisowej i test API tego samego obszaru; nie odpalaj pelnego `pytest`, jesli zmiana jest lokalna.
+- Dla zmian AI Review Editor lacz test API z testem serwisowym tej samej warstwy (`review`, `rewrite`, `block ops`, `versions`) i frontendowym `AIReviewEditorPage.test.tsx`; build dolacz przy zmianie routingu, shared kontraktu albo wiekszym UI hardeningu.
 - Dla zmian frontendowych uruchamiaj test tylko dotknietego feature'a; `npm run build` dolacz dopiero przy zmianie routingu, kontraktu API, shared UI albo wiekszym refaktorze.
 - `powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command test-backend-full` uruchamiaj dopiero przy zmianach przekrojowych: DB/migrations, `tests/conftest.py`, crawler core, shared helpers, shared read models, kontrakty API obejmujace wiele feature'ow i checkpoint przed merge.
 - `powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgres` uruchamiaj tylko przy zmianach migracji, local DB flow, guardow Postgresa albo gdy prosisz o realny smoke.
@@ -94,6 +97,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
 - `app/services/`: glowna logika aplikacji, read model, orkiestracja crawl, site workspace, GSC, eksporty
 - `app/services/site_service.py`: site-centric workspace detail, crawl history, active/baseline context
 - `app/services/gsc_service.py`: site-level property selection + per-crawl import i summary
+- `app/services/ai_review_editor_service.py`: create/list/get/update dokumentu, parse i sync pochodnych reprezentacji dokumentu
+- `app/services/editor_document_block_service.py`: inline edit, insert/delete block, reindex i current-state sync
+- `app/services/editor_document_version_service.py`: version snapshots, diff preview, rollback / restore
+- `app/services/editor_review_run_service.py`: review runs, summary, current vs stale governance
+- `app/services/editor_review_engine_service.py`: deterministiczny/mock review engine i wspolny draft issue dla review workflow
+- `app/services/editor_rewrite_service.py`: dismiss/resolved_manual, rewrite runs, apply rewrite, stale/actionability guards
 - `app/services/content_recommendation_service.py`: site-centric own-data recommendations reuse'ujace taxonomy, GSC, internal linking, lifecycle state, `implemented_summary`, shared status order dla summary/sortowania, outcome windows, `too_early` i backendowe implemented filters
 - `app/services/competitive_gap_service.py`: finalny site-centric Competitive Gap read model nad aktywnym snapshotem, z source selection `reviewed -> raw_candidates -> legacy`, readiness diagnostics i legacy fallback
 - `app/services/competitive_gap_sync_service.py`: manual competitor sync, lightweight diagnostics, persistence do tabel competitorowych i zapis raw candidates po syncu
@@ -114,6 +123,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
 - `frontend/src/features/sites/`: site workspace shell, overview, crawl history
 - `frontend/src/features/content-recommendations/`: site-level widok Content Recommendations
 - `frontend/src/features/competitive-gap/`: site-level widok Competitive Gap z readiness panel, semantic debug/status panel, empty states, competitor sync summary, operator UI dla runow i lazy explanation
+- `frontend/src/features/ai-review-editor/`: site-level AI Review Editor z lista dokumentow, ekranem dokumentu, issue panel, rewrite preview, version history i diff preview
 - `app/services/site_compare_service.py`: compare layer dla site workspace nad `active_crawl_id` i `baseline_crawl_id`
 - `app/api/routes/site_compare.py`: site-centric compare endpointy dla pages / audit / opportunities / internal linking
 - `frontend/src/features/gsc/`: site-level GSC workspace i legacy snapshot GSC view
@@ -137,6 +147,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
   `app/services/page_taxonomy_service.py`, `app/api/routes/pages.py`, `frontend/src/features/pages/`
 - Content Recommendations:
   `app/services/content_recommendation_service.py`, `app/services/content_recommendation_rules.py`, `app/api/routes/site_content_recommendations.py`, `frontend/src/features/content-recommendations/`
+- AI Review Editor:
+  `app/api/routes/site_ai_review_editor.py`, `app/schemas/ai_review_editor.py`, `app/services/ai_review_editor_service.py`, `app/services/editor_document_block_service.py`, `app/services/editor_document_version_service.py`, `app/services/editor_review_run_service.py`, `app/services/editor_review_engine_service.py`, `app/services/editor_review_llm_service.py`, `app/services/editor_rewrite_service.py`, `app/services/editor_rewrite_llm_service.py`, `frontend/src/features/ai-review-editor/`
 - Competitive Gap:
   `app/services/competitive_gap_service.py`, `app/services/competitive_gap_sync_service.py`, `app/services/competitive_gap_sync_run_service.py`, `app/services/competitive_gap_semantic_rules.py`, `app/services/competitive_gap_semantic_service.py`, `app/services/competitive_gap_semantic_run_service.py`, `app/services/competitive_gap_semantic_arbiter_service.py`, `app/services/competitive_gap_extraction_service.py`, `app/api/routes/site_competitive_gap.py`, `frontend/src/features/competitive-gap/`
 - Audit:
@@ -205,6 +217,34 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
   - summary bar w UI jest tylko klikanym drilldownem po statusie; frontend nie przelicza tych countow sam
   - przy cleanupie status order trzymaj jedno zrodlo prawdy na backendzie i jedno na froncie; nie duplikuj recznie list w kilku miejscach
   - nie dodawaj competitor gap ani external keyword integrations "przy okazji"
+
+### 4b. Zmiana AI Review Editor
+- Backend:
+  - `app/api/routes/site_ai_review_editor.py`
+  - `app/schemas/ai_review_editor.py`
+  - `app/services/ai_review_editor_service.py`
+  - `app/services/editor_document_block_service.py`
+  - `app/services/editor_document_version_service.py`
+  - `app/services/editor_review_run_service.py`
+  - `app/services/editor_review_llm_service.py`
+  - `app/services/editor_rewrite_service.py`
+  - `app/services/editor_rewrite_llm_service.py`
+- Frontend:
+  - `frontend/src/features/ai-review-editor/`
+  - `frontend/src/types/api.ts`
+- Testy backendowe:
+  - `tests/test_api_ai_review_editor.py`
+  - `tests/test_ai_review_editor_block_service.py`
+  - `tests/test_ai_review_editor_review_service.py`
+  - `tests/test_ai_review_editor_rewrite_service.py`
+  - `tests/test_ai_review_editor_version_service.py`
+- Testy frontendowe:
+  - `frontend/src/features/ai-review-editor/AIReviewEditorPage.test.tsx`
+- Pamietaj:
+  - kanoniczny current state dokumentu = aktywne `editor_document_blocks`
+  - `source_content` i `normalized_content` sa pochodne i musza pozostac zsynchronizowane z blokami
+  - stale review pozostaje historycznym kontekstem; nie remapuj issue automatycznie do nowego current state
+  - rewrite apply ma byc blokowany, gdy rewrite input nie pasuje juz do aktualnego stanu dokumentu
 
 ### 5. Zmiana w crawlerze
 - Scheduler i request flow: `app/crawler/scrapy_project/spiders/site_spider.py`

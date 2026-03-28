@@ -17,6 +17,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy import event
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -49,6 +50,12 @@ def crawl_job_status_sqlalchemy_enum() -> Enum:
 
 CONTENT_GENERATOR_ASSET_ALLOWED_STATUSES = frozenset({"pending", "running", "ready", "failed"})
 CONTENT_GENERATOR_ASSET_STATUS_PENDING = "pending"
+EDITOR_DOCUMENT_ALLOWED_STATUSES = frozenset({"draft", "parsed", "archived"})
+EDITOR_REVIEW_RUN_ALLOWED_STATUSES = frozenset({"queued", "running", "completed", "failed", "cancelled"})
+EDITOR_REVIEW_ISSUE_ALLOWED_STATUSES = frozenset(
+    {"open", "dismissed", "rewrite_requested", "rewrite_ready", "applied", "resolved_manual"}
+)
+EDITOR_REWRITE_RUN_ALLOWED_STATUSES = frozenset({"queued", "running", "completed", "failed", "cancelled", "applied"})
 
 
 class Site(Base):
@@ -74,6 +81,10 @@ class Site(Base):
         back_populates="site",
         cascade="all, delete-orphan",
         uselist=False,
+    )
+    editor_documents: Mapped[list["EditorDocument"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
     )
     content_recommendation_states: Mapped[list["SiteContentRecommendationState"]] = relationship(
         back_populates="site",
@@ -364,6 +375,256 @@ class SiteContentGeneratorAsset(Base):
 
     site: Mapped[Site] = relationship(back_populates="content_generator_asset")
     basis_crawl_job: Mapped[CrawlJob] = relationship(back_populates="content_generator_assets")
+
+
+class EditorDocument(Base):
+    __tablename__ = "editor_documents"
+    __table_args__ = (
+        Index("ix_editor_documents_site_id", "site_id"),
+        Index("ix_editor_documents_site_id_created_at", "site_id", "created_at"),
+        Index("ix_editor_documents_site_id_status", "site_id", "status"),
+        CheckConstraint(
+            "status IN ('draft', 'parsed', 'archived')",
+            name="ck_editor_documents_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    document_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_format: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_content: Mapped[str] = mapped_column(Text, nullable=False)
+    normalized_content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    topic_brief_json: Mapped[dict[str, Any] | None] = mapped_column(MutableDict.as_mutable(JSON), nullable=True)
+    facts_context_json: Mapped[dict[str, Any] | None] = mapped_column(MutableDict.as_mutable(JSON), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="editor_documents")
+    blocks: Mapped[list["EditorDocumentBlock"]] = relationship(
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
+    review_runs: Mapped[list["EditorReviewRun"]] = relationship(
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
+    review_issues: Mapped[list["EditorReviewIssue"]] = relationship(
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
+    rewrite_runs: Mapped[list["EditorRewriteRun"]] = relationship(
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
+    versions: Mapped[list["EditorDocumentVersion"]] = relationship(
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
+
+
+class EditorDocumentBlock(Base):
+    __tablename__ = "editor_document_blocks"
+    __table_args__ = (
+        Index(
+            "uq_editor_document_blocks_document_id_block_key_active",
+            "document_id",
+            "block_key",
+            unique=True,
+            sqlite_where=text("is_active = 1"),
+            postgresql_where=text("is_active"),
+        ),
+        Index(
+            "uq_editor_document_blocks_document_id_position_active",
+            "document_id",
+            "position_index",
+            unique=True,
+            sqlite_where=text("is_active = 1"),
+            postgresql_where=text("is_active"),
+        ),
+        Index("ix_editor_document_blocks_document_id", "document_id"),
+        Index("ix_editor_document_blocks_document_id_active", "document_id", "is_active"),
+        Index("ix_editor_document_blocks_document_id_type", "document_id", "block_type"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("editor_documents.id", ondelete="CASCADE"), nullable=False)
+    block_key: Mapped[str] = mapped_column(String(32), nullable=False)
+    block_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    block_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    parent_block_key: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    position_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    text_content: Mapped[str] = mapped_column(Text, nullable=False)
+    html_content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    context_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    document: Mapped[EditorDocument] = relationship(back_populates="blocks")
+
+
+class EditorDocumentVersion(Base):
+    __tablename__ = "editor_document_versions"
+    __table_args__ = (
+        UniqueConstraint("document_id", "version_no", name="uq_editor_document_versions_document_id_version_no"),
+        Index("ix_editor_document_versions_document_id", "document_id"),
+        Index("ix_editor_document_versions_document_id_created_at", "document_id", "created_at"),
+        Index("ix_editor_document_versions_document_id_source", "document_id", "source_of_change"),
+        CheckConstraint(
+            "source_of_change IN ('document_parse', 'document_update', 'manual_block_edit', 'block_insert', 'block_delete', 'rewrite_apply', 'rollback')",
+            name="ck_editor_document_versions_source_of_change",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("editor_documents.id", ondelete="CASCADE"), nullable=False)
+    version_no: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_of_change: Mapped[str] = mapped_column(String(32), nullable=False)
+    version_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    snapshot_json: Mapped[dict[str, Any]] = mapped_column(MutableDict.as_mutable(JSON), nullable=False, default=dict)
+    metadata_json: Mapped[dict[str, Any] | None] = mapped_column(MutableDict.as_mutable(JSON), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+
+    document: Mapped[EditorDocument] = relationship(back_populates="versions")
+
+
+class EditorReviewRun(Base):
+    __tablename__ = "editor_review_runs"
+    __table_args__ = (
+        Index("ix_editor_review_runs_document_id", "document_id"),
+        Index("ix_editor_review_runs_document_id_created_at", "document_id", "created_at"),
+        Index("ix_editor_review_runs_document_id_status", "document_id", "status"),
+        CheckConstraint(
+            "status IN ('queued', 'running', 'completed', 'failed', 'cancelled')",
+            name="ck_editor_review_runs_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("editor_documents.id", ondelete="CASCADE"), nullable=False)
+    document_version_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    review_mode: Mapped[str] = mapped_column(String(32), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    model_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    schema_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    input_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    document: Mapped[EditorDocument] = relationship(back_populates="review_runs")
+    issues: Mapped[list["EditorReviewIssue"]] = relationship(
+        back_populates="review_run",
+        cascade="all, delete-orphan",
+    )
+
+
+class EditorReviewIssue(Base):
+    __tablename__ = "editor_review_issues"
+    __table_args__ = (
+        Index("ix_editor_review_issues_review_run_id", "review_run_id"),
+        Index("ix_editor_review_issues_document_id", "document_id"),
+        Index("ix_editor_review_issues_document_id_status", "document_id", "status"),
+        Index("ix_editor_review_issues_document_id_block_key", "document_id", "block_key"),
+        CheckConstraint(
+            "status IN ('open', 'dismissed', 'rewrite_requested', 'rewrite_ready', 'applied', 'resolved_manual')",
+            name="ck_editor_review_issues_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    review_run_id: Mapped[int] = mapped_column(ForeignKey("editor_review_runs.id", ondelete="CASCADE"), nullable=False)
+    document_id: Mapped[int] = mapped_column(ForeignKey("editor_documents.id", ondelete="CASCADE"), nullable=False)
+    block_key: Mapped[str] = mapped_column(String(32), nullable=False)
+    issue_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    severity: Mapped[str] = mapped_column(String(32), nullable=False)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    replacement_instruction: Mapped[str | None] = mapped_column(Text, nullable=True)
+    replacement_candidate_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="open")
+    dismiss_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    review_run: Mapped[EditorReviewRun] = relationship(back_populates="issues")
+    document: Mapped[EditorDocument] = relationship(back_populates="review_issues")
+    rewrite_runs: Mapped[list["EditorRewriteRun"]] = relationship(back_populates="review_issue")
+
+
+class EditorRewriteRun(Base):
+    __tablename__ = "editor_rewrite_runs"
+    __table_args__ = (
+        Index("ix_editor_rewrite_runs_document_id", "document_id"),
+        Index("ix_editor_rewrite_runs_review_issue_id", "review_issue_id"),
+        Index("ix_editor_rewrite_runs_document_id_status", "document_id", "status"),
+        Index("ix_editor_rewrite_runs_document_id_block_key", "document_id", "block_key"),
+        CheckConstraint(
+            "status IN ('queued', 'running', 'completed', 'failed', 'cancelled', 'applied')",
+            name="ck_editor_rewrite_runs_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    document_id: Mapped[int] = mapped_column(ForeignKey("editor_documents.id", ondelete="CASCADE"), nullable=False)
+    review_issue_id: Mapped[int | None] = mapped_column(
+        ForeignKey("editor_review_issues.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    block_key: Mapped[str] = mapped_column(String(32), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    model_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    schema_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    input_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    source_block_content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    result_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    document: Mapped[EditorDocument] = relationship(back_populates="rewrite_runs")
+    review_issue: Mapped[EditorReviewIssue | None] = relationship(back_populates="rewrite_runs")
 
 
 class SiteCompetitor(Base):

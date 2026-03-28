@@ -1,7 +1,7 @@
 # REPO_MAP.md
 
 ## Root
-- `README.md`: aktualny opis produktu, setup lokalny, routing, API, page taxonomy, Content Recommendations lifecycle z implemented filters / outcome windows / summary barem, Competitive Gap z dual-read `reviewed/raw/legacy` i GSC flow
+- `README.md`: aktualny opis produktu, setup lokalny, routing, API, AI Review Editor, page taxonomy, Content Recommendations lifecycle z implemented filters / outcome windows / summary barem, Competitive Gap z dual-read `reviewed/raw/legacy` i GSC flow
 - `UI_MAP.md`: mapa glownych ekranow i glownych blokow UI
 - `AGENTS.md`: szybki przewodnik dla agenta
 - `ARCHITECTURE.md`: model architektury i invariants
@@ -30,6 +30,7 @@ tests/      testy backendowe i smoke
     - `sites.py`: site workspace list/detail/crawl history/new crawl for existing site
     - `site_content_recommendations.py`: site-centric Content Recommendations, `mark-done`, backendowy `implemented_summary`, implemented filters / outcome windows + CSV export
     - `site_competitive_gap.py`: site-centric Competitive Gap, strategy CRUD, manual competitors, sync, sync runs, review runs, semantic rerun endpoint, readiness diagnostics, explanation i CSV export
+    - `site_ai_review_editor.py`: site-centric AI Review Editor documents, blocks, review runs, issues, rewrites, versions, diff i restore
     - `pages.py`: snapshot-scoped pages list
     - `pages.py`: snapshot-scoped pages list + taxonomy summary endpoint
     - `links.py`: snapshot-scoped links list
@@ -54,7 +55,7 @@ tests/      testy backendowe i smoke
   - `rendering/detection.py`: heurystyka `js_heavy_like`
   - `normalization/urls.py`: normalizacja URL-i
 - `db/`
-- `models.py`: modele `Site`, `CrawlJob`, `Page`, `Link`, `GscProperty`, `GscUrlMetric`, `GscTopQuery`, `SiteContentRecommendationState`, `SiteContentStrategy`, `SiteCompetitor`, `SiteCompetitorPage`, `SiteCompetitorSemanticCandidate`, `SiteCompetitorSemanticRun`, `SiteCompetitorSemanticDecision`, `SiteCompetitorPageExtraction`, `SiteCompetitorSyncRun`, `SiteContentGapCandidate`, `SiteContentGapReviewRun`, `SiteContentGapItem`
+- `models.py`: modele `Site`, `CrawlJob`, `Page`, `Link`, `EditorDocument`, `EditorDocumentBlock`, `EditorDocumentVersion`, `EditorReviewRun`, `EditorReviewIssue`, `EditorRewriteRun`, `GscProperty`, `GscUrlMetric`, `GscTopQuery`, `SiteContentRecommendationState`, `SiteContentStrategy`, `SiteCompetitor`, `SiteCompetitorPage`, `SiteCompetitorSemanticCandidate`, `SiteCompetitorSemanticRun`, `SiteCompetitorSemanticDecision`, `SiteCompetitorPageExtraction`, `SiteCompetitorSyncRun`, `SiteContentGapCandidate`, `SiteContentGapReviewRun`, `SiteContentGapItem`
   - `session.py`: engine i `SessionLocal`
   - `base.py`: SQLAlchemy base
 - `integrations/gsc/`
@@ -84,6 +85,14 @@ tests/      testy backendowe i smoke
     - `competitive_gap_extraction_service.py`: LLM extraction/labeling competitor pages
     - `competitive_gap_explanation_service.py`: on-demand explanation dla pojedynczego gap row
     - `page_taxonomy_service.py`: regułowa, trwała klasyfikacja `page_type` / `page_bucket` + summary per crawl
+    - `ai_review_editor_service.py`: create/list/get/update dokumentu i parse do blokow
+    - `editor_document_block_service.py`: inline edit, insert before/after/end, delete block, reindex i sync reprezentacji dokumentu
+    - `editor_document_version_service.py`: snapshot wersji dokumentu, diff preview, restore/rollback, hash current-state
+    - `editor_review_run_service.py`: review runs, summary, latest/current vs stale governance
+    - `editor_review_engine_service.py`: deterministic/mock review engine i wspolny draft issue dla review workflow
+    - `editor_review_llm_service.py`: structured LLM review + normalizacja issue
+    - `editor_rewrite_service.py`: dismiss/resolved_manual, rewrite runs, apply rewrite, stale/actionability guards
+    - `editor_rewrite_llm_service.py`: structured single-block rewrite + input hash dla bezpiecznego apply
   - `audit_service.py`: raport audytowy
   - `gsc_service.py`: site-level property selection, OAuth redirect validation, per-crawl import, top queries, summary
   - `priority_rules.py` / `priority_service.py`: priority score i opportunities
@@ -113,6 +122,7 @@ tests/      testy backendowe i smoke
     - `SiteCrawlsPage.tsx`: historia crawl snapshotow dla witryny
     - `SiteNewCrawlPage.tsx`: dedykowany create-flow nowego snapshotu dla istniejacej witryny
     - `api.ts`, `routes.ts`, `context.ts`
+  - `ai-review-editor/`: site-level AI Review Editor z lista dokumentow, ekranem dokumentu, version history, diff preview i helperami governance/stale state
   - `content-recommendations/`: site-level own-data Recommendations workspace z podwidokami `overview` / `active` / `implemented`, API client i testami
   - `competitive-gap/`: site-level Competitive Gap workspace z podwidokami `overview` / `strategy` / `competitors` / `sync` / `results`, reuse'ujacy ten sam backendowy sync, semantic, review i results flow
   - `jobs/`: lista snapshotow, create flow, detail snapshotu, legacy entry point
@@ -135,6 +145,16 @@ tests/      testy backendowe i smoke
 ## Testy: `tests/`
 - `conftest.py`: fixtures SQLite i `TestClient`
 - API / services:
+  - `test_api_ai_review_editor.py`
+  - `test_ai_review_editor_block_service.py`
+  - `test_ai_review_editor_review_service.py`
+  - `test_ai_review_editor_rewrite_service.py`
+  - `test_ai_review_editor_version_service.py`
+  - `test_ai_review_editor_migration.py`
+  - `test_editor_block_parser_service.py`
+  - `test_editor_review_engine_service.py`
+  - `test_editor_review_llm_service.py`
+  - `test_editor_rewrite_llm_service.py`
   - `test_api_competitive_gap.py`
   - `test_api_jobs_list.py`
   - `test_api_sites.py`
@@ -186,6 +206,12 @@ Frontend testy siedza obok feature'ow w `frontend/src/**/*.test.tsx`.
 - `0019_content_gap_candidates_v1.py`: persisted raw content gap candidates
 - `0020_content_gap_review_runs_v1.py`: explicit review run lifecycle
 - `0021_content_gap_items_v1.py`: persisted reviewed items
+- `0023_ai_review_editor_stage1.py`: core tabele AI Review Editor
+- `0024_ai_review_editor_stage4_workflow.py`: workflow issue / rewrite run state
+- `0025_ai_review_editor_v6.py`: versioning i governance doprecyzowania
+- `0026_ai_review_editor_stage7_inline_block_edit.py`: inline block edit
+- `0027_ai_review_editor_stage8_block_ops.py`: insert/delete block
+- `0028_ai_review_editor_stage9_status_cleanup.py`: cleanup legacy statusu `resolved` w `editor_review_issues`
 - `0007_stage11_page_taxonomy.py`: trwałe pola page taxonomy w `pages`
 
 ETAP 7, ETAP 8, ETAP 10.1, ETAP 10.2 i ETAP 10.3 nie dodaja nowej migracji:
@@ -217,6 +243,8 @@ ETAP 11.3B nie dodaje nowej migracji:
   `app/services/page_taxonomy_service.py`, `app/api/routes/pages.py`, `frontend/src/features/pages/PagesPage.tsx`
 - Content Recommendations:
   `app/services/content_recommendation_service.py`, `app/services/content_recommendation_rules.py`, `app/services/content_recommendation_keys.py`, `app/api/routes/site_content_recommendations.py`, `frontend/src/features/content-recommendations/`
+- AI Review Editor:
+  `app/api/routes/site_ai_review_editor.py`, `app/schemas/ai_review_editor.py`, `app/services/ai_review_editor_service.py`, `app/services/editor_document_block_service.py`, `app/services/editor_document_version_service.py`, `app/services/editor_review_run_service.py`, `app/services/editor_review_engine_service.py`, `app/services/editor_review_llm_service.py`, `app/services/editor_rewrite_service.py`, `app/services/editor_rewrite_llm_service.py`, `frontend/src/features/ai-review-editor/`, `tests/test_api_ai_review_editor.py`
 - Competitive Gap:
   `app/services/competitive_gap_service.py`, `app/services/competitive_gap_sync_service.py`, `app/services/competitive_gap_sync_run_service.py`, `app/services/competitive_gap_semantic_rules.py`, `app/services/competitive_gap_semantic_service.py`, `app/services/competitive_gap_semantic_run_service.py`, `app/services/competitive_gap_semantic_arbiter_service.py`, `app/services/competitive_gap_extraction_service.py`, `app/services/competitive_gap_explanation_service.py`, `app/api/routes/site_competitive_gap.py`, `frontend/src/features/competitive-gap/`
 - CSV eksport:
@@ -281,6 +309,24 @@ app/db/models.py
 -> frontend/src/types/api.ts
 -> frontend/src/features/pages/PagesPage.tsx
 -> tests/* + frontend/src/**/*.test.tsx
+```
+
+### Zmiana AI Review Editor
+```text
+app/schemas/ai_review_editor.py
+-> app/api/routes/site_ai_review_editor.py
+-> app/services/ai_review_editor_service.py
+-> app/services/editor_document_block_service.py
+-> app/services/editor_document_version_service.py
+-> app/services/editor_review_run_service.py
+-> app/services/editor_review_llm_service.py
+-> app/services/editor_rewrite_service.py
+-> app/services/editor_rewrite_llm_service.py
+-> frontend/src/features/ai-review-editor/*
+-> frontend/src/types/api.ts
+-> tests/test_api_ai_review_editor.py
+-> tests/test_ai_review_editor_*.py
+-> frontend/src/features/ai-review-editor/AIReviewEditorPage.test.tsx
 ```
 
 ## Rzeczy, ktorych tu nie ma

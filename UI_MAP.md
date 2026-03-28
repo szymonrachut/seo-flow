@@ -55,6 +55,9 @@ Uwagi:
       - `/sites/:siteId/pages`
         - `/sites/:siteId/pages`
         - `/sites/:siteId/pages/records`
+      - `/sites/:siteId/ai-review-editor`
+        - `/sites/:siteId/ai-review-editor/documents`
+        - `/sites/:siteId/ai-review-editor/documents/:documentId`
       - `/sites/:siteId/audit`
         - `/sites/:siteId/audit`
         - `/sites/:siteId/audit/sections`
@@ -240,6 +243,74 @@ Uwagi:
         - baseline update
         - import GSC
         - recommendation marked done
+
+    - `/sites/:siteId/ai-review-editor/documents` -> AI Review Editor / Documents
+      - Compact header
+        - site context
+        - active crawl / baseline helper
+        - CTA utworzenia dokumentu
+      - Summary cards
+        - total documents
+        - parsed documents
+        - active blocks
+        - documents with current issues
+      - Lista dokumentow
+        - title
+        - document type
+        - source format
+        - status
+        - active blocks count
+        - latest review status
+        - latest version
+        - open action
+      - Empty states
+        - brak dokumentow
+        - brak wynikow po filtrach
+
+    - `/sites/:siteId/ai-review-editor/documents/:documentId` -> AI Review Editor / Document
+      - Compact header
+        - title / document type / source format
+        - status dokumentu
+        - canonical source badge: aktywne bloki
+        - primary actions: parse / run review
+      - Context notices
+        - review running
+        - review failed
+        - review stale
+        - local draft open
+        - single-block delete guard
+        - action success / error notice
+      - Summary cards
+        - active blocks
+        - total issues
+        - open issues
+        - latest version
+      - Main editor canvas
+        - render dokumentu z aktywnych blokow
+        - inline manual edit pojedynczego bloku
+        - insert before / insert after
+        - delete block
+      - Issue panel
+        - quick filters
+        - severity / status badges
+        - empty states:
+          - no review yet
+          - review in progress
+          - no visible issues after filters
+          - no issues for current document state
+        - actions:
+          - dismiss
+          - resolved manual
+          - request AI rewrite
+          - apply rewrite, gdy preview jest nadal current
+      - Review run panel
+        - latest run status
+        - current vs stale scope badge
+        - history runs
+      - Version history panel
+        - versions list
+        - diff preview
+        - restore / rollback
 
     - `/sites/:siteId/crawls` -> Site Crawls / Historia
       - Compact header

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 
 import { EmptyState } from '../components/EmptyState'
 import { AuditPage } from '../features/audit/AuditPage'
+import { AIReviewEditorDocumentPage } from '../features/ai-review-editor/AIReviewEditorDocumentPage'
+import { AIReviewEditorDocumentsPage } from '../features/ai-review-editor/AIReviewEditorDocumentsPage'
 import { SiteAuditComparePage } from '../features/audit/SiteAuditComparePage'
 import { SiteAuditOverviewPage, SiteAuditSectionsPage } from '../features/audit/SiteAuditWorkspacePage'
 import { CannibalizationPage } from '../features/cannibalization/CannibalizationPage'
@@ -52,6 +54,11 @@ export function AppRoutes() {
         <Route path="/sites/:siteId" element={<SiteWorkspaceLayout />}>
           <Route index element={<SiteOverviewPage />} />
           <Route path="progress" element={<SiteProgressPage />} />
+          <Route path="ai-review-editor">
+            <Route index element={<Navigate replace to="documents" />} />
+            <Route path="documents" element={<AIReviewEditorDocumentsPage />} />
+            <Route path="documents/:documentId" element={<AIReviewEditorDocumentPage />} />
+          </Route>
           <Route path="crawls">
             <Route index element={<SiteCrawlsPage />} />
             <Route path="new" element={<SiteNewCrawlPage />} />

@@ -121,6 +121,43 @@ export type CompetitiveGapSortBy =
   | 'topic_label'
   | 'gap_type'
   | 'page_type'
+export type EditorDocumentStatus = 'draft' | 'parsed' | 'archived'
+export type EditorReviewMode = 'light' | 'standard' | 'strict'
+export type EditorDocumentVersionSource =
+  | 'document_parse'
+  | 'document_update'
+  | 'manual_block_edit'
+  | 'block_insert'
+  | 'block_delete'
+  | 'rewrite_apply'
+  | 'rollback'
+export type EditorDocumentBlockType = 'heading' | 'paragraph' | 'list_item'
+export type EditorDocumentBlockInsertPosition = 'before' | 'after' | 'end'
+export type EditorDocumentVersionBlockChangeType = 'added' | 'removed' | 'changed'
+export type EditorReviewIssueSeverity = 'low' | 'medium' | 'high'
+export type EditorReviewIssueStatus =
+  | 'open'
+  | 'dismissed'
+  | 'rewrite_requested'
+  | 'rewrite_ready'
+  | 'applied'
+  | 'resolved_manual'
+export type EditorReviewRunStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
+export type EditorRewriteRunStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' | 'applied'
+export type EditorReviewKnownIssueType =
+  | 'weak_heading'
+  | 'short_paragraph'
+  | 'placeholder_text'
+  | 'todo_marker'
+  | 'generic_heading'
+  | 'factuality'
+  | 'off_topic'
+  | 'unsupported_claim'
+  | 'irrelevant_entity'
+  | 'brand_mismatch'
+  | 'product_hallucination'
+  | 'unclear'
+  | 'terminology_inconsistency'
 export type PageType =
   | 'home'
   | 'category'
@@ -363,6 +400,310 @@ export interface SiteDetail {
   baseline_crawl: CrawlJobDetail | null
   crawl_history: SiteCrawlListItem[]
 }
+
+export interface EditorDocumentListItem {
+  id: number
+  site_id: number
+  title: string
+  document_type: string
+  source_format: string
+  status: EditorDocumentStatus
+  active_block_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface EditorDocumentListResponse {
+  site_id: number
+  items: EditorDocumentListItem[]
+}
+
+export interface EditorDocument {
+  id: number
+  site_id: number
+  title: string
+  document_type: string
+  source_format: string
+  source_content: string
+  normalized_content: string | null
+  topic_brief_json: Record<string, unknown> | null
+  facts_context_json: Record<string, unknown> | null
+  status: EditorDocumentStatus
+  active_block_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface EditorDocumentBlock {
+  id: number
+  document_id: number
+  block_key: string
+  block_type: EditorDocumentBlockType | string
+  block_level: number | null
+  parent_block_key: string | null
+  position_index: number
+  text_content: string
+  html_content: string | null
+  context_path: string | null
+  content_hash: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EditorDocumentBlockListResponse {
+  document_id: number
+  items: EditorDocumentBlock[]
+}
+
+export interface EditorDocumentBlockUpdateInput {
+  text_content: string
+  expected_content_hash?: string
+}
+
+export interface EditorDocumentBlockInsertInput {
+  target_block_key?: string
+  position: EditorDocumentBlockInsertPosition
+  block_type: EditorDocumentBlockType
+  block_level?: number | null
+  text_content: string
+}
+
+export interface EditorDocumentParseResponse {
+  document: EditorDocument
+  blocks_created_count: number
+  replaced_block_count: number
+}
+
+export interface EditorDocumentVersionBlockSnapshot {
+  block_key: string
+  block_type: string
+  block_level: number | null
+  parent_block_key: string | null
+  position_index: number
+  text_content: string
+  html_content: string | null
+  context_path: string | null
+  content_hash: string
+}
+
+export interface EditorDocumentVersionSnapshot {
+  title: string
+  document_type: string
+  source_format: string
+  source_content: string
+  normalized_content: string | null
+  topic_brief_json: Record<string, unknown> | null
+  facts_context_json: Record<string, unknown> | null
+  status: EditorDocumentStatus | string
+  blocks: EditorDocumentVersionBlockSnapshot[]
+}
+
+export interface EditorDocumentVersion {
+  id: number
+  document_id: number
+  version_no: number
+  source_of_change: EditorDocumentVersionSource
+  source_description: string | null
+  version_hash: string
+  block_count: number
+  metadata_json: Record<string, unknown> | null
+  created_at: string
+  is_current: boolean
+  snapshot?: EditorDocumentVersionSnapshot | null
+}
+
+export interface EditorDocumentVersionListResponse {
+  document_id: number
+  current_version_id: number | null
+  items: EditorDocumentVersion[]
+}
+
+export interface EditorDocumentVersionDocumentFieldDiff {
+  field: string
+  before_value: unknown
+  after_value: unknown
+}
+
+export interface EditorDocumentVersionBlockDiff {
+  block_key: string
+  change_type: EditorDocumentVersionBlockChangeType
+  block_type: string | null
+  before_context_path: string | null
+  after_context_path: string | null
+  before_text: string | null
+  after_text: string | null
+}
+
+export interface EditorDocumentVersionDiffSummary {
+  added_blocks: number
+  removed_blocks: number
+  changed_blocks: number
+  changed_fields: number
+}
+
+export interface EditorDocumentVersionDiff {
+  document_id: number
+  base_version: EditorDocumentVersion | null
+  target_version: EditorDocumentVersion
+  summary: EditorDocumentVersionDiffSummary
+  document_changes: EditorDocumentVersionDocumentFieldDiff[]
+  block_changes: EditorDocumentVersionBlockDiff[]
+}
+
+export interface EditorDocumentVersionRestoreResponse {
+  document: EditorDocument
+  restored_from_version: EditorDocumentVersion
+  current_version: EditorDocumentVersion
+  blocks_restored_count: number
+}
+
+export interface EditorDocumentBlockUpdateResponse {
+  changed: boolean
+  document: EditorDocument
+  updated_block: EditorDocumentBlock
+  current_version: EditorDocumentVersion
+}
+
+export interface EditorDocumentBlockInsertResponse {
+  document: EditorDocument
+  inserted_block: EditorDocumentBlock
+  current_version: EditorDocumentVersion
+}
+
+export interface EditorDocumentBlockDeleteResponse {
+  document: EditorDocument
+  deleted_block_key: string
+  remaining_block_count: number
+  current_version: EditorDocumentVersion
+}
+
+export interface EditorReviewSeverityCounts {
+  low: number
+  medium: number
+  high: number
+}
+
+export interface EditorReviewRun {
+  id: number
+  document_id: number
+  document_version_hash: string
+  review_mode: EditorReviewMode | string
+  status: EditorReviewRunStatus
+  model_name: string | null
+  prompt_version: string | null
+  schema_version: string | null
+  input_hash: string | null
+  issue_count: number
+  issue_block_count: number
+  severity_counts: EditorReviewSeverityCounts
+  started_at: string | null
+  finished_at: string | null
+  error_code: string | null
+  error_message: string | null
+  matches_current_document: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EditorReviewRunListResponse {
+  document_id: number
+  items: EditorReviewRun[]
+}
+
+export interface EditorReviewIssue {
+  id: number
+  review_run_id: number
+  document_id: number
+  block_key: string
+  issue_type: EditorReviewKnownIssueType | string
+  severity: EditorReviewIssueSeverity
+  confidence: number | null
+  message: string
+  reason: string | null
+  replacement_instruction: string | null
+  replacement_candidate_text: string | null
+  status: EditorReviewIssueStatus
+  dismiss_reason: string | null
+  resolution_note: string | null
+  created_at: string
+  updated_at: string
+  resolved_at: string | null
+}
+
+export interface EditorReviewIssueListResponse {
+  document_id: number
+  review_run_id: number | null
+  review_run_status: EditorReviewRunStatus | null
+  review_mode: EditorReviewMode | string | null
+  review_matches_current_document: boolean | null
+  items: EditorReviewIssue[]
+}
+
+export interface EditorReviewSummary {
+  document_id: number
+  review_run_count: number
+  latest_review_run_id: number | null
+  latest_review_run_status: EditorReviewRunStatus | null
+  latest_review_run_finished_at: string | null
+  latest_review_matches_current_document: boolean | null
+  issue_count: number
+  issue_block_count: number
+  severity_counts: EditorReviewSeverityCounts
+}
+
+export interface EditorRewriteRun {
+  id: number
+  document_id: number
+  review_issue_id: number | null
+  block_key: string
+  status: EditorRewriteRunStatus
+  model_name: string | null
+  prompt_version: string | null
+  schema_version: string | null
+  input_hash: string | null
+  source_block_content_hash: string | null
+  result_text: string | null
+  started_at: string | null
+  finished_at: string | null
+  applied_at: string | null
+  error_code: string | null
+  error_message: string | null
+  matches_current_document: boolean
+  matches_current_block: boolean
+  is_stale: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EditorRewriteRunListResponse {
+  document_id: number
+  review_issue_id: number | null
+  items: EditorRewriteRun[]
+}
+
+export interface EditorRewriteApplyResponse {
+  document: EditorDocument
+  issue: EditorReviewIssue
+  rewrite_run: EditorRewriteRun
+  updated_block: EditorDocumentBlock
+}
+
+export interface EditorReviewRunCreateInput {
+  review_mode?: EditorReviewMode
+}
+
+export interface EditorReviewIssueDismissInput {
+  dismiss_reason?: string
+}
+
+export interface EditorReviewIssueManualResolveInput {
+  resolution_note?: string
+}
+
+export type EditorRewriteRunCreateInput = Record<string, never>
+
+export type EditorRewriteApplyInput = Record<string, never>
 
 export interface SiteContentGeneratorAsset {
   site_id: number

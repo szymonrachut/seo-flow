@@ -23,6 +23,7 @@
     "overview": "Overview",
     "progress": "Progress",
     "pages": "Pages",
+    "aiReviewEditor": "AI Review Editor",
     "contentRecommendations": "Content Recommendations",
     "competitiveGap": "Competitive Gap",
     "links": "Links",
@@ -101,6 +102,8 @@
     "siteNewCrawl": "Site {{domain}} new crawl",
     "sitePages": "Site {{domain}} pages",
     "sitePagesRecords": "Site {{domain}} page records",
+    "aiReviewEditorDocuments": "Site {{domain}} AI Review Editor documents",
+    "aiReviewEditorDocument": "Site {{domain}} AI Review Editor document",
     "siteAudit": "Site {{domain}} audit",
     "siteAuditSections": "Site {{domain}} audit sections",
     "siteGsc": "Site {{domain}} GSC overview",
@@ -141,6 +144,8 @@
       "progress": "Progress",
       "pages": "Pages",
       "pagesRecords": "Pages Records",
+      "aiReviewEditorDocuments": "AI Review Documents",
+      "aiReviewEditorDocument": "AI Review Document",
       "audit": "Audit",
       "auditSections": "Audit Sections",
       "opportunities": "SEO Opportunities",
@@ -966,6 +971,320 @@
         "opportunities": "Issues + impressions",
         "lastImported": "Last imported"
       }
+    }
+  },
+  "aiReviewEditor": {
+    "nav": {
+      "documents": "Documents"
+    },
+    "header": {
+      "eyebrow": "AI review editor"
+    },
+    "common": {
+      "none": "None"
+    },
+    "documents": {
+      "loading": "Loading AI review documents...",
+      "errorTitle": "AI review documents unavailable",
+      "title": "AI review documents",
+      "description": "Open an existing document and work from the current active block state, issues, rewrites, and review runs.",
+      "context": {
+        "site": "Site",
+        "activeCrawl": "Active crawl",
+        "baseline": "Baseline"
+      },
+      "summary": {
+        "total": "Documents",
+        "parsed": "Parsed",
+        "drafts": "Drafts",
+        "activeBlocks": "Active blocks"
+      },
+      "emptyTitle": "No AI review documents yet",
+      "emptyDescription": "Create or import a document first, then return here to review it block by block.",
+      "table": {
+        "title": "Title",
+        "type": "Type",
+        "status": "Status",
+        "blocks": "Blocks",
+        "updated": "Updated",
+        "open": "Open"
+      }
+    },
+    "document": {
+      "invalidIdTitle": "Invalid AI review document",
+      "invalidIdDescription": "The requested document id is not valid.",
+      "invalidIdMessage": "The requested document id is not valid.",
+      "loading": "Loading AI review document...",
+      "errorTitle": "AI review document unavailable",
+      "emptyTitle": "AI review document unavailable",
+      "emptyDescription": "The requested document could not be loaded.",
+      "description": "Review the current active blocks, resolve issues, request block rewrites, and apply fixes without leaving the workspace.",
+      "context": {
+        "type": "Document type",
+        "status": "Document status",
+        "blocks": "Blocks",
+        "latestRun": "Latest review",
+        "filteredIssues": "Visible issues"
+      },
+      "chips": {
+        "type": "Document type",
+        "status": "Document status",
+        "latestRun": "Latest review"
+      },
+      "backToDocuments": "Open documents list",
+      "canvasTitle": "Current document",
+      "canvasDescription": "This screen reads the active editor blocks as the canonical document source after any applied rewrite.",
+      "metaTitle": "Document meta",
+      "metaUpdatedAt": "Updated at",
+      "metaSourceFormat": "Source format",
+      "metaReviewRuns": "Review runs",
+      "metaCurrentVersion": "Current version",
+      "metaLatestReviewScope": "Latest review scope",
+      "metaCanonicalSource": "Canonical read source",
+      "canonicalSourceValue": "Active editor_document_blocks",
+      "reviewScopeCurrent": "Current document state",
+      "reviewScopeStale": "Stale after later document changes",
+      "editingBadge": "Editing",
+      "insertingBadge": "Inserting",
+      "editFieldLabel": "Block text",
+      "insertFieldLabel": "New block text",
+      "insertTypeLabel": "Block type",
+      "insertLevelLabel": "Heading level",
+      "refreshing": "Refreshing the latest document state...",
+      "manualEditSaved": "Block saved. Version {{versionNo}} is now current.",
+      "manualEditNoChanges": "No block changes were saved.",
+      "parseSaved": "Document parsed. {{blocksCount}} active blocks are now available in the editor.",
+      "insertSaved": "Block inserted. Version {{versionNo}} is now current.",
+      "deleteSaved": "Block removed. Version {{versionNo}} is now current.",
+      "reviewCompleted": "Review run #{{runId}} finished with {{issueCount}} issue(s).",
+      "reviewFailed": "The latest review run did not finish successfully.",
+      "reviewFailedTitle": "No current issues are available",
+      "reviewFailedBannerTitle": "The latest review run failed",
+      "noReviewYetTitle": "No review has been run yet",
+      "noReviewYetDescription": "Run review for the current document state to populate issues and governance actions.",
+      "reviewRunningTitle": "Review is in progress",
+      "reviewRunningNotice": "Wait for the current review run to finish before trusting issue actions or counts.",
+      "reviewStaleTitle": "The latest review is stale",
+      "reviewStaleDescription": "The document changed after the latest review run. Treat these issues as historical context and run review again before taking issue actions.",
+      "localDraftNotice": "A local edit or insert draft is open. Finish or cancel it before starting a new review or restoring another version.",
+      "singleBlockNotice": "This document currently has one active block. Delete stays disabled to avoid an empty document; use edit or insert instead.",
+      "issueDismissed": "Issue marked as dismissed.",
+      "issueResolvedManually": "Issue marked as resolved manually.",
+      "rewriteReady": "AI rewrite finished. Review the preview before applying it.",
+      "rewritePendingTitle": "AI rewrite is in progress",
+      "rewritePendingDescription": "Wait for the latest rewrite run to finish before applying or requesting another rewrite.",
+      "rewriteFailed": "The latest AI rewrite request did not finish successfully.",
+      "rewriteFailedTitle": "The latest AI rewrite failed",
+      "rewriteApplied": "AI rewrite applied to block {{blockKey}}.",
+      "restoreSaved": "Version {{versionNo}} is now the current document state.",
+      "noVisibleIssuesTitle": "No current issues are visible",
+      "noVisibleIssuesDescription": "The latest current review does not show issues for the active document state.",
+      "summary": {
+        "totalIssues": "Issues",
+        "blocksWithIssues": "Blocks with issues",
+        "openIssues": "Open",
+        "rewriteReady": "Rewrite ready",
+        "highSeverity": "High severity"
+      },
+      "statusBreakdown": "Issue status breakdown",
+      "severityBreakdown": "Issue severity breakdown",
+      "reviewState": "Review state",
+      "reviewRuns": "Review runs",
+      "lastReviewAt": "Last review finished",
+      "activeBlocks": "Active blocks",
+      "latestRunIssues": "Latest run issues",
+      "recentRuns": "Recent review runs",
+      "runLabel": "Run #{{runId}}",
+      "runMeta": "{{issueCount}} issues · {{reviewMode}} mode",
+      "noRuns": "No review run history for this document yet.",
+      "noBlocksTitle": "No active blocks to review",
+      "noBlocksDescription": "Parse this document first so the editor can render the current block state.",
+      "blockMarker": "{{count}} issue(s) on block {{blockKey}}",
+      "blockMarkerAria": "Open {{count}} issue marker(s) for block {{blockKey}}",
+      "panel": {
+        "emptyTitle": "Pick a block with issues",
+        "emptyDescription": "Use the gutter markers to focus a problematic block and inspect its issues.",
+        "eyebrow": "Issue details",
+        "currentBlock": "Current block",
+        "reason": "Reason",
+        "replacementInstruction": "Replacement instruction",
+        "dismissReason": "Dismiss reason",
+        "resolutionNote": "Resolution note",
+        "rewriteRequested": "AI rewrite has been requested for this issue. Refreshing the issue state will show the generated rewrite when it is ready.",
+        "appliedHint": "This issue is already marked as applied. The active block state now reflects the AI rewrite."
+      },
+      "rewritePreview": {
+        "title": "Rewrite preview",
+        "before": "Before",
+        "after": "After",
+        "empty": "No rewrite preview is available yet."
+      }
+    },
+    "actions": {
+      "runReview": "Run review",
+      "reviewRunning": "Running review...",
+      "parse": "Parse document",
+      "parsing": "Parsing...",
+      "dismiss": "Dismiss",
+      "resolveManual": "Resolved manually",
+      "editBlock": "Edit",
+      "addBlockBefore": "Add before",
+      "addBlockAfter": "Add after",
+      "insertBlock": "Insert block",
+      "deleteBlock": "Delete",
+      "saveBlock": "Save",
+      "cancelEdit": "Cancel",
+      "cancelInsert": "Cancel",
+      "rewrite": "Rewrite with AI",
+      "requestRewrite": "Rewrite with AI",
+      "applyRewrite": "Apply rewrite",
+      "restoreVersion": "Restore version",
+      "openDocuments": "Open documents",
+      "backToDocuments": "Back to documents"
+    },
+    "filters": {
+      "quickTitle": "Issue filters",
+      "title": "Issue filters",
+      "panelTitle": "More issue filters",
+      "panelDescription": "Keep the document current-first and narrow the panel to a specific issue type when needed.",
+      "description": "Keep the document current-first and narrow the panel to a specific issue type when needed.",
+      "issueType": "Issue type",
+      "allIssueTypes": "All issue types",
+      "quick": {
+        "all": "All",
+        "open": "Open",
+        "high": "High severity",
+        "dismissed": "Dismissed",
+        "resolved_manual": "Resolved manually",
+        "rewrite_ready": "Rewrite ready",
+        "applied": "Applied"
+      }
+    },
+    "issuePanel": {
+      "title": "Issue details",
+      "description": "Select a gutter marker to inspect issues and actions for that block.",
+      "emptyFilteredTitle": "No issues match the current filters",
+      "emptyFilteredDescription": "Reset filters to bring issue markers and the side panel content back.",
+      "emptySelectionTitle": "Pick a block with issues",
+      "emptySelectionDescription": "Use the gutter markers to focus a problematic block and inspect its issues.",
+      "blockContext": "Current block",
+      "actionsLockedTitle": "Issue actions are locked",
+      "actionsLockedDescription": "This issue belongs to a stale review run. Run review again on the current document before dismissing, resolving, or requesting a new rewrite."
+    },
+    "issue": {
+      "select": "Select",
+      "replacementInstruction": "Replacement instruction",
+      "dismissReason": "Dismiss reason",
+      "resolutionNote": "Resolution note"
+    },
+    "rewrite": {
+      "before": "Before",
+      "after": "After",
+      "staleTitle": "Rewrite preview is stale",
+      "staleDescription": "This block changed after the rewrite was generated. Request a new rewrite before applying AI output."
+    },
+    "runs": {
+      "title": "Recent review runs",
+      "issueCount": "Issues",
+      "finishedAt": "Finished"
+    },
+    "versions": {
+      "title": "Version history",
+      "description": "Open an earlier snapshot, preview the diff, and restore a previous document state when needed.",
+      "emptyTitle": "No document versions yet",
+      "emptyDescription": "Versions will appear after parsing, applying rewrites, or restoring an earlier state.",
+      "current": "Current",
+      "fallbackDescription": "Document state snapshot",
+      "blockCount": "Blocks"
+    },
+    "diffPreview": {
+      "eyebrow": "Version diff",
+      "title": "Version {{versionNo}} preview",
+      "loading": "Loading version diff...",
+      "errorTitle": "Version diff unavailable",
+      "emptyTitle": "Choose a version to preview",
+      "emptyDescription": "Pick a version from the history to inspect the block-level diff.",
+      "restoreTitle": "Restore this version",
+      "restoreDescription": "This will create a new current version from the selected snapshot and keep the full history intact.",
+      "summary": {
+        "changed": "Changed",
+        "added": "Added",
+        "removed": "Removed",
+        "fields": "Metadata"
+      },
+      "documentChanges": "Document metadata changes",
+      "before": "Before",
+      "after": "After",
+      "noBlockChangesTitle": "No block changes in this comparison",
+      "noBlockChangesDescription": "Only document-level metadata changed between these versions."
+    },
+    "versionSource": {
+      "document_parse": "Document parse",
+      "document_update": "Document update",
+      "manual_block_edit": "Manual block edit",
+      "block_insert": "Block insert",
+      "block_delete": "Block delete",
+      "rewrite_apply": "Rewrite apply",
+      "rollback": "Rollback"
+    },
+    "diffChangeType": {
+      "added": "Added",
+      "removed": "Removed",
+      "changed": "Changed"
+    },
+    "diffField": {
+      "title": "Title",
+      "document_type": "Document type",
+      "source_format": "Source format",
+      "status": "Document status",
+      "topic_brief_json": "Topic brief",
+      "facts_context_json": "Facts context"
+    },
+    "documentStatus": {
+      "draft": "Draft",
+      "parsed": "Parsed",
+      "archived": "Archived"
+    },
+    "reviewRunStatus": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "applied": "Applied"
+    },
+    "reviewMode": {
+      "light": "Light",
+      "standard": "Standard",
+      "strict": "Strict"
+    },
+    "issueStatus": {
+      "open": "Open",
+      "dismissed": "Dismissed",
+      "rewrite_requested": "Rewrite requested",
+      "rewrite_ready": "Rewrite ready",
+      "applied": "Applied",
+      "resolved_manual": "Resolved manually"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "issueType": {
+      "weak_heading": "Weak heading",
+      "short_paragraph": "Short paragraph",
+      "placeholder_text": "Placeholder text",
+      "todo_marker": "TODO marker",
+      "generic_heading": "Generic heading",
+      "factuality": "Factuality",
+      "off_topic": "Off topic",
+      "unsupported_claim": "Unsupported claim",
+      "irrelevant_entity": "Irrelevant entity",
+      "brand_mismatch": "Brand mismatch",
+      "product_hallucination": "Product hallucination",
+      "unclear": "Unclear wording",
+      "terminology_inconsistency": "Terminology inconsistency"
     }
   },
   "contentRecommendations": {

@@ -13,6 +13,30 @@ export const queryKeys = {
     ['sites', siteId, 'internal-linking', 'compare', search] as const,
   siteContentRecommendations: (siteId: number, search: string) =>
     ['sites', siteId, 'content-recommendations', search] as const,
+  siteAiReviewDocuments: (siteId: number) => ['sites', siteId, 'ai-review-editor', 'documents'] as const,
+  siteAiReviewDocument: (siteId: number, documentId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId] as const,
+  siteAiReviewBlocks: (siteId: number, documentId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'blocks'] as const,
+  siteAiReviewIssues: (siteId: number, documentId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'issues'] as const,
+  siteAiReviewSummary: (siteId: number, documentId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'summary'] as const,
+  siteAiReviewRuns: (siteId: number, documentId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'review-runs'] as const,
+  siteAiReviewVersions: (siteId: number, documentId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'versions'] as const,
+  siteAiReviewVersion: (siteId: number, documentId: number, versionId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'versions', versionId] as const,
+  siteAiReviewVersionDiff: (
+    siteId: number,
+    documentId: number,
+    versionId: number,
+    compareToVersionId: number | null,
+  ) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'versions', versionId, 'diff', compareToVersionId] as const,
+  siteAiRewriteRuns: (siteId: number, documentId: number, issueId: number) =>
+    ['sites', siteId, 'ai-review-editor', 'documents', documentId, 'issues', issueId, 'rewrite-runs'] as const,
   siteCompetitiveGap: (siteId: number, search: string) => ['sites', siteId, 'competitive-gap', search] as const,
   siteCompetitiveGapStrategy: (siteId: number) => ['sites', siteId, 'competitive-gap', 'strategy'] as const,
   siteCompetitiveGapCompetitors: (siteId: number) => ['sites', siteId, 'competitive-gap', 'competitors'] as const,
