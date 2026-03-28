@@ -485,7 +485,7 @@ export function GscPage() {
                   type="button"
                   onClick={() => void handleImportAll()}
                   disabled={!gscSummaryQuery.data.selected_property_uri || importGscMutation.isPending}
-                  className="inline-flex rounded-full bg-teal-700 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-400 dark:text-slate-950 dark:hover:bg-teal-300"
+                  className="inline-flex rounded-full bg-teal-700 px-3 py-1.5 text-sm font-semibold !text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-400 dark:!text-slate-950 dark:hover:bg-teal-300"
                 >
                   {importGscMutation.isPending ? t('gsc.connection.importing') : t('gsc.connection.importAll')}
                 </button>

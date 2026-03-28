@@ -148,7 +148,7 @@ export function SiteWorkspaceLayout() {
           <div className="flex flex-wrap items-center gap-2">
             <Link
               to={newCrawlPath}
-              className="inline-flex rounded-full bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 dark:bg-teal-400 dark:text-slate-950 dark:hover:bg-teal-300"
+              className="inline-flex rounded-full bg-stone-950 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-stone-800 dark:bg-teal-400 dark:!text-slate-950 dark:hover:bg-teal-300"
             >
               {t('nav.newCrawl')}
             </Link>

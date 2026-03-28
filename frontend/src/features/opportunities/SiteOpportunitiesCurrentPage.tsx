@@ -462,9 +462,9 @@ export function SiteOpportunitiesCurrentPage({ mode = 'overview' }: SiteOpportun
                     </div>
                     <div className="mt-4 space-y-2">
                       {group.top_pages.map((page) => (
-                        <button key={`${group.type}-${page.page_id}`} type="button" onClick={() => openRecordDetails(page.page_id)} className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50/85 px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-100">
-                          <span className="max-w-[70%] truncate text-sm font-medium text-stone-900" title={page.url}>{page.url}</span>
-                          <span className="text-xs font-medium text-stone-600">{page.priority_score}</span>
+                        <button key={`${group.type}-${page.page_id}`} type="button" onClick={() => openRecordDetails(page.page_id)} className="flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50/85 px-4 py-3 text-left transition hover:border-stone-300 hover:bg-stone-100 dark:border-slate-800 dark:bg-slate-900/80 dark:hover:border-slate-700 dark:hover:bg-slate-800">
+                          <span className="max-w-[70%] truncate text-sm font-medium text-stone-900 dark:text-slate-100" title={page.url}>{page.url}</span>
+                          <span className="text-xs font-medium text-stone-600 dark:text-slate-300">{page.priority_score}</span>
                         </button>
                       ))}
                     </div>

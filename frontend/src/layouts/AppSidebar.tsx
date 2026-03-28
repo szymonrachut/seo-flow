@@ -1,5 +1,4 @@
 import type { ChangeEvent, ReactNode } from 'react'
-import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -20,7 +19,7 @@ interface AppSidebarProps {
 }
 
 const activeMenuClass =
-  'border-stone-950 bg-stone-950 text-white shadow-sm dark:border-teal-400 dark:bg-teal-400 dark:text-slate-950'
+  'border-stone-950 bg-stone-950 !text-white shadow-sm dark:border-teal-400 dark:bg-teal-400 dark:!text-slate-950'
 const inactiveMenuClass =
   'border-stone-200 bg-white/80 text-stone-700 hover:border-stone-400 hover:bg-stone-100 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900'
 const disabledMenuClass =
@@ -37,16 +36,6 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [siteSearch, setSiteSearch] = useState('')
-
-  const filteredSites = sites.filter((site) => {
-    const needle = siteSearch.trim().toLowerCase()
-    if (!needle) {
-      return true
-    }
-
-    return `${site.domain} ${site.root_url}`.toLowerCase().includes(needle)
-  })
 
   function handleSiteSwitch(event: ChangeEvent<HTMLSelectElement>) {
     const siteId = Number(event.target.value)
@@ -71,26 +60,15 @@ export function AppSidebar({
 
           <div className="space-y-3 rounded-3xl border border-stone-200 bg-stone-50/90 p-4 dark:border-slate-800 dark:bg-slate-900/80">
             <label className="grid gap-1 text-sm text-stone-700 dark:text-slate-200">
-              <span>{t('shell.sidebar.siteSearch')}</span>
-              <input
-                type="search"
-                value={siteSearch}
-                onChange={(event) => setSiteSearch(event.target.value)}
-                placeholder={t('shell.sidebar.siteSearchPlaceholder')}
-                className="rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-teal-400 dark:focus:ring-teal-500/30"
-              />
-            </label>
-
-            <label className="grid gap-1 text-sm text-stone-700 dark:text-slate-200">
               <span>{t('shell.sidebar.siteSwitcher')}</span>
               <select
                 value={selectedSiteId ? String(selectedSiteId) : ''}
                 onChange={handleSiteSwitch}
                 className="rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-teal-400 dark:focus:ring-teal-500/30"
-                disabled={sitesLoading || filteredSites.length === 0}
+                disabled={sitesLoading || sites.length === 0}
               >
                 <option value="">{t('shell.sidebar.siteSwitcherPlaceholder')}</option>
-                {filteredSites.map((site) => (
+                {sites.map((site) => (
                   <option key={site.id} value={site.id}>
                     {site.domain}
                   </option>
@@ -100,13 +78,13 @@ export function AppSidebar({
 
             <Link
               to={buildSitesNewPath()}
-              className="inline-flex w-full items-center justify-center rounded-full bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 dark:bg-teal-400 dark:text-slate-950 dark:hover:bg-teal-300"
+              className="inline-flex w-full items-center justify-center rounded-full bg-stone-950 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-stone-800 dark:bg-teal-400 dark:!text-slate-950 dark:hover:bg-teal-300"
             >
               {t('shell.sidebar.addSite')}
             </Link>
 
             {sitesError ? <p className="text-sm text-rose-700 dark:text-rose-300">{t('shell.sidebar.sitesError')}</p> : null}
-            {!sitesLoading && !sitesError && filteredSites.length === 0 ? (
+            {!sitesLoading && !sitesError && sites.length === 0 ? (
               <p className="text-sm text-stone-500 dark:text-slate-400">{t('shell.sidebar.noSites')}</p>
             ) : null}
           </div>
@@ -202,7 +180,7 @@ function SidebarMenuItem({ item, compact = false }: SidebarMenuItemProps) {
         </div>
       )}
 
-      {item.active && item.subItems?.length ? (
+      {item.active && item.subItems && item.subItems.length > 1 ? (
         <div className="ml-2 space-y-2 border-l border-stone-200 pl-4 dark:border-slate-800">
           {item.subItems.map((subItem) =>
             subItem.to && !subItem.disabled ? (
@@ -211,7 +189,7 @@ function SidebarMenuItem({ item, compact = false }: SidebarMenuItemProps) {
                 to={subItem.to}
                 className={`flex items-center justify-between rounded-2xl px-3 py-2 text-sm transition ${
                   subItem.active
-                    ? 'bg-stone-950 text-white dark:bg-teal-400 dark:text-slate-950'
+                    ? 'bg-stone-950 !text-white dark:bg-teal-400 dark:!text-slate-950'
                     : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-slate-100'
                 }`}
               >

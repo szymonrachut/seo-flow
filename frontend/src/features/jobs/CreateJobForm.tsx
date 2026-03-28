@@ -148,7 +148,7 @@ export function CreateJobForm({ onSubmit, isPending, errorMessage, initialValues
         <button
           type="submit"
           disabled={isPending}
-          className="inline-flex rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex rounded-full bg-stone-950 px-5 py-2.5 text-sm font-semibold !text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? t('jobs.form.submitting') : t('jobs.form.submit')}
         </button>

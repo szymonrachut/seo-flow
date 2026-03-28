@@ -237,16 +237,16 @@ function renderBadge(
 ) {
   const styles = {
     stone: selected
-      ? 'border-stone-950 bg-stone-950 text-white shadow-sm'
+      ? 'border-stone-950 bg-stone-950 !text-white shadow-sm'
       : 'border-stone-300 bg-stone-100 text-stone-700',
     rose: selected
-      ? 'border-rose-700 bg-rose-700 text-white shadow-sm'
+      ? 'border-rose-700 bg-rose-700 !text-white shadow-sm'
       : 'border-rose-200 bg-rose-50 text-rose-700',
     amber: selected
-      ? 'border-amber-600 bg-amber-600 text-white shadow-sm'
+      ? 'border-amber-600 bg-amber-600 !text-white shadow-sm'
       : 'border-amber-200 bg-amber-50 text-amber-700',
     teal: selected
-      ? 'border-teal-700 bg-teal-700 text-white shadow-sm'
+      ? 'border-teal-700 bg-teal-700 !text-white shadow-sm'
       : 'border-teal-200 bg-teal-50 text-teal-700',
   }
 

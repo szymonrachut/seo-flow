@@ -240,7 +240,7 @@ function renderBadge(
 ) {
   const styles = {
     stone: selected
-      ? 'border-stone-950 bg-stone-950 text-white shadow-sm'
+      ? 'border-stone-950 bg-stone-950 !text-white shadow-sm'
       : 'border-stone-300 bg-stone-100 text-stone-700',
     rose: selected
       ? 'border-rose-700 bg-rose-700 text-white shadow-sm'
@@ -850,7 +850,7 @@ export function PagesPage() {
               onClick={() => updateParams({ gsc_date_range: 'last_28_days', page: 1 })}
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                 pagesParams.gsc_date_range === 'last_28_days'
-                  ? 'border border-stone-950 bg-stone-950 text-white'
+                  ? 'border border-stone-950 bg-stone-950 !text-white'
                   : 'border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100'
               }`}
             >
@@ -861,7 +861,7 @@ export function PagesPage() {
               onClick={() => updateParams({ gsc_date_range: 'last_90_days', page: 1 })}
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                 pagesParams.gsc_date_range === 'last_90_days'
-                  ? 'border border-stone-950 bg-stone-950 text-white'
+                  ? 'border border-stone-950 bg-stone-950 !text-white'
                   : 'border border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100'
               }`}
             >

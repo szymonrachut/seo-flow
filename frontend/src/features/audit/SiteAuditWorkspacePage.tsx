@@ -193,7 +193,7 @@ function AuditWorkspaceSubnav({ siteId, mode }: { siteId: number; mode: 'overvie
         to={`/sites/${siteId}/audit${location.search}`}
         className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
           mode === 'overview'
-            ? 'border-stone-950 bg-stone-950 text-white'
+            ? 'border-stone-950 bg-stone-950 !text-white'
             : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100'
         }`}
       >
@@ -203,7 +203,7 @@ function AuditWorkspaceSubnav({ siteId, mode }: { siteId: number; mode: 'overvie
         to={`/sites/${siteId}/audit/sections${location.search}`}
         className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
           mode === 'sections'
-            ? 'border-stone-950 bg-stone-950 text-white'
+            ? 'border-stone-950 bg-stone-950 !text-white'
             : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:bg-stone-100'
         }`}
       >

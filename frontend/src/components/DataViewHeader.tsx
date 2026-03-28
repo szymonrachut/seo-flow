@@ -33,7 +33,7 @@ function toneClassName(tone: DataViewHeaderTone) {
 
 function renderPrimaryAction(action: ActionMenuItem) {
   const className =
-    'inline-flex items-center rounded-full bg-stone-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800 dark:bg-teal-400 dark:text-slate-950 dark:hover:bg-teal-300'
+    'inline-flex items-center rounded-full bg-stone-950 px-4 py-2 text-sm font-semibold !text-white transition hover:bg-stone-800 dark:bg-teal-400 dark:!text-slate-950 dark:hover:bg-teal-300'
 
   if (action.to) {
     return (

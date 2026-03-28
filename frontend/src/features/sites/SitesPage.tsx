@@ -43,7 +43,7 @@ export function SitesPage() {
 
           <Link
             to={buildSitesNewPath()}
-            className="inline-flex rounded-full bg-stone-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800"
+            className="inline-flex rounded-full bg-stone-950 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-stone-800"
           >
             {t('sites.page.addSite')}
           </Link>
