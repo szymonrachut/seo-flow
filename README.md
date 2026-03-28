@@ -7,6 +7,7 @@ Lokalny crawler SEO dla jednej domeny z:
 - frontendem React + Vite do codziennej pracy lokalnej,
 - site-centric workspace nad snapshotami crawl,
 - site-centric compare UX nad `active_crawl_id` i `baseline_crawl_id`,
+- site-level AI Review Editor dla dokumentow blokowych z review/rewrite workflow, version history i rollbackiem,
 - site-centric Content Recommendations (own data only),
 - site-centric Competitive Gap z manual competitors,
 - cienka warstwa lifecycle dla Content Recommendations (`mark done`, implemented, dynamic outcome, filters i outcome windows),
@@ -42,6 +43,8 @@ Lokalny crawler SEO dla jednej domeny z:
   - legacy dynamic fallback,
 - semantic foundation i semantic arbiter pozostaja competitorowa warstwa cache/statusow i legacy fallbackiem; nie sa juz auto-triggerowanym primary path dla review layer,
 - lifecycle rekomendacji jest cienka, trwala warstwa site-level; nie zmienia snapshotowego modelu `pages`, `links` ani `gsc_*`,
+- AI Review Editor jest osobna warstwa site-level dla dokumentow redakcyjnych; biezacy stan dokumentu pochodzi z aktywnych `editor_document_blocks`,
+- `source_content` i `normalized_content` dokumentu AI Review Editor sa reprezentacjami pochodnymi synchronizowanymi z aktywnego zestawu blokow,
 - `mark done` chowa rekomendacje tylko dla tego samego `active_crawl_id`; jesli ten sam problem wraca w przyszlym crawl snapshot, rekomendacja moze znowu pojawic sie jako aktywna,
 - compare w site workspace jest dodatkowa warstwa nad aktywnym i baseline crawl, a nie osobnym snapshot store,
 - konfiguracja GSC nalezy do `site`,
@@ -71,6 +74,28 @@ To jest najwazniejszy invariant repo:
 - compare-ready routing dla `pages`, `audit`, `opportunities`, `internal linking`
 - baseline fallback do poprzedniego crawla tej samej witryny, jesli istnieje
 - summary cards, badge i filtry zmian bez mieszania wielu snapshotow w jednej bazowej tabeli
+
+### AI Review Editor
+- site-level routing:
+  - `/sites/:siteId/ai-review-editor/documents`
+  - `/sites/:siteId/ai-review-editor/documents/:documentId`
+- kanoniczny current source of truth dokumentu to aktywne `editor_document_blocks`
+- parse HTML do blokow, inline manual edit pojedynczego bloku, insert before / insert after / delete block z guardem ostatniego bloku
+- explicit review runs zapisujace issue dla konkretnego `document_version_hash`
+- governance stale state:
+  - review z poprzedniego stanu dokumentu jest oznaczany jako stale po pozniejszej zmianie blokow,
+  - read model review summary / issue list zwraca flagi `latest_review_matches_current_document` i `review_matches_current_document`,
+  - akcje issue (`dismiss`, `resolved_manual`, `rewrite`) sa blokowane dla stale review,
+  - rewrite preview ma read flags `matches_current_document`, `matches_current_block`, `is_stale`
+- AI rewrite pozostaje single-block preview:
+  - request rewrite tworzy persisted rewrite run,
+  - apply rewrite podmienia tylko docelowy blok i capture'uje nowa wersje dokumentu
+- version history:
+  - `document_parse`, `document_update`, `manual_block_edit`, `block_insert`, `block_delete`, `rewrite_apply`, `rollback`
+  - diff preview porownuje snapshoty blokow i metadanych
+  - restore / rollback tworzy nowa aktualna wersje bez nadpisywania historii
+- ograniczenia:
+  - brak drag & drop reorder, split/merge blokow, collaborative editing, rich-text editora, auto-review on save i automatycznego remapowania issue
 
 ### Site Intelligence
 - ETAP 11.1: trwaĹ‚a page taxonomy zapisana w `pages`
@@ -370,6 +395,48 @@ Wazne:
 - nowe crawle tej samej witryny reuse'uja te sama konfiguracje,
 - dane GSC nadal trafiaja do konkretnego `crawl_job`.
 
+### AI Review Editor
+- route'y site-level:
+  - `/sites/:siteId/ai-review-editor/documents`
+  - `/sites/:siteId/ai-review-editor/documents/:documentId`
+- source of truth:
+  - kanoniczny aktualny stan dokumentu to aktywne `editor_document_blocks`
+  - `source_content` i `normalized_content` sa pochodnymi reprezentacjami synchronizowanymi z aktywnych blokow
+- glowny workflow:
+  - create / load dokumentu
+  - parse HTML do blokow
+  - review run nad aktualnym snapshotem aktywnych blokow
+  - issue workflow: `dismiss`, `resolved_manual`, `AI rewrite`, `apply rewrite`
+  - inline manual edit pojedynczego bloku
+  - insert before / insert after / delete block
+  - version history, diff preview, rollback / restore
+- governance po ETAPIE 9:
+  - latest review moze byc `current` albo `stale`
+  - stale review pozostaje tylko historycznym kontekstem; workflow issue jest wtedy blokowany do czasu nowego review
+  - rewrite preview jest uznawany za bezpieczny do apply tylko wtedy, gdy nadal pasuje do aktualnego stanu dokumentu
+  - backend i UI jawnie sygnalizuja failed review/rewrite runy oraz stany nieaktualne
+- glowne warstwy backendowe:
+  - `app/services/ai_review_editor_service.py`
+  - `app/services/editor_document_block_service.py`
+  - `app/services/editor_document_version_service.py`
+  - `app/services/editor_review_run_service.py`
+  - `app/services/editor_review_engine_service.py`
+  - `app/services/editor_review_llm_service.py`
+  - `app/services/editor_rewrite_service.py`
+  - `app/services/editor_rewrite_llm_service.py`
+- frontend:
+  - `frontend/src/features/ai-review-editor/AIReviewEditorDocumentsPage.tsx`
+  - `frontend/src/features/ai-review-editor/AIReviewEditorDocumentPage.tsx`
+  - `frontend/src/features/ai-review-editor/AIReviewEditorVersionHistorySection.tsx`
+  - `frontend/src/features/ai-review-editor/AIReviewEditorDiffPreviewSection.tsx`
+- ograniczenia modulu:
+  - brak drag & drop reorder
+  - brak split/merge blokow
+  - brak collaborative editing i live sync
+  - brak rich-text editora
+  - brak auto-review on save
+  - brak automatycznego remapowania issue do nowego stanu dokumentu bez twardej reguly
+
 ## Frontend routing
 
 ### Glowny site-centric routing
@@ -378,6 +445,9 @@ Wazne:
 - `/sites/new` -> dodanie witryny / pierwszy crawl
 - `/sites/:siteId` -> site overview
 - `/sites/:siteId/progress` -> site-level dashboard postepu oparty o aktywny crawl, pomocniczy baseline, trend KPI, poprawy/regresje, postep wdrozen i timeline
+- `/sites/:siteId/ai-review-editor` -> redirect do listy dokumentow AI Review Editor
+- `/sites/:siteId/ai-review-editor/documents` -> lista dokumentow AI Review Editor dla witryny
+- `/sites/:siteId/ai-review-editor/documents/:documentId` -> current-state ekran dokumentu AI Review Editor z issue panelem, rewrite preview i historia wersji
 - `/sites/:siteId/pages` -> current-state pages overview dla aktywnego crawla
 - `/sites/:siteId/pages/records` -> current-state records list dla aktywnego crawla
 - `/sites/:siteId/audit` -> current-state audit overview dla aktywnego crawla
@@ -487,6 +557,31 @@ Snapshotowe route'y nadal dzialaja:
 - `GET /sites/{site_id}`
 - `GET /sites/{site_id}/crawls`
 - `POST /sites/{site_id}/crawls`
+- `GET /sites/{site_id}/ai-review-editor/documents`
+- `POST /sites/{site_id}/ai-review-editor/documents`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}`
+- `PUT /sites/{site_id}/ai-review-editor/documents/{document_id}`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/parse`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/blocks`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/blocks`
+- `PUT /sites/{site_id}/ai-review-editor/documents/{document_id}/blocks/{block_key}`
+- `DELETE /sites/{site_id}/ai-review-editor/documents/{document_id}/blocks/{block_key}`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/review-summary`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/review-runs`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/review-runs`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/review-runs/{review_run_id}`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/issues`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/review-runs/{review_run_id}/issues`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{issue_id}/dismiss`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{issue_id}/resolve-manual`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{issue_id}/rewrite-runs`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{issue_id}/rewrite-runs`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/rewrite-runs/{rewrite_run_id}`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/rewrite-runs/{rewrite_run_id}/apply`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/versions`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/versions/{version_id}`
+- `GET /sites/{site_id}/ai-review-editor/documents/{document_id}/versions/{version_id}/diff`
+- `POST /sites/{site_id}/ai-review-editor/documents/{document_id}/versions/{version_id}/restore`
 - `GET /sites/{site_id}/content-recommendations`
 - `POST /sites/{site_id}/content-recommendations/mark-done`
 - `GET /sites/{site_id}/competitive-content-gap`
@@ -650,12 +745,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command crawl -Start
 Backend:
 ```bash
 python -m pytest
+python -m pytest tests/test_api_ai_review_editor.py tests/test_ai_review_editor_block_service.py tests/test_ai_review_editor_review_service.py tests/test_ai_review_editor_rewrite_service.py tests/test_ai_review_editor_version_service.py tests/test_ai_review_editor_migration.py tests/test_editor_block_parser_service.py tests/test_editor_review_engine_service.py tests/test_editor_review_llm_service.py tests/test_editor_rewrite_llm_service.py -q
 ```
 
 Frontend:
 ```bash
 cd frontend
 npm test
+npm test -- src/features/ai-review-editor/AIReviewEditorPage.test.tsx
 npm run build
 ```
 

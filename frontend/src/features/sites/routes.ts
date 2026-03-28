@@ -93,6 +93,18 @@ export function buildSiteContentRecommendationsImplementedPath(
   return `/sites/${siteId}/content-recommendations/implemented${buildSiteWorkspaceSearch(context)}`
 }
 
+export function buildSiteAiReviewEditorDocumentsPath(siteId: number, context: SiteWorkspaceRouteContext = {}) {
+  return `/sites/${siteId}/ai-review-editor/documents${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteAiReviewEditorDocumentPath(
+  siteId: number,
+  documentId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/ai-review-editor/documents/${documentId}${buildSiteWorkspaceSearch(context)}`
+}
+
 export function buildSiteCompetitiveGapPath(siteId: number, context: SiteWorkspaceRouteContext = {}) {
   return `/sites/${siteId}/competitive-gap${buildSiteWorkspaceSearch(context)}`
 }

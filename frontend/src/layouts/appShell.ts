@@ -3,6 +3,7 @@ import { matchPath } from 'react-router-dom'
 
 import type { SiteDetail } from '../types/api'
 import {
+  buildSiteAiReviewEditorDocumentsPath,
   buildSiteChangesPath,
   buildSiteChangesAuditPath,
   buildSiteChangesInternalLinkingPath,
@@ -58,6 +59,7 @@ export type AppShellSiteSection =
   | 'audit'
   | 'opportunities'
   | 'internal-linking'
+  | 'ai-review-editor'
   | 'content-recommendations'
   | 'competitive-gap'
   | 'gsc'
@@ -129,6 +131,10 @@ export function getActiveSiteSection(pathname: string): AppShellSiteSection | nu
 
   if (pathMatches(pathname, ['/sites/:siteId/internal-linking', '/sites/:siteId/internal-linking/*'])) {
     return 'internal-linking'
+  }
+
+  if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor', '/sites/:siteId/ai-review-editor/*'])) {
+    return 'ai-review-editor'
   }
 
   if (pathMatches(pathname, ['/sites/:siteId/content-recommendations', '/sites/:siteId/content-recommendations/*'])) {
@@ -343,6 +349,14 @@ export function resolveAppSectionTitle(t: TFunction, pathname: string, site: Sit
 
     if (pathMatches(pathname, ['/sites/:siteId/changes', '/sites/:siteId/changes/*'])) {
       return t('shell.routeTitles.changes')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/documents/:documentId'])) {
+      return t('shell.routeTitles.aiReviewEditorDocument')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/documents'])) {
+      return t('shell.routeTitles.aiReviewEditorDocuments')
     }
 
     if (pathMatches(pathname, ['/sites/:siteId/content-recommendations/active'])) {
@@ -565,6 +579,19 @@ export function buildSiteMenuItems(t: TFunction, pathname: string, site: SiteDet
           label: t('siteInternalLinking.navIssues'),
           to: buildSiteInternalLinkingIssuesPath(site.id, context),
           active: activeInternalLinkingSubsection === 'issues',
+        },
+      ],
+    },
+    {
+      key: 'ai-review-editor',
+      label: t('nav.aiReviewEditor'),
+      to: buildSiteAiReviewEditorDocumentsPath(site.id, context),
+      active: activeSection === 'ai-review-editor',
+      subItems: [
+        {
+          label: t('aiReviewEditor.nav.documents'),
+          to: buildSiteAiReviewEditorDocumentsPath(site.id, context),
+          active: activeSection === 'ai-review-editor',
         },
       ],
     },

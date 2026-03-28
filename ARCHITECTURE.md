@@ -9,6 +9,7 @@ Repo zawiera lokalna aplikacje do:
 - trwalej, deterministycznej klasyfikacji page taxonomy w `pages`,
 - site-centric Content Recommendations liczonych dynamicznie z own data only,
 - site-centric Competitive Gap liczonych dynamicznie nad aktywnym snapshotem i manual competitors,
+- site-centric AI Review Editor dla dokumentow redakcyjnych z review/rewrite/version workflow,
 - rownoleglej semantic foundation / semantic arbiter warstwy cache, statusow i legacy fallbacku dla Competitive Gap,
 - snapshot-aware Content Gap Review flow z persisted candidates, review runs i reviewed items,
 - prezentacji danych w UI React,
@@ -20,6 +21,11 @@ Repo zawiera lokalna aplikacje do:
 - `CrawlJob` = snapshot tej witryny w czasie.
 - `pages`, `links`, audit, opportunities, internal linking i cannibalization sa liczone dla jednego konkretnego `crawl_job`.
 - `pages` niosa tez trwale pola page taxonomy zapisane per rekord snapshotu.
+- AI Review Editor jest osobnym site-level workflow dokumentowym:
+  - aktualny stan dokumentu bierze sie z aktywnych `editor_document_blocks`,
+  - `source_content` i `normalized_content` sa reprezentacjami pochodnymi synchronizowanymi z blokow,
+  - issue i rewrite sa przypiete do konkretnego review runu nad konkretnym stanem dokumentu,
+  - version history/rollback materializuje nowe snapshoty dokumentu bez cofania historii.
 - Content Recommendations sa warstwa site-level liczona nad aktywnym snapshotem, taxonomy, GSC, internal linking i priority signals.
 - Competitive Gap jest warstwa site-level liczona nad aktywnym snapshotem, strategiami site-level i current competitor extractions.
 - Content Gap Review doklada trzy persisted warstwy snapshot-aware:
@@ -36,6 +42,10 @@ Repo zawiera lokalna aplikacje do:
 - `GscProperty` jest trwale przypiete do `site`.
 - `gsc_url_metrics` i `gsc_top_queries` pozostaja zapisane per `crawl_job`.
 - `site_content_recommendation_states` przechowuje tylko stan lifecycle rekomendacji; nie przenosi snapshotowych danych do nowego store compare.
+- stale review w AI Review Editor nie jest auto-remapowane do nowego stanu dokumentu:
+  - po zmianie aktywnych blokow ostatni review staje sie historycznym kontekstem,
+  - issue workflow jest wtedy blokowany do czasu nowego review,
+  - rewrite apply jest dozwolony tylko wtedy, gdy rewrite input nadal pasuje do aktualnego stanu dokumentu.
 
 To jest glowny invariant repo:
 - konfiguracja integracji moze byc site-level,
@@ -133,6 +143,37 @@ To jest wazne:
 - `site` nie miesza snapshotowych tabel,
 - jest tylko cienka warstwa nawigacyjna i orkiestracyjna nad istniejacym job-centric core,
 - shell i routing wystawiaja juz current-state views dla `pages`, `audit`, `opportunities` i `internal-linking` nad aktywnym crawlem, a compare pozostaje dodatkowa warstwa grupowana w sekcji `Zmiany`.
+
+### 4a. AI Review Editor
+- `app/api/routes/site_ai_review_editor.py` wystawia site-level API pod `/sites/{site_id}/ai-review-editor/*`.
+- `app/services/ai_review_editor_service.py` odpowiada za:
+  - create/list/get/update dokumentu,
+  - parse HTML do aktywnych blokow,
+  - skladanie current-state payloadu dokumentu.
+- `editor_document_block_service.py` obsluguje lokalne mutacje dokumentu:
+  - inline manual edit pojedynczego bloku,
+  - insert before / insert after / append,
+  - delete bloku z guardem ostatniego aktywnego bloku,
+  - reindex i synchronizacje reprezentacji dokumentu.
+- `editor_document_version_service.py` materializuje historyczne snapshoty dokumentu:
+  - `document_parse`
+  - `document_update`
+  - `manual_block_edit`
+  - `block_insert`
+  - `block_delete`
+  - `rewrite_apply`
+  - `rollback`
+- `editor_review_run_service.py` zapisuje review runs, issues i summary przypiete do `document_version_hash`.
+- `editor_rewrite_service.py` pilnuje governance workflow issue:
+  - stale review blokuje nowe akcje issue,
+  - rewrite apply jest single-block apply,
+  - rewrite preview jest bezpieczny do apply tylko wtedy, gdy nadal zgadza sie z current block/current document.
+
+To jest wazne:
+- kanoniczny current source of truth dokumentu to aktywne `editor_document_blocks`,
+- `source_content` i `normalized_content` pozostaja reprezentacja pochodna, nie drugim miejscem prawdy,
+- restore / rollback tworzy nowy aktualny stan bez nadpisywania historii,
+- modul celowo nie ma drag & drop reorder, split/merge blokow, collaborative editing, websocket/live sync ani auto-remapowania issue.
 
 ### 5. Snapshotowy read model
 - `seo_analysis.build_page_records()` serializuje `Page` i dokleja pochodne flagi:
@@ -321,6 +362,38 @@ To jest wazne:
 - semantic layer jest warstwa enrichment/cache zintegrowana z finalnym Competitive Gap read modelem; CSV export reuse'uje ten sam semantic-enriched payload co UI,
 - sync run store nie jest worker queue i nie wprowadza websocketow / Celery / Redis,
 - eksport CSV reuse'uje ten sam read model Competitive Gap co UI.
+
+### 7c. AI Review Editor
+- `app/api/routes/site_ai_review_editor.py` wystawia site-level API dla dokumentow AI Review Editor.
+- `app/services/ai_review_editor_service.py` odpowiada za create/list/get/update dokumentu i parse HTML do blokow.
+- `app/services/editor_document_block_service.py` utrzymuje kanoniczny current state przez:
+  - inline manual edit pojedynczego bloku,
+  - insert before / insert after / insert end,
+  - delete block,
+  - reindex i sync pochodnych reprezentacji dokumentu.
+- `app/services/editor_document_version_service.py` materializuje wersje dokumentu:
+  - capture snapshotu po parse / edit / insert / delete / rewrite apply / rollback,
+  - diff preview miedzy wersjami,
+  - restore starszej wersji jako nowego current state.
+- `app/services/editor_review_run_service.py` uruchamia review nad aktywnymi blokami i trzyma governance:
+  - latest review run moze byc `current` albo `stale`,
+  - stale review pozostaje tylko historycznym kontekstem,
+  - issue workflow jest blokowany, gdy review nie pasuje juz do aktualnego stanu dokumentu.
+- `app/services/editor_review_llm_service.py` i `app/services/editor_rewrite_llm_service.py` sa structured LLM layers:
+  - review zwraca tylko znormalizowane issue wysokiej jakosci dla dozwolonych typow/severity,
+  - rewrite dotyczy dokladnie jednego bloku i zwraca tylko `block_key` + `rewritten_text`.
+- `app/services/editor_rewrite_service.py` utrzymuje workflow issue/rewrite:
+  - `dismiss`
+  - `resolved_manual`
+  - request AI rewrite
+  - apply rewrite
+  - stale/actionability guards dla review issue i rewrite preview.
+
+To jest wazne:
+- source of truth dokumentu to aktywne `editor_document_blocks`, nie historyczne snapshoty ani stare `source_content`,
+- `source_content` i `normalized_content` sa tylko reprezentacjami pochodnymi synchronizowanymi z blokow,
+- modul nie robi automatycznego remapowania issue do nowego current state po zmianie dokumentu,
+- rollback/restore tworzy nowa aktualna wersje zamiast nadpisywac historie.
 
 ### 8. Frontend
 - `routes/AppRoutes.tsx` startuje od `/sites`.

@@ -104,6 +104,7 @@ Glowne pozycje sidebara dla wybranej witryny:
 - Przeglad
 - Postep
 - Strony
+- AI Review Editor
 - Audyt
 - Szanse SEO
 - Linkowanie wewnetrzne
@@ -125,6 +126,11 @@ Rozwiniete jest tylko submenu aktywnej sekcji.
 #### Strony
 - Przeglad
 - Rekordy
+
+#### AI Review Editor
+- Dokumenty
+- Dokument
+  - jeden dokument otwierany bez osobnego submenu dla issue albo wersji; workflow pozostaje na jednym ekranie
 
 #### Audyt
 - Przeglad
@@ -192,6 +198,13 @@ Na dole sidebara:
 
 - `/sites/:siteId/pages` -> Strony / Przeglad
 - `/sites/:siteId/pages/records` -> Strony / Rekordy
+
+- `/sites/:siteId/ai-review-editor` -> redirect do Dokumentow
+- `/sites/:siteId/ai-review-editor/documents` -> AI Review Editor / Dokumenty
+- `/sites/:siteId/ai-review-editor/documents/:documentId` -> AI Review Editor / Dokument
+  - dokument renderowany z aktywnych blokow
+  - issue/rewrite actions respektuja stale/current governance
+  - version history, diff preview i restore pozostaja w tym samym ekranie
 
 - `/sites/:siteId/audit` -> Audyt / Przeglad
 - `/sites/:siteId/audit/sections` -> Audyt / Sekcje
@@ -384,13 +397,24 @@ Widoki:
 - Przeglad
 - Problemy
 
-### 8.8. `Rekomendacje tresci`
+### 8.8. `AI Review Editor`
+Widoki:
+- Dokumenty
+- Dokument
+
+Wazne bloki:
+- current document renderowany z aktywnych blokow
+- issue pane z governance stale/current
+- rewrite preview ze stanem bezpiecznego apply
+- version history + diff preview + restore
+
+### 8.9. `Rekomendacje tresci`
 Widoki:
 - Przeglad
 - Aktywne
 - Wdrożone
 
-### 8.9. `Braki wzgledem konkurencji`
+### 8.10. `Braki wzgledem konkurencji`
 Widoki:
 - Przeglad
 - Strategia
@@ -398,18 +422,18 @@ Widoki:
 - Synchronizacja
 - Wyniki
 
-### 8.10. `GSC`
+### 8.11. `GSC`
 Widoki:
 - Przeglad
 - Konfiguracja
 - Import
 
-### 8.11. `Crawle`
+### 8.12. `Crawle`
 Widoki:
 - Historia
 - Nowy crawl
 
-### 8.12. `Zmiany`
+### 8.13. `Zmiany`
 Widoki:
 - Przeglad
 - Strony

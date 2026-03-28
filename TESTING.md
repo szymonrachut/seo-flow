@@ -30,6 +30,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 -Command smoke-postgr
 ```bash
 cd frontend
 npm test -- src/features/pages/PagesPage.test.tsx
+npm test -- src/features/ai-review-editor/AIReviewEditorPage.test.tsx
 npm run build
 ```
 
@@ -180,6 +181,32 @@ npm run build
   - gdy zmiana dotyka lifecycle, `implemented_summary`, outcome windows albo eksportu
 - Przejdz do full backend:
   - gdy zmiana dotyka shared signals z pages / GSC / internal linking / opportunities / cannibalization naraz
+
+### AI Review Editor
+- Backend:
+  - `tests/test_ai_review_editor_block_service.py`
+  - `tests/test_ai_review_editor_review_service.py`
+  - `tests/test_ai_review_editor_rewrite_service.py`
+  - `tests/test_ai_review_editor_version_service.py`
+  - `tests/test_api_ai_review_editor.py`
+  - `tests/test_ai_review_editor_migration.py`
+  - `tests/test_editor_block_parser_service.py`
+  - `tests/test_editor_review_engine_service.py`
+  - `tests/test_editor_review_llm_service.py`
+  - `tests/test_editor_rewrite_llm_service.py`
+- Frontend:
+  - `frontend/src/features/ai-review-editor/AIReviewEditorPage.test.tsx`
+- Wystarczy lokalny zakres:
+  - zmiana w `app/services/ai_review_editor_service.py`
+  - zmiana w `app/services/editor_document_block_service.py`
+  - zmiana w `app/services/editor_document_version_service.py`
+  - zmiana w `app/services/editor_review_run_service.py`
+  - zmiana w `app/services/editor_rewrite_service.py`
+  - zmiana w `frontend/src/features/ai-review-editor/`
+- Rozszerz do szerszego backendu:
+  - gdy zmiana dotyka kontraktu API AI Review Editor, stale/current governance albo shared prompt normalization
+- Przejdz do full backend:
+  - gdy zmienia sie `app/db/models.py`, migracje `0023-0028`, shared DB fixtures albo kilka warstw AI Review Editor naraz
 
 ### Competitive Gap
 - Backend:

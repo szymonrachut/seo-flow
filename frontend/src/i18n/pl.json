@@ -23,6 +23,7 @@
     "overview": "Przeglad",
     "progress": "Postep",
     "pages": "Strony",
+    "aiReviewEditor": "AI Review Editor",
     "contentRecommendations": "Rekomendacje tresci",
     "competitiveGap": "Braki wzgledem konkurencji",
     "links": "Linki",
@@ -101,6 +102,8 @@
     "siteNewCrawl": "Nowy crawl witryny {{domain}}",
     "sitePages": "Strony witryny {{domain}}",
     "sitePagesRecords": "Rekordy stron witryny {{domain}}",
+    "aiReviewEditorDocuments": "Dokumenty AI Review Editor dla {{domain}}",
+    "aiReviewEditorDocument": "Dokument AI Review Editor dla {{domain}}",
     "siteAudit": "Audyt witryny {{domain}}",
     "siteAuditSections": "Sekcje audytu witryny {{domain}}",
     "siteGsc": "Przeglad GSC witryny {{domain}}",
@@ -144,6 +147,8 @@
       "progress": "Postep",
       "pages": "Strony",
       "pagesRecords": "Rekordy stron",
+      "aiReviewEditorDocuments": "Dokumenty AI Review",
+      "aiReviewEditorDocument": "Dokument AI Review",
       "audit": "Audyt",
       "auditSections": "Sekcje audytu",
       "opportunities": "Szanse SEO",
@@ -969,6 +974,320 @@
         "opportunities": "Problemy + impressions",
         "lastImported": "Ostatni import"
       }
+    }
+  },
+  "aiReviewEditor": {
+    "nav": {
+      "documents": "Dokumenty"
+    },
+    "header": {
+      "eyebrow": "Edytor AI review"
+    },
+    "common": {
+      "none": "Brak"
+    },
+    "documents": {
+      "loading": "Ladowanie dokumentow AI review...",
+      "errorTitle": "Dokumenty AI review sa niedostepne",
+      "title": "Dokumenty AI review",
+      "description": "Otworz istniejacy dokument i pracuj na aktualnym stanie aktywnych blokow, issue, rewrite runow i review runow.",
+      "context": {
+        "site": "Witryna",
+        "activeCrawl": "Aktywny crawl",
+        "baseline": "Baseline"
+      },
+      "summary": {
+        "total": "Dokumenty",
+        "parsed": "Sparsowane",
+        "drafts": "Drafty",
+        "activeBlocks": "Aktywne bloki"
+      },
+      "emptyTitle": "Brak dokumentow AI review",
+      "emptyDescription": "Najpierw utworz albo zaimportuj dokument, a potem wroc tutaj, aby reviewowac go blok po bloku.",
+      "table": {
+        "title": "Tytul",
+        "type": "Typ",
+        "status": "Status",
+        "blocks": "Bloki",
+        "updated": "Zaktualizowano",
+        "open": "Otworz"
+      }
+    },
+    "document": {
+      "invalidIdTitle": "Nieprawidlowy dokument AI review",
+      "invalidIdDescription": "Wskazane id dokumentu nie jest prawidlowe.",
+      "invalidIdMessage": "Wskazane id dokumentu nie jest prawidlowe.",
+      "loading": "Ladowanie dokumentu AI review...",
+      "errorTitle": "Dokument AI review jest niedostepny",
+      "emptyTitle": "Dokument AI review jest niedostepny",
+      "emptyDescription": "Nie udalo sie zaladowac wskazanego dokumentu.",
+      "description": "Reviewuj aktualne aktywne bloki, zamykaj issue, zamawiaj rewrite pojedynczych blokow i stosuj poprawki bez opuszczania workspace.",
+      "context": {
+        "type": "Typ dokumentu",
+        "status": "Status dokumentu",
+        "blocks": "Bloki",
+        "latestRun": "Ostatni review",
+        "filteredIssues": "Widoczne issue"
+      },
+      "chips": {
+        "type": "Typ dokumentu",
+        "status": "Status dokumentu",
+        "latestRun": "Ostatni review"
+      },
+      "backToDocuments": "Otworz liste dokumentow",
+      "canvasTitle": "Aktualny dokument",
+      "canvasDescription": "Ten ekran czyta aktywne bloki edytora jako canonical source dokumentu po zastosowaniu rewrite.",
+      "metaTitle": "Meta dokumentu",
+      "metaUpdatedAt": "Zaktualizowano",
+      "metaSourceFormat": "Format zrodla",
+      "metaReviewRuns": "Review runy",
+      "metaCurrentVersion": "Aktualna wersja",
+      "metaLatestReviewScope": "Zakres ostatniego review",
+      "metaCanonicalSource": "Canonical read source",
+      "canonicalSourceValue": "Aktywne editor_document_blocks",
+      "reviewScopeCurrent": "Biezacy stan dokumentu",
+      "reviewScopeStale": "Nieaktualny po pozniejszych zmianach dokumentu",
+      "editingBadge": "Edycja",
+      "insertingBadge": "Wstawianie",
+      "editFieldLabel": "Tresc bloku",
+      "insertFieldLabel": "Tresc nowego bloku",
+      "insertTypeLabel": "Typ bloku",
+      "insertLevelLabel": "Poziom naglowka",
+      "refreshing": "Odswiezanie najnowszego stanu dokumentu...",
+      "manualEditSaved": "Blok zapisany. Wersja {{versionNo}} jest teraz aktualna.",
+      "manualEditNoChanges": "Nie zapisano zadnych zmian w bloku.",
+      "parseSaved": "Dokument zostal sparsowany. W edytorze jest teraz dostepnych {{blocksCount}} aktywnych blokow.",
+      "insertSaved": "Blok zostal wstawiony. Wersja {{versionNo}} jest teraz aktualna.",
+      "deleteSaved": "Blok zostal usuniety. Wersja {{versionNo}} jest teraz aktualna.",
+      "reviewCompleted": "Review run #{{runId}} zakonczyl sie z {{issueCount}} issue.",
+      "reviewFailed": "Ostatni review run nie zakonczyl sie powodzeniem.",
+      "reviewFailedTitle": "Brak aktualnych issue do pokazania",
+      "reviewFailedBannerTitle": "Ostatni review run zakonczyl sie bledem",
+      "noReviewYetTitle": "Nie uruchomiono jeszcze review",
+      "noReviewYetDescription": "Uruchom review dla biezacego stanu dokumentu, aby uzupelnic issue i akcje governance.",
+      "reviewRunningTitle": "Review jest w toku",
+      "reviewRunningNotice": "Poczekaj na zakonczenie biezacego review runu, zanim zaufasz liczbom albo wykonasz akcje na issue.",
+      "reviewStaleTitle": "Ostatni review jest nieaktualny",
+      "reviewStaleDescription": "Dokument zmienil sie po ostatnim review runie. Traktuj te issue jako historyczny kontekst i uruchom review ponownie, zanim wykonasz akcje na issue.",
+      "localDraftNotice": "Masz otwarty lokalny draft edycji albo wstawienia bloku. Zakoncz go albo anuluj przed nowym review albo przywroceniem innej wersji.",
+      "singleBlockNotice": "Dokument ma obecnie jeden aktywny blok. Usuwanie pozostaje zablokowane, aby nie zostawic pustego dokumentu; uzyj edycji albo wstawienia.",
+      "issueDismissed": "Issue zostalo oznaczone jako odrzucone.",
+      "issueResolvedManually": "Issue zostalo oznaczone jako poprawione recznie.",
+      "rewriteReady": "Rewrite AI jest gotowy. Sprawdz podglad przed zastosowaniem.",
+      "rewritePendingTitle": "Rewrite AI jest w toku",
+      "rewritePendingDescription": "Poczekaj, az ostatni rewrite run sie zakonczy, zanim zastosujesz wynik albo poprosisz o kolejny rewrite.",
+      "rewriteFailed": "Ostatnia prosba o rewrite AI nie zakonczyl sie powodzeniem.",
+      "rewriteFailedTitle": "Ostatni rewrite AI zakonczyl sie bledem",
+      "rewriteApplied": "Rewrite AI zostal zastosowany do bloku {{blockKey}}.",
+      "restoreSaved": "Wersja {{versionNo}} jest teraz aktualnym stanem dokumentu.",
+      "noVisibleIssuesTitle": "Brak widocznych aktualnych issue",
+      "noVisibleIssuesDescription": "Ostatni aktualny review nie pokazuje issue dla biezacego stanu dokumentu.",
+      "summary": {
+        "totalIssues": "Issue",
+        "blocksWithIssues": "Bloki z issue",
+        "openIssues": "Open",
+        "rewriteReady": "Rewrite ready",
+        "highSeverity": "High severity"
+      },
+      "statusBreakdown": "Rozklad statusow issue",
+      "severityBreakdown": "Rozklad severity",
+      "reviewState": "Stan review",
+      "reviewRuns": "Review runy",
+      "lastReviewAt": "Ostatni zakonczony review",
+      "activeBlocks": "Aktywne bloki",
+      "latestRunIssues": "Issue z ostatniego runu",
+      "recentRuns": "Ostatnie review runy",
+      "runLabel": "Run #{{runId}}",
+      "runMeta": "{{issueCount}} issue · tryb {{reviewMode}}",
+      "noRuns": "Ten dokument nie ma jeszcze historii review runow.",
+      "noBlocksTitle": "Brak aktywnych blokow do review",
+      "noBlocksDescription": "Najpierw sparsuj dokument, aby edytor mogl wyrenderowac aktualny stan blokow.",
+      "blockMarker": "{{count}} issue dla bloku {{blockKey}}",
+      "blockMarkerAria": "Otworz {{count}} marker(y) issue dla bloku {{blockKey}}",
+      "panel": {
+        "emptyTitle": "Wybierz blok z issue",
+        "emptyDescription": "Uzyj markerow w gutterze, aby skupic sie na problematycznym bloku i jego issue.",
+        "eyebrow": "Szczegoly issue",
+        "currentBlock": "Aktualny blok",
+        "reason": "Powod",
+        "replacementInstruction": "Instrukcja zamiany",
+        "dismissReason": "Powod odrzucenia",
+        "resolutionNote": "Notatka rozwiazania",
+        "rewriteRequested": "Rewrite AI zostal juz zamowiony dla tego issue. Po odswiezeniu stanu zobaczysz wygenerowana propozycje, gdy bedzie gotowa.",
+        "appliedHint": "To issue jest juz oznaczone jako applied. Aktualny stan bloku odzwierciedla zastosowany rewrite AI."
+      },
+      "rewritePreview": {
+        "title": "Podglad rewrite",
+        "before": "Przed",
+        "after": "Po",
+        "empty": "Podglad rewrite nie jest jeszcze dostepny."
+      }
+    },
+    "actions": {
+      "runReview": "Uruchom review",
+      "reviewRunning": "Uruchamianie review...",
+      "parse": "Parsuj dokument",
+      "parsing": "Parsowanie...",
+      "dismiss": "Odrzuc",
+      "resolveManual": "Poprawione recznie",
+      "editBlock": "Edytuj",
+      "addBlockBefore": "Dodaj przed",
+      "addBlockAfter": "Dodaj po",
+      "insertBlock": "Wstaw blok",
+      "deleteBlock": "Usun",
+      "saveBlock": "Zapisz",
+      "cancelEdit": "Anuluj",
+      "cancelInsert": "Anuluj",
+      "rewrite": "Popraw AI",
+      "requestRewrite": "Popraw AI",
+      "applyRewrite": "Zastosuj poprawke",
+      "restoreVersion": "Przywroc wersje",
+      "openDocuments": "Otworz dokumenty",
+      "backToDocuments": "Powrot do dokumentow"
+    },
+    "filters": {
+      "quickTitle": "Filtry issue",
+      "title": "Filtry issue",
+      "panelTitle": "Dodatkowe filtry issue",
+      "panelDescription": "Zachowaj current-first widok dokumentu i zawezaj panel do konkretnego typu issue tylko wtedy, gdy to potrzebne.",
+      "description": "Zachowaj current-first widok dokumentu i zawezaj panel do konkretnego typu issue tylko wtedy, gdy to potrzebne.",
+      "issueType": "Typ issue",
+      "allIssueTypes": "Wszystkie typy issue",
+      "quick": {
+        "all": "Wszystkie",
+        "open": "Open",
+        "high": "High severity",
+        "dismissed": "Odrzucone",
+        "resolved_manual": "Poprawione recznie",
+        "rewrite_ready": "Rewrite ready",
+        "applied": "Applied"
+      }
+    },
+    "issuePanel": {
+      "title": "Szczegoly issue",
+      "description": "Wybierz marker w gutterze, aby sprawdzic issue i akcje dla konkretnego bloku.",
+      "emptyFilteredTitle": "Brak issue dla biezacych filtrow",
+      "emptyFilteredDescription": "Zresetuj filtry, aby przywrocic markery i zawartosc panelu bocznego.",
+      "emptySelectionTitle": "Wybierz blok z issue",
+      "emptySelectionDescription": "Uzyj markerow w gutterze, aby skupic sie na problematycznym bloku i jego issue.",
+      "blockContext": "Aktualny blok",
+      "actionsLockedTitle": "Akcje dla issue sa zablokowane",
+      "actionsLockedDescription": "To issue nalezy do nieaktualnego review runu. Uruchom review ponownie na biezacym dokumencie, zanim odrzucisz issue, oznaczysz je jako poprawione albo poprosisz o nowy rewrite."
+    },
+    "issue": {
+      "select": "Wybierz",
+      "replacementInstruction": "Instrukcja zamiany",
+      "dismissReason": "Powod odrzucenia",
+      "resolutionNote": "Notatka rozwiazania"
+    },
+    "rewrite": {
+      "before": "Przed",
+      "after": "Po",
+      "staleTitle": "Podglad rewrite jest nieaktualny",
+      "staleDescription": "Ten blok zmienil sie po wygenerowaniu rewrite. Zamow nowy rewrite, zanim zastosujesz wynik AI."
+    },
+    "runs": {
+      "title": "Ostatnie review runy",
+      "issueCount": "Issue",
+      "finishedAt": "Zakonczenie"
+    },
+    "versions": {
+      "title": "Historia wersji",
+      "description": "Otworz wczesniejszy snapshot, podejrzyj diff i przywroc poprzedni stan dokumentu, gdy to potrzebne.",
+      "emptyTitle": "Brak wersji dokumentu",
+      "emptyDescription": "Wersje pojawia sie po parsowaniu, zastosowaniu rewrite albo przywroceniu starszego stanu.",
+      "current": "Aktualna",
+      "fallbackDescription": "Snapshot stanu dokumentu",
+      "blockCount": "Bloki"
+    },
+    "diffPreview": {
+      "eyebrow": "Diff wersji",
+      "title": "Podglad wersji {{versionNo}}",
+      "loading": "Ladowanie diffu wersji...",
+      "errorTitle": "Diff wersji jest niedostepny",
+      "emptyTitle": "Wybierz wersje do podgladu",
+      "emptyDescription": "Wybierz wersje z historii, aby sprawdzic blokowy diff zmian.",
+      "restoreTitle": "Przywroc te wersje",
+      "restoreDescription": "Ta akcja utworzy nowa aktualna wersje na bazie wybranego snapshotu i zachowa cala historie.",
+      "summary": {
+        "changed": "Zmienione",
+        "added": "Dodane",
+        "removed": "Usuniete",
+        "fields": "Metadane"
+      },
+      "documentChanges": "Zmiany metadanych dokumentu",
+      "before": "Przed",
+      "after": "Po",
+      "noBlockChangesTitle": "Brak zmian blokow w tym porownaniu",
+      "noBlockChangesDescription": "Miedzy tymi wersjami zmienily sie tylko metadane dokumentu."
+    },
+    "versionSource": {
+      "document_parse": "Parsowanie dokumentu",
+      "document_update": "Aktualizacja dokumentu",
+      "manual_block_edit": "Reczna edycja bloku",
+      "block_insert": "Wstawienie bloku",
+      "block_delete": "Usuniecie bloku",
+      "rewrite_apply": "Zastosowanie rewrite",
+      "rollback": "Rollback"
+    },
+    "diffChangeType": {
+      "added": "Dodany",
+      "removed": "Usuniety",
+      "changed": "Zmieniony"
+    },
+    "diffField": {
+      "title": "Tytul",
+      "document_type": "Typ dokumentu",
+      "source_format": "Format zrodla",
+      "status": "Status dokumentu",
+      "topic_brief_json": "Topic brief",
+      "facts_context_json": "Facts context"
+    },
+    "documentStatus": {
+      "draft": "Draft",
+      "parsed": "Parsed",
+      "archived": "Archived"
+    },
+    "reviewRunStatus": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "applied": "Applied"
+    },
+    "reviewMode": {
+      "light": "Light",
+      "standard": "Standard",
+      "strict": "Strict"
+    },
+    "issueStatus": {
+      "open": "Open",
+      "dismissed": "Dismissed",
+      "rewrite_requested": "Rewrite requested",
+      "rewrite_ready": "Rewrite ready",
+      "applied": "Applied",
+      "resolved_manual": "Resolved manual"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "issueType": {
+      "weak_heading": "Slaby naglowek",
+      "short_paragraph": "Zbyt krotki akapit",
+      "placeholder_text": "Placeholder text",
+      "todo_marker": "TODO marker",
+      "generic_heading": "Generyczny naglowek",
+      "factuality": "Faktycznosc",
+      "off_topic": "Poza tematem",
+      "unsupported_claim": "Nieuzasadnione twierdzenie",
+      "irrelevant_entity": "Nieistotna encja",
+      "brand_mismatch": "Niedopasowanie brandu",
+      "product_hallucination": "Halucynacja produktu",
+      "unclear": "Niejasne sformulowanie",
+      "terminology_inconsistency": "Niespojna terminologia"
     }
   },
   "contentRecommendations": {
