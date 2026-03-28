@@ -97,6 +97,10 @@ export function buildSiteAiReviewEditorDocumentsPath(siteId: number, context: Si
   return `/sites/${siteId}/ai-review-editor/documents${buildSiteWorkspaceSearch(context)}`
 }
 
+export function buildSiteAiReviewEditorNewDocumentPath(siteId: number, context: SiteWorkspaceRouteContext = {}) {
+  return `/sites/${siteId}/ai-review-editor/new${buildSiteWorkspaceSearch(context)}`
+}
+
 export function buildSiteAiReviewEditorDocumentPath(
   siteId: number,
   documentId: number,

@@ -130,7 +130,7 @@ def test_manual_resolve_sets_resolved_manual_and_does_not_create_rewrite_run(sql
     assert rewrite_runs == []
 
 
-def test_issue_actions_require_current_review_state(sqlite_session_factory) -> None:
+def test_issue_actions_only_require_current_issue_block_state(sqlite_session_factory) -> None:
     ids = _seed_reviewed_document(sqlite_session_factory)
 
     with sqlite_session_factory() as session:
@@ -154,13 +154,12 @@ def test_issue_actions_require_current_review_state(sqlite_session_factory) -> N
         session.commit()
 
     with sqlite_session_factory() as session:
-        with pytest.raises(editor_rewrite_service.EditorRewriteServiceError) as dismiss_exc:
-            editor_rewrite_service.dismiss_issue(
-                session,
-                ids["site_id"],
-                ids["document_id"],
-                ids["issue_id_heading"],
-            )
+        dismiss_payload = editor_rewrite_service.dismiss_issue(
+            session,
+            ids["site_id"],
+            ids["document_id"],
+            ids["issue_id_heading"],
+        )
         with pytest.raises(editor_rewrite_service.EditorRewriteServiceError) as resolve_exc:
             editor_rewrite_service.resolve_issue_manually(
                 session,
@@ -168,25 +167,25 @@ def test_issue_actions_require_current_review_state(sqlite_session_factory) -> N
                 ids["document_id"],
                 ids["issue_id_todo"],
             )
-        with pytest.raises(editor_rewrite_service.EditorRewriteServiceError) as rewrite_exc:
-            editor_rewrite_service.request_issue_rewrite(
-                session,
-                ids["site_id"],
-                ids["document_id"],
-                ids["issue_id_placeholder"],
-                client=_RecordingRewriteClient(
-                    [
-                        {
-                            "block_key": "P-003",
-                            "rewritten_text": "Should never be generated for a stale review issue.",
-                        }
-                    ]
-                ),
-            )
+        rewrite_payload = editor_rewrite_service.request_issue_rewrite(
+            session,
+            ids["site_id"],
+            ids["document_id"],
+            ids["issue_id_placeholder"],
+            client=_RecordingRewriteClient(
+                [
+                    {
+                        "block_key": "P-003",
+                        "rewritten_text": "This block can still receive an AI rewrite because it was not edited manually.",
+                    }
+                ]
+            ),
+        )
 
-    assert dismiss_exc.value.code == "issue_review_stale"
+    assert dismiss_payload["status"] == "dismissed"
     assert resolve_exc.value.code == "issue_review_stale"
-    assert rewrite_exc.value.code == "issue_review_stale"
+    assert rewrite_payload["status"] == "completed"
+    assert rewrite_payload["matches_current_block"] is True
 
 
 def test_request_issue_rewrite_creates_completed_run_and_marks_issue_ready(sqlite_session_factory) -> None:
@@ -302,7 +301,7 @@ def test_apply_rewrite_updates_only_target_block_and_marks_issue_applied(sqlite_
     assert "Lorem ipsum" not in document.source_content
 
 
-def test_apply_rewrite_rejects_document_change_after_rewrite_generation(sqlite_session_factory) -> None:
+def test_apply_rewrite_allows_unrelated_document_change_after_rewrite_generation(sqlite_session_factory) -> None:
     ids = _seed_reviewed_document(sqlite_session_factory)
     fake_client = _RecordingRewriteClient(
         [
@@ -342,6 +341,67 @@ def test_apply_rewrite_rejects_document_change_after_rewrite_generation(sqlite_s
             ids["document_id"],
             ids["issue_id_placeholder"],
         )
+        apply_payload = editor_rewrite_service.apply_rewrite_run(
+            session,
+            ids["site_id"],
+            ids["document_id"],
+            int(rewrite_run["id"]),
+        )
+
+    assert rewrite_runs_payload["items"][0]["matches_current_document"] is False
+    assert rewrite_runs_payload["items"][0]["matches_current_block"] is True
+    assert rewrite_runs_payload["items"][0]["is_stale"] is False
+    assert apply_payload["rewrite_run"]["status"] == "applied"
+
+
+def test_apply_rewrite_rejects_target_block_change_after_rewrite_generation(sqlite_session_factory) -> None:
+    ids = _seed_reviewed_document(sqlite_session_factory)
+    fake_client = _RecordingRewriteClient(
+        [
+            {
+                "block_key": "P-003",
+                "rewritten_text": "This section explains the local SEO service scope with verified offer details.",
+            }
+        ]
+    )
+
+    with sqlite_session_factory() as session:
+        rewrite_run = editor_rewrite_service.request_issue_rewrite(
+            session,
+            ids["site_id"],
+            ids["document_id"],
+            ids["issue_id_placeholder"],
+            client=fake_client,
+        )
+        session.commit()
+
+    with sqlite_session_factory() as session:
+        active_blocks = session.scalars(
+            select(EditorDocumentBlock)
+            .where(
+                EditorDocumentBlock.document_id == ids["document_id"],
+                EditorDocumentBlock.is_active.is_(True),
+            )
+            .order_by(EditorDocumentBlock.position_index.asc(), EditorDocumentBlock.id.asc())
+        ).all()
+        target_block = next(block for block in active_blocks if block.block_key == "P-003")
+        editor_document_block_service.update_document_block(
+            session,
+            ids["site_id"],
+            ids["document_id"],
+            target_block.block_key,
+            text_content="A manual edit changed the placeholder paragraph after rewrite generation.",
+            expected_content_hash=target_block.content_hash,
+        )
+        session.commit()
+
+    with sqlite_session_factory() as session:
+        rewrite_runs_payload = editor_rewrite_service.list_issue_rewrite_runs(
+            session,
+            ids["site_id"],
+            ids["document_id"],
+            ids["issue_id_placeholder"],
+        )
         with pytest.raises(editor_rewrite_service.EditorRewriteServiceError) as exc_info:
             editor_rewrite_service.apply_rewrite_run(
                 session,
@@ -351,6 +411,7 @@ def test_apply_rewrite_rejects_document_change_after_rewrite_generation(sqlite_s
             )
 
     assert rewrite_runs_payload["items"][0]["matches_current_document"] is False
+    assert rewrite_runs_payload["items"][0]["matches_current_block"] is False
     assert rewrite_runs_payload["items"][0]["is_stale"] is True
     assert exc_info.value.code == "rewrite_input_mismatch"
 

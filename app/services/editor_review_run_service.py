@@ -14,6 +14,7 @@ from app.core.text_processing import collapse_whitespace
 from app.db.models import (
     EditorDocument,
     EditorDocumentBlock,
+    EditorDocumentVersion,
     EditorReviewIssue,
     EditorReviewRun,
     Site,
@@ -187,7 +188,7 @@ def list_document_issues(session: Session, site_id: int, document_id: int) -> di
         "review_run_status": latest_run.status,
         "review_mode": latest_run.review_mode,
         "review_matches_current_document": review_run_matches_current_document(session, latest_run),
-        "items": [_serialize_issue(issue) for issue in _load_run_issues(session, latest_run.id)],
+        "items": [_serialize_issue(session, issue) for issue in _load_run_issues(session, latest_run.id)],
     }
 
 
@@ -204,7 +205,7 @@ def list_review_run_issues(
         "review_run_status": run.status,
         "review_mode": run.review_mode,
         "review_matches_current_document": review_run_matches_current_document(session, run),
-        "items": [_serialize_issue(issue) for issue in _load_run_issues(session, run.id)],
+        "items": [_serialize_issue(session, issue) for issue in _load_run_issues(session, run.id)],
     }
 
 
@@ -343,7 +344,7 @@ def _serialize_review_run(session: Session, run: EditorReviewRun) -> dict[str, A
     }
 
 
-def _serialize_issue(issue: EditorReviewIssue) -> dict[str, Any]:
+def _serialize_issue(session: Session, issue: EditorReviewIssue) -> dict[str, Any]:
     return {
         "id": issue.id,
         "review_run_id": issue.review_run_id,
@@ -359,6 +360,7 @@ def _serialize_issue(issue: EditorReviewIssue) -> dict[str, Any]:
         "status": issue.status,
         "dismiss_reason": issue.dismiss_reason,
         "resolution_note": issue.resolution_note,
+        "matches_current_block": review_issue_matches_current_block(session, issue),
         "created_at": issue.created_at,
         "updated_at": issue.updated_at,
         "resolved_at": issue.resolved_at,
@@ -474,3 +476,58 @@ def review_run_matches_current_document(session: Session, run: EditorReviewRun) 
         active_blocks=active_blocks,
     )
     return current_document_hash == run.document_version_hash
+
+
+def review_issue_matches_current_block(session: Session, issue: EditorReviewIssue) -> bool:
+    review_run = session.get(EditorReviewRun, issue.review_run_id)
+    if review_run is None:
+        return False
+    return review_run_matches_current_block(session, review_run, issue.block_key)
+
+
+def review_run_matches_current_block(session: Session, run: EditorReviewRun, block_key: str | None) -> bool:
+    normalized_block_key = collapse_whitespace(block_key or "")
+    if not normalized_block_key:
+        return False
+
+    document = session.get(EditorDocument, run.document_id)
+    if document is None:
+        return False
+
+    active_blocks = _load_active_blocks(session, document.id)
+    current_block = next((block for block in active_blocks if block.block_key == normalized_block_key), None)
+    if current_block is None:
+        return False
+
+    if review_run_matches_current_document(session, run):
+        return True
+
+    version = session.scalar(
+        select(EditorDocumentVersion)
+        .where(
+            EditorDocumentVersion.document_id == run.document_id,
+            EditorDocumentVersion.version_hash == run.document_version_hash,
+        )
+        .order_by(EditorDocumentVersion.version_no.desc(), EditorDocumentVersion.id.desc())
+        .limit(1)
+    )
+    if version is None:
+        return False
+
+    snapshot_block = _find_snapshot_block(version, normalized_block_key)
+    if snapshot_block is None:
+        return False
+
+    snapshot_content_hash = collapse_whitespace(str(snapshot_block.get("content_hash") or ""))
+    if not snapshot_content_hash:
+        return False
+    return current_block.content_hash == snapshot_content_hash
+
+
+def _find_snapshot_block(version: EditorDocumentVersion, block_key: str) -> dict[str, Any] | None:
+    snapshot = dict(version.snapshot_json or {})
+    blocks = list(snapshot.get("blocks") or [])
+    for block in blocks:
+        if collapse_whitespace(str(block.get("block_key") or "")) == block_key:
+            return dict(block)
+    return None

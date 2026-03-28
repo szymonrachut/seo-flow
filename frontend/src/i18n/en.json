@@ -103,6 +103,7 @@
     "sitePages": "Site {{domain}} pages",
     "sitePagesRecords": "Site {{domain}} page records",
     "aiReviewEditorDocuments": "Site {{domain}} AI Review Editor documents",
+    "aiReviewEditorNewDocument": "Site {{domain}} new AI Review document",
     "aiReviewEditorDocument": "Site {{domain}} AI Review Editor document",
     "siteAudit": "Site {{domain}} audit",
     "siteAuditSections": "Site {{domain}} audit sections",
@@ -148,6 +149,7 @@
       "pages": "Pages",
       "pagesRecords": "Pages Records",
       "aiReviewEditorDocuments": "AI Review Documents",
+      "aiReviewEditorNewDocument": "New AI Review Document",
       "aiReviewEditorDocument": "AI Review Document",
       "audit": "Audit",
       "auditSections": "Audit Sections",
@@ -978,7 +980,9 @@
   },
   "aiReviewEditor": {
     "nav": {
-      "documents": "Documents"
+      "documents": "Documents",
+      "newDocument": "New document",
+      "currentDocument": "Current document"
     },
     "header": {
       "eyebrow": "AI review editor"
@@ -1013,6 +1017,27 @@
         "open": "Open"
       }
     },
+    "create": {
+      "title": "New AI review document",
+      "description": "Create a fresh document in the site workspace, then open it in the editor to parse blocks and run review.",
+      "fields": {
+        "title": "Title",
+        "documentType": "Document type",
+        "sourceFormat": "Source format",
+        "sourceContent": "Source HTML"
+      },
+      "placeholders": {
+        "title": "Orthodontics pricing guide",
+        "documentType": "article",
+        "sourceContent": "<h1>Orthodontics pricing guide</h1>\n<p>Use verified content here.</p>"
+      },
+      "validation": {
+        "required": "Fill in the title, document type, and source HTML before creating the document."
+      },
+      "htmlOnlyTitle": "HTML is the supported source format",
+      "htmlOnlyDescription": "The editor currently parses only HTML input, so every new document starts from HTML source.",
+      "nextStepHint": "After creating the document, you can parse it into blocks, run review, request rewrites, and track version history."
+    },
     "document": {
       "invalidIdTitle": "Invalid AI review document",
       "invalidIdDescription": "The requested document id is not valid.",
@@ -1037,6 +1062,8 @@
       "backToDocuments": "Open documents list",
       "canvasTitle": "Current document",
       "canvasDescription": "This screen reads the active editor blocks as the canonical document source after any applied rewrite.",
+      "fullDocumentTitle": "Whole document",
+      "fullDocumentDescription": "Read the current document as clean HTML without block numbering or issue markers.",
       "metaTitle": "Document meta",
       "metaUpdatedAt": "Updated at",
       "metaSourceFormat": "Source format",
@@ -1054,6 +1081,8 @@
       "insertTypeLabel": "Block type",
       "insertLevelLabel": "Heading level",
       "refreshing": "Refreshing the latest document state...",
+      "htmlDownloadReady": "Current document HTML downloaded as {{fileName}}.",
+      "htmlDownloadFailed": "The current document HTML could not be downloaded.",
       "manualEditSaved": "Block saved. Version {{versionNo}} is now current.",
       "manualEditNoChanges": "No block changes were saved.",
       "parseSaved": "Document parsed. {{blocksCount}} active blocks are now available in the editor.",
@@ -1068,7 +1097,7 @@
       "reviewRunningTitle": "Review is in progress",
       "reviewRunningNotice": "Wait for the current review run to finish before trusting issue actions or counts.",
       "reviewStaleTitle": "The latest review is stale",
-      "reviewStaleDescription": "The document changed after the latest review run. Treat these issues as historical context and run review again before taking issue actions.",
+      "reviewStaleDescription": "The document changed after the latest review run. You can still finish issues on unchanged blocks, but manually edited blocks need a fresh review before using AI actions again.",
       "localDraftNotice": "A local edit or insert draft is open. Finish or cancel it before starting a new review or restoring another version.",
       "singleBlockNotice": "This document currently has one active block. Delete stays disabled to avoid an empty document; use edit or insert instead.",
       "issueDismissed": "Issue marked as dismissed.",
@@ -1102,6 +1131,8 @@
       "noRuns": "No review run history for this document yet.",
       "noBlocksTitle": "No active blocks to review",
       "noBlocksDescription": "Parse this document first so the editor can render the current block state.",
+      "fullDocumentEmptyTitle": "No document HTML is available yet",
+      "fullDocumentEmptyDescription": "Parse the document or add content first to render the full HTML preview.",
       "blockMarker": "{{count}} issue(s) on block {{blockKey}}",
       "blockMarkerAria": "Open {{count}} issue marker(s) for block {{blockKey}}",
       "panel": {
@@ -1124,6 +1155,9 @@
       }
     },
     "actions": {
+      "newDocument": "New document",
+      "createDocument": "Create document",
+      "creatingDocument": "Creating document...",
       "runReview": "Run review",
       "reviewRunning": "Running review...",
       "parse": "Parse document",
@@ -1141,6 +1175,9 @@
       "rewrite": "Rewrite with AI",
       "requestRewrite": "Rewrite with AI",
       "applyRewrite": "Apply rewrite",
+      "viewBlocks": "Issue blocks",
+      "viewFullDocument": "Whole document",
+      "downloadHtml": "Download HTML",
       "restoreVersion": "Restore version",
       "openDocuments": "Open documents",
       "backToDocuments": "Back to documents"
@@ -1172,7 +1209,7 @@
       "emptySelectionDescription": "Use the gutter markers to focus a problematic block and inspect its issues.",
       "blockContext": "Current block",
       "actionsLockedTitle": "Issue actions are locked",
-      "actionsLockedDescription": "This issue belongs to a stale review run. Run review again on the current document before dismissing, resolving, or requesting a new rewrite."
+      "actionsLockedDescription": "This block was edited after the review run. Run review again before dismissing the issue, marking it resolved, or requesting a new rewrite for this block."
     },
     "issue": {
       "select": "Select",

@@ -937,14 +937,24 @@ def test_stale_review_issue_actions_return_conflict(api_client, sqlite_session_f
 
     stale_issues_response = api_client.get(f"/sites/{site_id}/ai-review-editor/documents/{document_id}/issues")
     assert stale_issues_response.status_code == 200
-    assert stale_issues_response.json()["review_matches_current_document"] is False
+    stale_issues_payload = stale_issues_response.json()
+    assert stale_issues_payload["review_matches_current_document"] is False
+    assert next(item for item in stale_issues_payload["items"] if item["block_key"] == "H1-001")["matches_current_block"] is True
+    todo_issue_id = next(item["id"] for item in stale_issues_payload["items"] if item["block_key"] == "P-002")
+    assert next(item for item in stale_issues_payload["items"] if item["block_key"] == "P-002")["matches_current_block"] is False
 
     dismiss_response = api_client.post(
         f"/sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{heading_issue_id}/dismiss",
         json={},
     )
-    assert dismiss_response.status_code == 409
-    assert "stale review" in dismiss_response.json()["detail"].lower()
+    assert dismiss_response.status_code == 200
+
+    resolve_response = api_client.post(
+        f"/sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{todo_issue_id}/resolve-manual",
+        json={},
+    )
+    assert resolve_response.status_code == 409
+    assert "changed after the review run" in resolve_response.json()["detail"].lower()
 
 
 def test_rewrite_run_list_marks_stale_after_later_document_change(
@@ -1010,6 +1020,78 @@ def test_rewrite_run_list_marks_stale_after_later_document_change(
     assert rewrite_runs_payload["items"][0]["id"] == rewrite_run_id
     assert rewrite_runs_payload["items"][0]["matches_current_document"] is False
     assert rewrite_runs_payload["items"][0]["matches_current_block"] is True
+    assert rewrite_runs_payload["items"][0]["is_stale"] is False
+
+    apply_response = api_client.post(
+        f"/sites/{site_id}/ai-review-editor/documents/{document_id}/rewrite-runs/{rewrite_run_id}/apply",
+        json={},
+    )
+    assert apply_response.status_code == 200
+    assert apply_response.json()["rewrite_run"]["status"] == "applied"
+
+
+def test_rewrite_run_apply_returns_conflict_after_target_block_change(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    _force_mock_review_engine(monkeypatch)
+    site_id = _seed_site(sqlite_session_factory)
+    document_id = _create_and_parse_document(
+        api_client,
+        site_id,
+        source_content="""
+            <h1>Overview</h1>
+            <p>TODO: Replace this draft with final copy.</p>
+            <p>This paragraph should stay untouched.</p>
+        """,
+        topic_brief_json={"primary_topic": "local SEO services"},
+        facts_context_json={"brand": "Example", "services": ["Local SEO", "SEO Audit"]},
+    )
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/ai-review-editor/documents/{document_id}/review-runs",
+        json={"review_mode": "standard"},
+    )
+    assert create_run_response.status_code == 201
+    issues_payload = api_client.get(f"/sites/{site_id}/ai-review-editor/documents/{document_id}/issues").json()
+    rewrite_issue_id = next(item["id"] for item in issues_payload["items"] if item["block_key"] == "P-002")
+
+    fake_client = _RecordingLlmClient(
+        [
+            {
+                "block_key": "P-002",
+                "rewritten_text": "Use verified local SEO service copy only.",
+            }
+        ]
+    )
+    _force_rewrite_llm(monkeypatch, fake_client)
+
+    request_rewrite_response = api_client.post(
+        f"/sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{rewrite_issue_id}/rewrite-runs",
+        json={},
+    )
+    assert request_rewrite_response.status_code == 201
+    rewrite_run_id = int(request_rewrite_response.json()["id"])
+
+    blocks_payload = api_client.get(f"/sites/{site_id}/ai-review-editor/documents/{document_id}/blocks").json()
+    target_block = next(item for item in blocks_payload["items"] if item["block_key"] == "P-002")
+    update_response = api_client.put(
+        f"/sites/{site_id}/ai-review-editor/documents/{document_id}/blocks/P-002",
+        json={
+            "text_content": "Verified final copy replaces the old TODO paragraph.",
+            "expected_content_hash": target_block["content_hash"],
+        },
+    )
+    assert update_response.status_code == 200
+
+    rewrite_runs_response = api_client.get(
+        f"/sites/{site_id}/ai-review-editor/documents/{document_id}/issues/{rewrite_issue_id}/rewrite-runs"
+    )
+    assert rewrite_runs_response.status_code == 200
+    rewrite_runs_payload = rewrite_runs_response.json()
+    assert rewrite_runs_payload["items"][0]["matches_current_document"] is False
+    assert rewrite_runs_payload["items"][0]["matches_current_block"] is False
     assert rewrite_runs_payload["items"][0]["is_stale"] is True
 
     apply_response = api_client.post(

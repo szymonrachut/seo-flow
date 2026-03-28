@@ -444,6 +444,13 @@ export interface EditorDocumentListResponse {
   items: EditorDocumentListItem[]
 }
 
+export interface EditorDocumentCreateInput {
+  title: string
+  document_type: string
+  source_format: string
+  source_content: string
+}
+
 export interface EditorDocument {
   id: number
   site_id: number
@@ -652,6 +659,7 @@ export interface EditorReviewIssue {
   status: EditorReviewIssueStatus
   dismiss_reason: string | null
   resolution_note: string | null
+  matches_current_block: boolean
   created_at: string
   updated_at: string
   resolved_at: string | null

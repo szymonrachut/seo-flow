@@ -11,6 +11,7 @@ import { QuickFilterBar } from '../../components/QuickFilterBar'
 import { SummaryCards } from '../../components/SummaryCards'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import type {
+  EditorDocument,
   EditorDocumentBlock,
   EditorDocumentBlockType,
   EditorReviewIssue,
@@ -64,6 +65,7 @@ import {
 
 type BadgeTone = 'stone' | 'rose' | 'amber' | 'teal'
 type HeaderTone = 'default' | 'warning' | 'success'
+type CanvasMode = 'blocks' | 'document'
 
 const surfaceClass =
   'rounded-[32px] border border-stone-300 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/80'
@@ -182,6 +184,39 @@ function renderBadge(label: string, tone: BadgeTone = 'stone') {
       {label}
     </span>
   )
+}
+
+function buildAiReviewHtmlFileName(title: string) {
+  const normalized = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+  return `${normalized || 'ai-review-document'}.html`
+}
+
+function escapeHtmlValue(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
+function buildAiReviewHtmlExport(document: EditorDocument) {
+  const bodyContent = document.source_content?.trim() || ''
+  return [
+    '<!DOCTYPE html>',
+    '<html>',
+    '<head>',
+    '  <meta charset="utf-8" />',
+    `  <title>${escapeHtmlValue(document.title)}</title>`,
+    '</head>',
+    '<body>',
+    bodyContent,
+    '</body>',
+    '</html>',
+  ].join('\n')
 }
 
 function BlockBody({ block }: { block: EditorDocumentBlock }) {
@@ -413,6 +448,7 @@ export function AIReviewEditorDocumentPage() {
   const [editingBlockKey, setEditingBlockKey] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
   const [insertDraft, setInsertDraft] = useState<BlockInsertDraft | null>(null)
+  const [canvasMode, setCanvasMode] = useState<CanvasMode>('blocks')
 
   const quickFilter = readQuickFilter(searchParams.get('issue_filter'))
   const issueTypeFilter = readIssueTypeFilter(searchParams.get('issue_type'))
@@ -492,7 +528,7 @@ export function AIReviewEditorDocumentPage() {
   const rewritePreviewText = latestCompletedRewriteRun?.result_text ?? selectedIssue?.replacement_candidate_text ?? null
   const canApplyRewrite =
     selectedIssue?.status === 'rewrite_ready' &&
-    !reviewNeedsRefresh &&
+    selectedIssue?.matches_current_block !== false &&
     !isRewriteRunStale(latestCompletedRewriteRun, selectedBlock) &&
     latestCompletedRewriteRun?.status === 'completed' &&
     Boolean(latestCompletedRewriteRun.result_text)
@@ -769,6 +805,30 @@ export function AIReviewEditorDocumentPage() {
     })
   }
 
+  function downloadCurrentDocumentHtml() {
+    if (!document) {
+      return
+    }
+
+    try {
+      const fileName = buildAiReviewHtmlFileName(document.title)
+      const htmlContent = buildAiReviewHtmlExport(document)
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+      const blobUrl = window.URL.createObjectURL(blob)
+      const link = window.document.createElement('a')
+      link.href = blobUrl
+      link.download = fileName
+      link.style.display = 'none'
+      window.document.body.append(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(blobUrl)
+      setActionNotice(t('aiReviewEditor.document.htmlDownloadReady', { fileName }))
+    } catch {
+      setActionError(t('aiReviewEditor.document.htmlDownloadFailed'))
+    }
+  }
+
   async function runAction(action: () => Promise<unknown>) {
     setActionError(null)
     setActionNotice(null)
@@ -830,13 +890,11 @@ export function AIReviewEditorDocumentPage() {
     updateBlockMutation.isPending || insertBlockMutation.isPending || deleteBlockMutation.isPending
   const normalizedInsertText = insertDraft ? normalizeInlineEditText(insertDraft.textContent) : ''
   const insertSaveDisabled = !insertDraft || normalizedInsertText.length === 0
-  const issueActionsLockedReason = reviewNeedsRefresh
-    ? t('aiReviewEditor.issuePanel.actionsLockedDescription')
-    : latestReviewFailed
-      ? latestRun?.error_message ?? t('aiReviewEditor.document.reviewFailed')
-      : latestReviewInProgress
-        ? t('aiReviewEditor.document.reviewRunningNotice')
-        : null
+  const issueWorkflowUnavailableReason = latestReviewFailed
+    ? latestRun?.error_message ?? t('aiReviewEditor.document.reviewFailed')
+    : latestReviewInProgress
+      ? t('aiReviewEditor.document.reviewRunningNotice')
+      : null
   const issuePanelEmptyState =
     !hasReviewRuns
       ? {
@@ -922,6 +980,11 @@ export function AIReviewEditorDocumentPage() {
               activeCrawlId,
               baselineCrawlId,
             }),
+          },
+          {
+            key: 'download-html',
+            label: t('aiReviewEditor.actions.downloadHtml'),
+            onClick: downloadCurrentDocumentHtml,
           },
         ]}
       />
@@ -1077,13 +1140,34 @@ export function AIReviewEditorDocumentPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold text-stone-950 dark:text-slate-50">
-                {t('aiReviewEditor.document.canvasTitle')}
+                {canvasMode === 'document'
+                  ? t('aiReviewEditor.document.fullDocumentTitle')
+                  : t('aiReviewEditor.document.canvasTitle')}
               </h2>
               <p className="mt-1 text-sm text-stone-600 dark:text-slate-300">
-                {t('aiReviewEditor.document.canvasDescription')}
+                {canvasMode === 'document'
+                  ? t('aiReviewEditor.document.fullDocumentDescription')
+                  : t('aiReviewEditor.document.canvasDescription')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setCanvasMode('blocks')}
+                className={canvasMode === 'blocks' ? primaryActionClass : actionClass}
+              >
+                {t('aiReviewEditor.actions.viewBlocks')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCanvasMode('document')}
+                className={canvasMode === 'document' ? primaryActionClass : actionClass}
+              >
+                {t('aiReviewEditor.actions.viewFullDocument')}
+              </button>
+              <button type="button" onClick={downloadCurrentDocumentHtml} className={actionClass}>
+                {t('aiReviewEditor.actions.downloadHtml')}
+              </button>
               {renderBadge(
                 t(`aiReviewEditor.documentStatus.${document.status}`),
                 documentStatusTone(document.status),
@@ -1095,13 +1179,38 @@ export function AIReviewEditorDocumentPage() {
             </div>
           </div>
 
-          {blocks.length === 1 ? (
+          {canvasMode === 'document' ? (
+            <div className="mt-6 rounded-[28px] border border-stone-300 bg-white/90 px-6 py-6 dark:border-slate-700 dark:bg-slate-950/80">
+              {document.source_content ? (
+                <article
+                  data-testid="ai-review-full-document"
+                  className="
+                    text-stone-700 dark:text-slate-200
+                    [&_h1]:mt-0 [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h1]:text-stone-950 [&_h1]:dark:text-slate-50
+                    [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-stone-950 [&_h2]:dark:text-slate-50
+                    [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-stone-950 [&_h3]:dark:text-slate-50
+                    [&_h4]:mt-5 [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-stone-950 [&_h4]:dark:text-slate-50
+                    [&_p]:mt-4 [&_p]:text-base [&_p]:leading-7
+                    [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6
+                    [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6
+                    [&_li]:mt-2 [&_li]:leading-7
+                  "
+                  dangerouslySetInnerHTML={{ __html: document.source_content }}
+                />
+              ) : (
+                <EmptyState
+                  title={t('aiReviewEditor.document.fullDocumentEmptyTitle')}
+                  description={t('aiReviewEditor.document.fullDocumentEmptyDescription')}
+                />
+              )}
+            </div>
+          ) : blocks.length === 1 ? (
             <div className="mt-4 rounded-2xl border border-stone-300 bg-stone-50/90 p-3 text-sm text-stone-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200">
               {t('aiReviewEditor.document.singleBlockNotice')}
             </div>
           ) : null}
 
-          {blocks.length === 0 ? (
+          {canvasMode === 'document' ? null : blocks.length === 0 ? (
             <div className="mt-6">
               <EmptyState
                 title={t('aiReviewEditor.document.noBlocksTitle')}
@@ -1334,6 +1443,10 @@ export function AIReviewEditorDocumentPage() {
                 {selectedBlockIssues.map((issue) => {
                   const isSelected = selectedIssue?.id === issue.id
                   const rewriteIsStale = isSelected && isRewriteRunStale(latestCompletedRewriteRun, selectedBlock)
+                  const issueReviewNeedsRefresh = issue.matches_current_block === false
+                  const issueActionsLockedReason = issueReviewNeedsRefresh
+                    ? t('aiReviewEditor.issuePanel.actionsLockedDescription')
+                    : issueWorkflowUnavailableReason
                   const latestRewriteAttemptPending =
                     isSelected &&
                     (latestRewriteRun?.status === 'queued' ||
@@ -1343,7 +1456,7 @@ export function AIReviewEditorDocumentPage() {
                   const issueCanApply =
                     isSelected &&
                     issue.status === 'rewrite_ready' &&
-                    !reviewNeedsRefresh &&
+                    issue.matches_current_block !== false &&
                     !rewriteIsStale &&
                     latestCompletedRewriteRun?.status === 'completed' &&
                     Boolean(latestCompletedRewriteRun.result_text)

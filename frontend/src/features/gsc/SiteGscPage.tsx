@@ -13,6 +13,7 @@ import type { GscDateRangeLabel, SiteGscSummary } from '../../types/api'
 import { getUiErrorMessage } from '../../utils/errors'
 import { formatDateTime } from '../../utils/format'
 import {
+  buildSiteGscPath,
   buildSiteGscImportPath,
   buildSiteGscSettingsPath,
   buildSiteOpportunitiesPath,
@@ -37,9 +38,19 @@ function formatRangeLabel(range: GscDateRangeLabel, t: ReturnType<typeof useTran
   return t(`sites.gsc.ranges.${range}`)
 }
 
-function buildSiteGscOauthStartHref(siteId: number, redirectPath: string, activeCrawlId: number | null) {
+function buildSiteGscOauthStartHref(
+  siteId: number,
+  activeCrawlId: number | null,
+  baselineCrawlId: number | null,
+) {
   const apiParams = new URLSearchParams()
-  const frontendRedirectUrl = new URL(redirectPath, globalThis.location.origin)
+  const frontendRedirectUrl = new URL(
+    buildSiteGscPath(
+      siteId,
+      buildWorkspaceContext(activeCrawlId, baselineCrawlId),
+    ),
+    globalThis.location.origin,
+  )
 
   if (activeCrawlId) {
     frontendRedirectUrl.searchParams.set('active_crawl_id', String(activeCrawlId))
@@ -367,7 +378,7 @@ function SiteGscSettings({
 }) {
   const { t } = useTranslation()
   const context = buildWorkspaceContext(activeCrawlId, baselineCrawlId)
-  const oauthHref = buildSiteGscOauthStartHref(siteId, buildSiteGscSettingsPath(siteId), activeCrawlId)
+  const oauthHref = buildSiteGscOauthStartHref(siteId, activeCrawlId, baselineCrawlId)
 
   return (
     <div className="space-y-6">

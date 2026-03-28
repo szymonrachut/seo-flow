@@ -6,6 +6,7 @@ import type {
   EditorDocument,
   EditorDocumentBlockListResponse,
   EditorDocumentBlockDeleteResponse,
+  EditorDocumentCreateInput,
   EditorDocumentBlockInsertInput,
   EditorDocumentBlockInsertResponse,
   EditorDocumentBlockUpdateInput,
@@ -30,6 +31,13 @@ import type {
 
 export async function listSiteAiReviewDocuments(siteId: number) {
   return apiRequest<EditorDocumentListResponse>(`/sites/${siteId}/ai-review-editor/documents`)
+}
+
+export async function createSiteAiReviewDocument(siteId: number, payload: EditorDocumentCreateInput) {
+  return apiRequest<EditorDocument>(`/sites/${siteId}/ai-review-editor/documents`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function getSiteAiReviewDocument(siteId: number, documentId: number) {
@@ -211,6 +219,20 @@ export function useSiteAiReviewDocumentsQuery(siteId: number, enabled = true) {
     queryKey: queryKeys.siteAiReviewDocuments(siteId),
     queryFn: () => listSiteAiReviewDocuments(siteId),
     enabled,
+  })
+}
+
+export function useCreateSiteAiReviewDocumentMutation(siteId: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: EditorDocumentCreateInput) => createSiteAiReviewDocument(siteId, payload),
+    onSuccess: async (document) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.siteAiReviewDocuments(siteId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.siteAiReviewDocument(siteId, document.id) }),
+      ])
+    },
   })
 }
 

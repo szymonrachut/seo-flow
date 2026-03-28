@@ -3,7 +3,9 @@ import { matchPath } from 'react-router-dom'
 
 import type { SiteDetail } from '../types/api'
 import {
+  buildSiteAiReviewEditorDocumentPath,
   buildSiteAiReviewEditorDocumentsPath,
+  buildSiteAiReviewEditorNewDocumentPath,
   buildSiteChangesPath,
   buildSiteChangesAuditPath,
   buildSiteChangesInternalLinkingPath,
@@ -239,6 +241,22 @@ export function getActiveInternalLinkingSubsection(pathname: string) {
   return null
 }
 
+export function getActiveAiReviewEditorSubsection(pathname: string) {
+  if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/new'])) {
+    return 'new'
+  }
+
+  if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/documents/:documentId'])) {
+    return 'document'
+  }
+
+  if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/documents'])) {
+    return 'documents'
+  }
+
+  return null
+}
+
 export function getActiveCompetitiveGapSubsection(pathname: string) {
   if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm', '/sites/:siteId/competitive-gap/semstorm/discovery'])) {
     return 'semstorm-discovery'
@@ -381,6 +399,10 @@ export function resolveAppSectionTitle(t: TFunction, pathname: string, site: Sit
 
     if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/documents/:documentId'])) {
       return t('shell.routeTitles.aiReviewEditorDocument')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/new'])) {
+      return t('shell.routeTitles.aiReviewEditorNewDocument')
     }
 
     if (pathMatches(pathname, ['/sites/:siteId/ai-review-editor/documents'])) {
@@ -534,10 +556,17 @@ export function buildSiteMenuItems(t: TFunction, pathname: string, site: SiteDet
   const activeAuditSubsection = getActiveAuditSubsection(pathname)
   const activeOpportunitiesSubsection = getActiveOpportunitiesSubsection(pathname)
   const activeInternalLinkingSubsection = getActiveInternalLinkingSubsection(pathname)
+  const activeAiReviewEditorSubsection = getActiveAiReviewEditorSubsection(pathname)
   const activeCompetitiveGapSubsection = getActiveCompetitiveGapSubsection(pathname)
   const activeContentRecommendationsSubsection = getActiveContentRecommendationsSubsection(pathname)
   const activeGscSubsection = getActiveGscSubsection(pathname)
   const activeCrawlsSubsection = getActiveCrawlsSubsection(pathname)
+  const aiReviewDocumentMatch = matchPath('/sites/:siteId/ai-review-editor/documents/:documentId', pathname)
+  const aiReviewDocumentId = aiReviewDocumentMatch?.params.documentId
+    ? Number(aiReviewDocumentMatch.params.documentId)
+    : null
+  const aiReviewCurrentDocumentId =
+    aiReviewDocumentId !== null && Number.isInteger(aiReviewDocumentId) ? aiReviewDocumentId : null
 
   return [
     {
@@ -647,8 +676,22 @@ export function buildSiteMenuItems(t: TFunction, pathname: string, site: SiteDet
         {
           label: t('aiReviewEditor.nav.documents'),
           to: buildSiteAiReviewEditorDocumentsPath(site.id, context),
-          active: activeSection === 'ai-review-editor',
+          active: activeAiReviewEditorSubsection === 'documents',
         },
+        {
+          label: t('aiReviewEditor.nav.newDocument'),
+          to: buildSiteAiReviewEditorNewDocumentPath(site.id, context),
+          active: activeAiReviewEditorSubsection === 'new',
+        },
+        ...(aiReviewCurrentDocumentId !== null
+          ? [
+              {
+                label: t('aiReviewEditor.nav.currentDocument'),
+                to: buildSiteAiReviewEditorDocumentPath(site.id, aiReviewCurrentDocumentId, context),
+                active: activeAiReviewEditorSubsection === 'document',
+              },
+            ]
+          : []),
       ],
     },
     {

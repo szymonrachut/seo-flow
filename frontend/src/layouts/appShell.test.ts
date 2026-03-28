@@ -11,6 +11,7 @@ import {
   getActiveCompetitiveGapSubsection,
   getActiveGscSubsection,
   getActiveInternalLinkingSubsection,
+  getActiveAiReviewEditorSubsection,
   getActiveOpportunitiesSubsection,
   getActivePagesSubsection,
   getActiveSiteSection,
@@ -118,6 +119,26 @@ describe('appShell changes navigation', () => {
       '/sites/5/internal-linking?active_crawl_id=11&baseline_crawl_id=10',
       '/sites/5/internal-linking/issues?active_crawl_id=11&baseline_crawl_id=10',
     ])
+  })
+
+  test('builds AI Review Editor submenu for documents, new document, and current document', async () => {
+    await i18n.changeLanguage('en')
+
+    expect(getActiveSiteSection('/sites/5/ai-review-editor/new')).toBe('ai-review-editor')
+    expect(getActiveAiReviewEditorSubsection('/sites/5/ai-review-editor/new')).toBe('new')
+    expect(resolveAppSectionTitle(i18n.t.bind(i18n), '/sites/5/ai-review-editor/new', site)).toBe(
+      'New AI Review Document - example.com',
+    )
+
+    const menuItems = buildSiteMenuItems(i18n.t.bind(i18n), '/sites/5/ai-review-editor/documents/12', site)
+    const item = menuItems.find((menuItem) => menuItem.key === 'ai-review-editor')
+
+    expect(item?.subItems?.map((subItem) => subItem.to)).toEqual([
+      '/sites/5/ai-review-editor/documents?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/ai-review-editor/new?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/ai-review-editor/documents/12?active_crawl_id=11&baseline_crawl_id=10',
+    ])
+    expect(item?.subItems?.find((subItem) => subItem.label === 'Current document')?.active).toBe(true)
   })
 
   test('treats GSC overview, settings and import as site-level subsections', async () => {

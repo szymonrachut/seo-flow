@@ -240,6 +240,28 @@ describe('SiteGscPage', () => {
     await waitFor(() => expect(selectedPropertyPayload).toEqual({ property_uri: 'sc-domain:example.com' }))
   })
 
+  test('builds the OAuth connect link with the canonical site GSC redirect path', async () => {
+    mockSiteGscFetch(
+      {
+        ...siteGscSummaryPayload,
+        auth_connected: false,
+        selected_property_uri: null,
+        selected_property_permission_level: null,
+      } as any,
+    )
+
+    renderWorkspace('/sites/5/gsc/settings?active_crawl_id=11&baseline_crawl_id=10')
+
+    const [connectLink] = await screen.findAllByRole('link', { name: 'Connect GSC' })
+    const oauthUrl = new URL(connectLink.getAttribute('href') ?? '', window.location.origin)
+
+    expect(oauthUrl.pathname).toBe('/sites/5/gsc/oauth/start')
+    expect(oauthUrl.searchParams.get('active_crawl_id')).toBe('11')
+    expect(oauthUrl.searchParams.get('frontend_redirect_url')).toBe(
+      `${window.location.origin}/sites/5/gsc?active_crawl_id=11&baseline_crawl_id=10`,
+    )
+  })
+
   test('renders the import view and imports into the active crawl snapshot', async () => {
     let importPayload: Record<string, unknown> | null = null
     let importUrl = ''

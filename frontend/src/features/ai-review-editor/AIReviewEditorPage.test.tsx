@@ -18,6 +18,7 @@ import type {
 import { SiteWorkspaceLayout } from '../sites/SiteWorkspaceLayout'
 import { AIReviewEditorDocumentPage } from './AIReviewEditorDocumentPage'
 import { AIReviewEditorDocumentsPage } from './AIReviewEditorDocumentsPage'
+import { AIReviewEditorNewDocumentPage } from './AIReviewEditorNewDocumentPage'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -107,6 +108,19 @@ function buildSitePayload() {
   }
 }
 
+function buildMockContentHash(
+  block: Pick<EditorDocumentBlock, 'block_key' | 'block_type' | 'block_level' | 'text_content' | 'context_path'>,
+) {
+  return [
+    'hash',
+    block.block_key,
+    block.block_type,
+    String(block.block_level ?? 'na'),
+    (block.context_path ?? 'root').replace(/\s+/g, '_'),
+    block.text_content.replace(/\s+/g, '_'),
+  ].join('|')
+}
+
 function createAiReviewState() {
   const document: EditorDocument = {
     id: 12,
@@ -140,8 +154,8 @@ function createAiReviewState() {
       position_index: 0,
       text_content: 'Pricing guide',
       html_content: '<h1>Pricing guide</h1>',
-      context_path: 'document',
-      content_hash: 'hash-h1',
+      context_path: 'Pricing guide',
+      content_hash: '',
       is_active: true,
       created_at: '2026-03-26T10:00:00Z',
       updated_at: '2026-03-26T10:10:00Z',
@@ -156,8 +170,8 @@ function createAiReviewState() {
       position_index: 1,
       text_content: 'TODO add verified pricing details.',
       html_content: '<p>TODO add verified pricing details.</p>',
-      context_path: 'document > intro',
-      content_hash: 'hash-p1',
+      context_path: 'Pricing guide',
+      content_hash: '',
       is_active: true,
       created_at: '2026-03-26T10:00:00Z',
       updated_at: '2026-03-26T10:10:00Z',
@@ -172,8 +186,8 @@ function createAiReviewState() {
       position_index: 2,
       text_content: 'All subscriptions renew monthly.',
       html_content: '<p>All subscriptions renew monthly.</p>',
-      context_path: 'document > notes',
-      content_hash: 'hash-p2',
+      context_path: 'Pricing guide',
+      content_hash: '',
       is_active: true,
       created_at: '2026-03-26T10:00:00Z',
       updated_at: '2026-03-26T10:10:00Z',
@@ -196,6 +210,7 @@ function createAiReviewState() {
       status: 'open',
       dismiss_reason: null,
       resolution_note: null,
+      matches_current_block: true,
       created_at: '2026-03-26T10:11:00Z',
       updated_at: '2026-03-26T10:11:00Z',
       resolved_at: null,
@@ -215,6 +230,7 @@ function createAiReviewState() {
       status: 'open',
       dismiss_reason: null,
       resolution_note: null,
+      matches_current_block: true,
       created_at: '2026-03-26T10:11:00Z',
       updated_at: '2026-03-26T10:11:00Z',
       resolved_at: null,
@@ -267,14 +283,23 @@ function createAiReviewState() {
     },
   ]
 
+  blocks.forEach((block) => {
+    block.content_hash = buildMockContentHash(block)
+  })
+
+  const reviewedBlockHashesByKey = Object.fromEntries(blocks.map((block) => [block.block_key, block.content_hash]))
+
   return {
     site: buildSitePayload(),
     document,
+    createdDocument: null as EditorDocument | null,
     blocks,
     issues,
     reviewRuns,
     versions,
+    reviewedBlockHashesByKey,
     rewriteRunsByIssue: new Map<number, EditorRewriteRun[]>(),
+    nextDocumentId: 13,
     nextRewriteRunId: 301,
     nextVersionId: 402,
     nextBlockId: 4,
@@ -360,7 +385,13 @@ function syncDocumentFromBlocks(state: ReturnType<typeof createAiReviewState>, u
       parent_block_key,
       context_path,
       html_content: renderBlockHtml(block),
-      content_hash: `hash-${block.block_key}-${state.nextVersionId}-${index}`,
+      content_hash: buildMockContentHash({
+        block_key: block.block_key,
+        block_type: block.block_type,
+        block_level: block.block_level,
+        text_content: block.text_content,
+        context_path,
+      }),
       updated_at: updatedAt,
     }
   })
@@ -372,6 +403,17 @@ function syncDocumentFromBlocks(state: ReturnType<typeof createAiReviewState>, u
   state.document.normalized_content = state.blocks.map((block) => block.text_content).join('\n\n')
 }
 
+function reviewSnapshotMatchesCurrentDocument(state: ReturnType<typeof createAiReviewState>) {
+  const reviewedEntries = Object.entries(state.reviewedBlockHashesByKey)
+  if (reviewedEntries.length !== state.blocks.length) {
+    return false
+  }
+  return reviewedEntries.every(([blockKey, contentHash]) => {
+    const currentBlock = state.blocks.find((candidate) => candidate.block_key === blockKey)
+    return currentBlock?.content_hash === contentHash
+  })
+}
+
 function markCurrentVersion(state: ReturnType<typeof createAiReviewState>, currentVersionId: number) {
   state.versions = state.versions.map((version) => ({
     ...version,
@@ -380,18 +422,31 @@ function markCurrentVersion(state: ReturnType<typeof createAiReviewState>, curre
 }
 
 function markReviewRunsStale(state: ReturnType<typeof createAiReviewState>) {
+  const matchesCurrentDocument = reviewSnapshotMatchesCurrentDocument(state)
+  state.issues = state.issues.map((issue) => {
+    const currentBlock = state.blocks.find((candidate) => candidate.block_key === issue.block_key)
+    return {
+      ...issue,
+      matches_current_block: currentBlock?.content_hash === state.reviewedBlockHashesByKey[issue.block_key],
+    }
+  })
   state.reviewRuns = state.reviewRuns.map((run) => ({
     ...run,
-    matches_current_document: false,
+    matches_current_document: matchesCurrentDocument,
   }))
   state.rewriteRunsByIssue = new Map(
     Array.from(state.rewriteRunsByIssue.entries()).map(([issueId, runs]) => [
       issueId,
       runs.map((run) => ({
         ...run,
-        matches_current_document: false,
-        matches_current_block: false,
-        is_stale: true,
+        matches_current_document: matchesCurrentDocument,
+        matches_current_block:
+          (state.blocks.find((candidate) => candidate.block_key === run.block_key)?.content_hash ?? null) ===
+          (run.source_block_content_hash ?? null),
+        is_stale:
+          run.status !== 'applied' &&
+          (state.blocks.find((candidate) => candidate.block_key === run.block_key)?.content_hash ?? null) !==
+            (run.source_block_content_hash ?? null),
       })),
     ]),
   )
@@ -441,76 +496,94 @@ function buildIssueBlockCount(issues: EditorReviewIssue[]) {
   return new Set(issues.map((issue) => issue.block_key)).size
 }
 
-function buildDocumentResponse(state: ReturnType<typeof createAiReviewState>) {
+function findMockDocument(state: ReturnType<typeof createAiReviewState>, documentId: number) {
+  if (state.document.id === documentId) {
+    return state.document
+  }
+  if (state.createdDocument?.id === documentId) {
+    return state.createdDocument
+  }
+  return null
+}
+
+function buildDocumentResponse(
+  state: ReturnType<typeof createAiReviewState>,
+  document = state.document,
+) {
   return {
-    ...state.document,
-    active_block_count: state.blocks.length,
+    ...document,
+    active_block_count: document.id === state.document.id ? state.blocks.length : document.active_block_count,
   }
 }
 
 function buildDocumentListResponse(state: ReturnType<typeof createAiReviewState>) {
   return {
     site_id: state.document.site_id,
-    items: [
-      {
-        id: state.document.id,
-        site_id: state.document.site_id,
-        title: state.document.title,
-        document_type: state.document.document_type,
-        source_format: state.document.source_format,
-        status: state.document.status,
-        active_block_count: state.blocks.length,
-        created_at: state.document.created_at,
-        updated_at: state.document.updated_at,
-      },
-    ],
+    items: [state.createdDocument, state.document]
+      .filter((document): document is EditorDocument => Boolean(document))
+      .map((document) => ({
+        id: document.id,
+        site_id: document.site_id,
+        title: document.title,
+        document_type: document.document_type,
+        source_format: document.source_format,
+        status: document.status,
+        active_block_count: document.id === state.document.id ? state.blocks.length : document.active_block_count,
+        created_at: document.created_at,
+        updated_at: document.updated_at,
+      })),
   }
 }
 
-function buildBlocksResponse(state: ReturnType<typeof createAiReviewState>) {
+function buildBlocksResponse(state: ReturnType<typeof createAiReviewState>, documentId = state.document.id) {
   return {
-    document_id: state.document.id,
-    items: state.blocks,
+    document_id: documentId,
+    items: documentId === state.document.id ? state.blocks : [],
   }
 }
 
-function buildIssuesResponse(state: ReturnType<typeof createAiReviewState>) {
+function buildIssuesResponse(state: ReturnType<typeof createAiReviewState>, documentId = state.document.id) {
   return {
-    document_id: state.document.id,
-    review_run_id: state.reviewRuns[0]?.id ?? null,
-    review_run_status: state.reviewRuns[0]?.status ?? null,
-    review_mode: state.reviewRuns[0]?.review_mode ?? 'standard',
-    review_matches_current_document: state.reviewRuns[0]?.matches_current_document ?? null,
-    items: state.issues,
+    document_id: documentId,
+    review_run_id: documentId === state.document.id ? state.reviewRuns[0]?.id ?? null : null,
+    review_run_status: documentId === state.document.id ? state.reviewRuns[0]?.status ?? null : null,
+    review_mode: documentId === state.document.id ? state.reviewRuns[0]?.review_mode ?? 'standard' : null,
+    review_matches_current_document:
+      documentId === state.document.id ? state.reviewRuns[0]?.matches_current_document ?? null : null,
+    items: documentId === state.document.id ? state.issues : [],
   }
 }
 
-function buildSummaryResponse(state: ReturnType<typeof createAiReviewState>) {
+function buildSummaryResponse(state: ReturnType<typeof createAiReviewState>, documentId = state.document.id) {
   return {
-    document_id: state.document.id,
-    review_run_count: state.reviewRuns.length,
-    latest_review_run_id: state.reviewRuns[0]?.id ?? null,
-    latest_review_run_status: state.reviewRuns[0]?.status ?? null,
-    latest_review_run_finished_at: state.reviewRuns[0]?.finished_at ?? null,
-    latest_review_matches_current_document: state.reviewRuns[0]?.matches_current_document ?? null,
-    issue_count: state.issues.length,
-    issue_block_count: buildIssueBlockCount(state.issues),
-    severity_counts: buildSeverityCounts(state.issues),
+    document_id: documentId,
+    review_run_count: documentId === state.document.id ? state.reviewRuns.length : 0,
+    latest_review_run_id: documentId === state.document.id ? state.reviewRuns[0]?.id ?? null : null,
+    latest_review_run_status: documentId === state.document.id ? state.reviewRuns[0]?.status ?? null : null,
+    latest_review_run_finished_at: documentId === state.document.id ? state.reviewRuns[0]?.finished_at ?? null : null,
+    latest_review_matches_current_document:
+      documentId === state.document.id ? state.reviewRuns[0]?.matches_current_document ?? null : null,
+    issue_count: documentId === state.document.id ? state.issues.length : 0,
+    issue_block_count: documentId === state.document.id ? buildIssueBlockCount(state.issues) : 0,
+    severity_counts: documentId === state.document.id ? buildSeverityCounts(state.issues) : { low: 0, medium: 0, high: 0 },
   }
 }
 
-function buildReviewRunsResponse(state: ReturnType<typeof createAiReviewState>) {
+function buildReviewRunsResponse(state: ReturnType<typeof createAiReviewState>, documentId = state.document.id) {
   const severityCounts = buildSeverityCounts(state.issues)
   const issueBlockCount = buildIssueBlockCount(state.issues)
 
   return {
-    document_id: state.document.id,
-    items: state.reviewRuns.map((run) => ({
-      ...run,
-      issue_count: state.issues.length,
-      issue_block_count: issueBlockCount,
-      severity_counts: severityCounts,
-    })),
+    document_id: documentId,
+    items:
+      documentId === state.document.id
+        ? state.reviewRuns.map((run) => ({
+            ...run,
+            issue_count: state.issues.length,
+            issue_block_count: issueBlockCount,
+            severity_counts: severityCounts,
+          }))
+        : [],
   }
 }
 
@@ -522,11 +595,11 @@ function buildRewriteRunsResponse(state: ReturnType<typeof createAiReviewState>,
   }
 }
 
-function buildVersionsResponse(state: ReturnType<typeof createAiReviewState>) {
+function buildVersionsResponse(state: ReturnType<typeof createAiReviewState>, documentId = state.document.id) {
   return {
-    document_id: state.document.id,
-    current_version_id: state.versions.find((version) => version.is_current)?.id ?? null,
-    items: state.versions,
+    document_id: documentId,
+    current_version_id: documentId === state.document.id ? state.versions.find((version) => version.is_current)?.id ?? null : null,
+    items: documentId === state.document.id ? state.versions : [],
   }
 }
 
@@ -635,28 +708,63 @@ function installAiReviewFetchMock(state: ReturnType<typeof createAiReviewState>)
       return jsonResponse(buildDocumentListResponse(state))
     }
 
-    if (method === 'GET' && pathname === '/sites/5/ai-review-editor/documents/12') {
-      return jsonResponse(buildDocumentResponse(state))
+    if (method === 'POST' && pathname === '/sites/5/ai-review-editor/documents') {
+      const requestBody = init?.body ? JSON.parse(String(init.body)) : {}
+      const createdAt = '2026-03-27T09:00:00Z'
+
+      state.createdDocument = {
+        id: state.nextDocumentId,
+        site_id: 5,
+        title: String(requestBody.title ?? ''),
+        document_type: String(requestBody.document_type ?? ''),
+        source_format: String(requestBody.source_format ?? 'html'),
+        source_content: String(requestBody.source_content ?? ''),
+        normalized_content: null,
+        topic_brief_json: null,
+        facts_context_json: null,
+        status: 'draft',
+        active_block_count: 0,
+        created_at: createdAt,
+        updated_at: createdAt,
+      }
+      state.nextDocumentId += 1
+
+      return jsonResponse(state.createdDocument, { status: 201 })
     }
 
-    if (method === 'GET' && pathname === '/sites/5/ai-review-editor/documents/12/blocks') {
-      return jsonResponse(buildBlocksResponse(state))
+    const documentDetailMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/(\d+)$/)
+    if (method === 'GET' && documentDetailMatch) {
+      const documentId = Number(documentDetailMatch[1])
+      const document = findMockDocument(state, documentId)
+      if (!document) {
+        return Promise.resolve(jsonResponse({ detail: `Missing document ${documentId}` }, { status: 404 }))
+      }
+      return jsonResponse(buildDocumentResponse(state, document))
     }
 
-    if (method === 'GET' && pathname === '/sites/5/ai-review-editor/documents/12/issues') {
-      return jsonResponse(buildIssuesResponse(state))
+    const blocksMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/(\d+)\/blocks$/)
+    if (method === 'GET' && blocksMatch) {
+      return jsonResponse(buildBlocksResponse(state, Number(blocksMatch[1])))
     }
 
-    if (method === 'GET' && pathname === '/sites/5/ai-review-editor/documents/12/review-summary') {
-      return jsonResponse(buildSummaryResponse(state))
+    const issuesMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/(\d+)\/issues$/)
+    if (method === 'GET' && issuesMatch) {
+      return jsonResponse(buildIssuesResponse(state, Number(issuesMatch[1])))
     }
 
-    if (method === 'GET' && pathname === '/sites/5/ai-review-editor/documents/12/review-runs') {
-      return jsonResponse(buildReviewRunsResponse(state))
+    const summaryMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/(\d+)\/review-summary$/)
+    if (method === 'GET' && summaryMatch) {
+      return jsonResponse(buildSummaryResponse(state, Number(summaryMatch[1])))
     }
 
-    if (method === 'GET' && pathname === '/sites/5/ai-review-editor/documents/12/versions') {
-      return jsonResponse(buildVersionsResponse(state))
+    const reviewRunsMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/(\d+)\/review-runs$/)
+    if (method === 'GET' && reviewRunsMatch) {
+      return jsonResponse(buildReviewRunsResponse(state, Number(reviewRunsMatch[1])))
+    }
+
+    const versionsMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/(\d+)\/versions$/)
+    if (method === 'GET' && versionsMatch) {
+      return jsonResponse(buildVersionsResponse(state, Number(versionsMatch[1])))
     }
 
     const versionDetailMatch = pathname.match(/^\/sites\/5\/ai-review-editor\/documents\/12\/versions\/(\d+)$/)
@@ -996,6 +1104,7 @@ function renderAiReviewRoute(route: string) {
             <Route path="/sites/:siteId" element={<SiteWorkspaceLayout />}>
               <Route path="ai-review-editor">
                 <Route path="documents" element={<AIReviewEditorDocumentsPage />} />
+                <Route path="new" element={<AIReviewEditorNewDocumentPage />} />
                 <Route path="documents/:documentId" element={<AIReviewEditorDocumentPage />} />
               </Route>
             </Route>
@@ -1027,6 +1136,31 @@ describe('AIReviewEditor frontend', () => {
     await screen.findByRole('heading', { name: 'Pricing FAQ' })
   })
 
+  test('shows new document navigation and creates a document from the AI review workspace', async () => {
+    const state = createAiReviewState()
+    installAiReviewFetchMock(state)
+
+    const { user } = renderAiReviewRoute('/sites/5/ai-review-editor/documents')
+
+    await screen.findByRole('heading', { name: 'AI review documents' })
+
+    await user.click(screen.getByRole('link', { name: 'New document' }))
+
+    await screen.findByRole('heading', { name: 'New AI review document' })
+
+    await user.type(screen.getByLabelText('Title'), 'Orthodontics pricing guide')
+    await user.clear(screen.getByLabelText('Document type'))
+    await user.type(screen.getByLabelText('Document type'), 'landing_page')
+    await user.type(
+      screen.getByLabelText('Source HTML'),
+      '<h1>Orthodontics pricing guide</h1><p>Verified treatment pricing details.</p>',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Create document' }))
+
+    await screen.findByRole('heading', { name: 'Orthodontics pricing guide' })
+  })
+
   test('renders document blocks and shows gutter markers only for blocks with issues', async () => {
     const state = createAiReviewState()
     installAiReviewFetchMock(state)
@@ -1038,13 +1172,68 @@ describe('AIReviewEditor frontend', () => {
     expect(screen.getByTestId('ai-review-block-marker-p1')).toBeInTheDocument()
     expect(screen.queryByTestId('ai-review-block-marker-p2')).not.toBeInTheDocument()
 
-    expect(within(screen.getByTestId('ai-review-block-h1')).getByText('Pricing guide')).toBeInTheDocument()
+    expect(within(screen.getByTestId('ai-review-block-h1')).getByRole('heading', { name: 'Pricing guide' })).toBeInTheDocument()
     expect(
       within(screen.getByTestId('ai-review-block-p1')).getByText('TODO add verified pricing details.'),
     ).toBeInTheDocument()
     expect(
       within(screen.getByTestId('ai-review-block-p2')).getByText('All subscriptions renew monthly.'),
     ).toBeInTheDocument()
+  })
+
+  test('switches to whole-document view and downloads the current HTML', async () => {
+    const state = createAiReviewState()
+    installAiReviewFetchMock(state)
+
+    const createObjectUrlMock = vi.fn(() => 'blob:ai-review-document')
+    const revokeObjectUrlMock = vi.fn()
+    const originalCreateObjectUrl = URL.createObjectURL
+    const originalRevokeObjectUrl = URL.revokeObjectURL
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: createObjectUrlMock,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: revokeObjectUrlMock,
+    })
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+
+    try {
+      const { user } = renderAiReviewRoute('/sites/5/ai-review-editor/documents/12')
+
+      await screen.findByTestId('ai-review-block-h1')
+      await user.click(screen.getByRole('button', { name: 'Whole document' }))
+
+      const fullDocument = await screen.findByTestId('ai-review-full-document')
+      expect(within(fullDocument).getByText('Pricing guide')).toBeInTheDocument()
+      expect(within(fullDocument).getByText('TODO add verified pricing details.')).toBeInTheDocument()
+
+      await user.click(screen.getAllByRole('button', { name: 'Download HTML' }).at(-1)!)
+
+      await waitFor(() => {
+        expect(createObjectUrlMock).toHaveBeenCalledTimes(1)
+      })
+      expect(clickSpy).toHaveBeenCalledTimes(1)
+      expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:ai-review-document')
+      const exportedBlob = (createObjectUrlMock.mock.calls as unknown[][])[0]?.[0] as Blob | undefined
+      expect(exportedBlob).toBeInstanceOf(Blob)
+      await expect(exportedBlob?.text()).resolves.toContain('<h1>Pricing guide</h1>')
+    } finally {
+      clickSpy.mockRestore()
+      Object.defineProperty(URL, 'createObjectURL', {
+        configurable: true,
+        writable: true,
+        value: originalCreateObjectUrl,
+      })
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        writable: true,
+        value: originalRevokeObjectUrl,
+      })
+    }
   })
 
   test('enters block edit mode and allows cancel without persisting changes', async () => {
@@ -1194,6 +1383,34 @@ describe('AIReviewEditor frontend', () => {
     })
     expect(await screen.findByText('Rewrite preview is stale')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Apply rewrite' })).not.toBeInTheDocument()
+  })
+
+  test('keeps issue actions available when a different block was edited manually', async () => {
+    const state = createAiReviewState()
+    installAiReviewFetchMock(state)
+
+    const { user } = renderAiReviewRoute('/sites/5/ai-review-editor/documents/12')
+
+    await screen.findByTestId('ai-review-issue-101')
+    await user.click(screen.getByRole('button', { name: 'Rewrite with AI' }))
+    await screen.findByTestId('ai-review-rewrite-preview')
+
+    const otherBlock = screen.getByTestId('ai-review-block-p2')
+    await user.click(within(otherBlock).getByRole('button', { name: 'Edit' }))
+    const editor = within(otherBlock).getByRole('textbox')
+    await user.clear(editor)
+    await user.type(editor, 'All subscriptions still renew monthly, with verified billing terms.')
+    await user.click(within(otherBlock).getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(
+        within(screen.getByTestId('ai-review-block-p2')).getByText(
+          'All subscriptions still renew monthly, with verified billing terms.',
+        ),
+      ).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Rewrite preview is stale')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Apply rewrite' })).toBeInTheDocument()
   })
 
   test('dismiss action refreshes issue status', async () => {

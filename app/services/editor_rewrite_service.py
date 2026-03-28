@@ -55,7 +55,7 @@ def dismiss_issue(
     issue.resolved_at = now
     issue.updated_at = now
     session.flush()
-    return _serialize_issue(issue)
+    return _serialize_issue(session, issue)
 
 
 def resolve_issue_manually(
@@ -79,7 +79,7 @@ def resolve_issue_manually(
     issue.resolved_at = now
     issue.updated_at = now
     session.flush()
-    return _serialize_issue(issue)
+    return _serialize_issue(session, issue)
 
 
 def request_issue_rewrite(
@@ -242,13 +242,7 @@ def apply_rewrite_run(
 
     active_blocks = _load_active_blocks(session, document.id)
     target_block = _get_active_block_or_raise(active_blocks, rewrite_run.block_key)
-    current_input_hash = editor_rewrite_llm_service.build_input_hash(
-        document,
-        active_blocks,
-        target_block,
-        issue,
-    )
-    if rewrite_run.input_hash and current_input_hash != rewrite_run.input_hash:
+    if not _rewrite_run_matches_current_block(session, rewrite_run):
         raise EditorRewriteServiceError(
             "Current block state no longer matches the rewrite input that produced this rewrite run.",
             code="rewrite_input_mismatch",
@@ -319,7 +313,7 @@ def apply_rewrite_run(
 
     return {
         "document": _serialize_document(session, document),
-        "issue": _serialize_issue(issue),
+        "issue": _serialize_issue(session, issue),
         "rewrite_run": _serialize_rewrite_run(session, rewrite_run),
         "updated_block": _serialize_block(updated_block),
     }
@@ -434,9 +428,9 @@ def _ensure_issue_review_is_current(session: Session, issue: EditorReviewIssue) 
             f"Review run {issue.review_run_id} for issue {issue.id} was not found.",
             code="review_run_not_found",
         )
-    if not editor_review_run_service.review_run_matches_current_document(session, review_run):
+    if not editor_review_run_service.review_issue_matches_current_block(session, issue):
         raise EditorRewriteServiceError(
-            "This issue belongs to a stale review of an older document state. Run review again before changing issue workflow.",
+            "This issue belongs to a block that changed after the review run. Run review again before changing this issue workflow.",
             code="issue_review_stale",
         )
 
@@ -559,7 +553,7 @@ def _serialize_block(block: EditorDocumentBlock) -> dict[str, Any]:
     }
 
 
-def _serialize_issue(issue: EditorReviewIssue) -> dict[str, Any]:
+def _serialize_issue(session: Session, issue: EditorReviewIssue) -> dict[str, Any]:
     return {
         "id": issue.id,
         "review_run_id": issue.review_run_id,
@@ -575,6 +569,7 @@ def _serialize_issue(issue: EditorReviewIssue) -> dict[str, Any]:
         "status": issue.status,
         "dismiss_reason": issue.dismiss_reason,
         "resolution_note": issue.resolution_note,
+        "matches_current_block": editor_review_run_service.review_issue_matches_current_block(session, issue),
         "created_at": issue.created_at,
         "updated_at": issue.updated_at,
         "resolved_at": issue.resolved_at,
@@ -584,6 +579,7 @@ def _serialize_issue(issue: EditorReviewIssue) -> dict[str, Any]:
 def _serialize_rewrite_run(session: Session, rewrite_run: EditorRewriteRun) -> dict[str, Any]:
     matches_current_document = _rewrite_run_matches_current_document(session, rewrite_run)
     matches_current_block = _rewrite_run_matches_current_block(session, rewrite_run)
+    is_stale = rewrite_run.status != "applied" and not matches_current_block
     return {
         "id": rewrite_run.id,
         "document_id": rewrite_run.document_id,
@@ -603,7 +599,7 @@ def _serialize_rewrite_run(session: Session, rewrite_run: EditorRewriteRun) -> d
         "error_message": rewrite_run.error_message,
         "matches_current_document": matches_current_document,
         "matches_current_block": matches_current_block,
-        "is_stale": not matches_current_document,
+        "is_stale": is_stale,
         "created_at": rewrite_run.created_at,
         "updated_at": rewrite_run.updated_at,
     }

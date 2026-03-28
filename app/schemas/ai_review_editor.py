@@ -304,6 +304,7 @@ class EditorReviewIssueResponse(BaseModel):
     status: EditorReviewIssueStatus
     dismiss_reason: str | None = None
     resolution_note: str | None = None
+    matches_current_block: bool = False
     created_at: datetime
     updated_at: datetime
     resolved_at: datetime | None = None

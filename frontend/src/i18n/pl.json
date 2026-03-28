@@ -103,6 +103,7 @@
     "sitePages": "Strony witryny {{domain}}",
     "sitePagesRecords": "Rekordy stron witryny {{domain}}",
     "aiReviewEditorDocuments": "Dokumenty AI Review Editor dla {{domain}}",
+    "aiReviewEditorNewDocument": "Nowy dokument AI Review Editor dla {{domain}}",
     "aiReviewEditorDocument": "Dokument AI Review Editor dla {{domain}}",
     "siteAudit": "Audyt witryny {{domain}}",
     "siteAuditSections": "Sekcje audytu witryny {{domain}}",
@@ -148,6 +149,7 @@
       "pages": "Strony",
       "pagesRecords": "Rekordy stron",
       "aiReviewEditorDocuments": "Dokumenty AI Review",
+      "aiReviewEditorNewDocument": "Nowy dokument AI Review",
       "aiReviewEditorDocument": "Dokument AI Review",
       "audit": "Audyt",
       "auditSections": "Sekcje audytu",
@@ -978,7 +980,9 @@
   },
   "aiReviewEditor": {
     "nav": {
-      "documents": "Dokumenty"
+      "documents": "Dokumenty",
+      "newDocument": "Nowy dokument",
+      "currentDocument": "Biezacy dokument"
     },
     "header": {
       "eyebrow": "Edytor AI review"
@@ -1013,6 +1017,27 @@
         "open": "Otworz"
       }
     },
+    "create": {
+      "title": "Nowy dokument AI review",
+      "description": "Utworz nowy dokument w workspace witryny, a potem otworz go w edytorze, aby sparsowac bloki i uruchomic review.",
+      "fields": {
+        "title": "Tytul",
+        "documentType": "Typ dokumentu",
+        "sourceFormat": "Format zrodla",
+        "sourceContent": "Zrodlowy HTML"
+      },
+      "placeholders": {
+        "title": "Przewodnik po cenach ortodoncji",
+        "documentType": "article",
+        "sourceContent": "<h1>Przewodnik po cenach ortodoncji</h1>\n<p>Wstaw tutaj zweryfikowana tresc.</p>"
+      },
+      "validation": {
+        "required": "Uzupelnij tytul, typ dokumentu i zrodlowy HTML przed utworzeniem dokumentu."
+      },
+      "htmlOnlyTitle": "HTML jest jedynym obslugiwanym formatem zrodla",
+      "htmlOnlyDescription": "Edytor potrafi obecnie parsowac tylko HTML, dlatego kazdy nowy dokument startuje ze zrodla HTML.",
+      "nextStepHint": "Po utworzeniu dokumentu mozesz sparsowac go do blokow, uruchomic review, zamawiac rewrites i sledzic historie wersji."
+    },
     "document": {
       "invalidIdTitle": "Nieprawidlowy dokument AI review",
       "invalidIdDescription": "Wskazane id dokumentu nie jest prawidlowe.",
@@ -1037,6 +1062,8 @@
       "backToDocuments": "Otworz liste dokumentow",
       "canvasTitle": "Aktualny dokument",
       "canvasDescription": "Ten ekran czyta aktywne bloki edytora jako canonical source dokumentu po zastosowaniu rewrite.",
+      "fullDocumentTitle": "Caly dokument",
+      "fullDocumentDescription": "Czytaj aktualny dokument jako czysty HTML bez numeracji blokow i markerow issue.",
       "metaTitle": "Meta dokumentu",
       "metaUpdatedAt": "Zaktualizowano",
       "metaSourceFormat": "Format zrodla",
@@ -1054,6 +1081,8 @@
       "insertTypeLabel": "Typ bloku",
       "insertLevelLabel": "Poziom naglowka",
       "refreshing": "Odswiezanie najnowszego stanu dokumentu...",
+      "htmlDownloadReady": "Aktualny HTML dokumentu zostal pobrany jako {{fileName}}.",
+      "htmlDownloadFailed": "Nie udalo sie pobrac aktualnego HTML dokumentu.",
       "manualEditSaved": "Blok zapisany. Wersja {{versionNo}} jest teraz aktualna.",
       "manualEditNoChanges": "Nie zapisano zadnych zmian w bloku.",
       "parseSaved": "Dokument zostal sparsowany. W edytorze jest teraz dostepnych {{blocksCount}} aktywnych blokow.",
@@ -1068,7 +1097,7 @@
       "reviewRunningTitle": "Review jest w toku",
       "reviewRunningNotice": "Poczekaj na zakonczenie biezacego review runu, zanim zaufasz liczbom albo wykonasz akcje na issue.",
       "reviewStaleTitle": "Ostatni review jest nieaktualny",
-      "reviewStaleDescription": "Dokument zmienil sie po ostatnim review runie. Traktuj te issue jako historyczny kontekst i uruchom review ponownie, zanim wykonasz akcje na issue.",
+      "reviewStaleDescription": "Dokument zmienil sie po ostatnim review runie. Nadal mozesz domknac issue dla niezmienionych blokow, ale recznie edytowane bloki wymagaja nowego review przed kolejnymi akcjami AI.",
       "localDraftNotice": "Masz otwarty lokalny draft edycji albo wstawienia bloku. Zakoncz go albo anuluj przed nowym review albo przywroceniem innej wersji.",
       "singleBlockNotice": "Dokument ma obecnie jeden aktywny blok. Usuwanie pozostaje zablokowane, aby nie zostawic pustego dokumentu; uzyj edycji albo wstawienia.",
       "issueDismissed": "Issue zostalo oznaczone jako odrzucone.",
@@ -1102,6 +1131,8 @@
       "noRuns": "Ten dokument nie ma jeszcze historii review runow.",
       "noBlocksTitle": "Brak aktywnych blokow do review",
       "noBlocksDescription": "Najpierw sparsuj dokument, aby edytor mogl wyrenderowac aktualny stan blokow.",
+      "fullDocumentEmptyTitle": "Brak HTML dokumentu do pokazania",
+      "fullDocumentEmptyDescription": "Najpierw sparsuj dokument albo dodaj tresc, aby wyrenderowac pelny podglad HTML.",
       "blockMarker": "{{count}} issue dla bloku {{blockKey}}",
       "blockMarkerAria": "Otworz {{count}} marker(y) issue dla bloku {{blockKey}}",
       "panel": {
@@ -1124,6 +1155,9 @@
       }
     },
     "actions": {
+      "newDocument": "Nowy dokument",
+      "createDocument": "Utworz dokument",
+      "creatingDocument": "Tworzenie dokumentu...",
       "runReview": "Uruchom review",
       "reviewRunning": "Uruchamianie review...",
       "parse": "Parsuj dokument",
@@ -1141,6 +1175,9 @@
       "rewrite": "Popraw AI",
       "requestRewrite": "Popraw AI",
       "applyRewrite": "Zastosuj poprawke",
+      "viewBlocks": "Bloki z issue",
+      "viewFullDocument": "Caly dokument",
+      "downloadHtml": "Pobierz HTML",
       "restoreVersion": "Przywroc wersje",
       "openDocuments": "Otworz dokumenty",
       "backToDocuments": "Powrot do dokumentow"
@@ -1172,7 +1209,7 @@
       "emptySelectionDescription": "Uzyj markerow w gutterze, aby skupic sie na problematycznym bloku i jego issue.",
       "blockContext": "Aktualny blok",
       "actionsLockedTitle": "Akcje dla issue sa zablokowane",
-      "actionsLockedDescription": "To issue nalezy do nieaktualnego review runu. Uruchom review ponownie na biezacym dokumencie, zanim odrzucisz issue, oznaczysz je jako poprawione albo poprosisz o nowy rewrite."
+      "actionsLockedDescription": "Ten blok zostal zedytowany po review runie. Uruchom review ponownie, zanim odrzucisz issue, oznaczysz je jako poprawione albo poprosisz o nowy rewrite dla tego bloku."
     },
     "issue": {
       "select": "Wybierz",

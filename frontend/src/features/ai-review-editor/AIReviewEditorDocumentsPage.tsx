@@ -10,7 +10,10 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { getUiErrorMessage } from '../../utils/errors'
 import { formatDateTime } from '../../utils/format'
 import { useSiteWorkspaceContext } from '../sites/context'
-import { buildSiteAiReviewEditorDocumentPath } from '../sites/routes'
+import {
+  buildSiteAiReviewEditorDocumentPath,
+  buildSiteAiReviewEditorNewDocumentPath,
+} from '../sites/routes'
 import { useSiteAiReviewDocumentsQuery } from './api'
 
 function documentStatusClass(status: string) {
@@ -54,6 +57,14 @@ export function AIReviewEditorDocumentsPage() {
         eyebrow={t('aiReviewEditor.header.eyebrow')}
         title={t('aiReviewEditor.documents.title')}
         description={t('aiReviewEditor.documents.description')}
+        primaryAction={{
+          key: 'new-document',
+          label: t('aiReviewEditor.actions.newDocument'),
+          to: buildSiteAiReviewEditorNewDocumentPath(site.id, {
+            activeCrawlId,
+            baselineCrawlId,
+          }),
+        }}
         contextChips={[
           { label: t('aiReviewEditor.documents.context.site'), value: site.domain },
           {
