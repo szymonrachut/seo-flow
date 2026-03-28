@@ -107,6 +107,32 @@ export type CompetitiveGapEmptyStateReason =
   | 'filters_excluded_all'
 export type CompetitiveGapDataSourceMode = 'legacy' | 'raw_candidates' | 'reviewed'
 export type CompetitiveGapDecisionAction = 'keep' | 'remove' | 'merge' | 'rewrite'
+export type SemstormResultType = 'organic' | 'paid'
+export type SemstormCompetitorsType = 'all' | 'similar'
+export type SemstormOpportunityBucket = 'quick_win' | 'core_opportunity' | 'watchlist'
+export type SemstormCoverageStatus = 'missing' | 'weak_coverage' | 'covered'
+export type SemstormDecisionType = 'create_new_page' | 'expand_existing_page' | 'monitor_only'
+export type SemstormGscSignalStatus = 'none' | 'weak' | 'present'
+export type SemstormOpportunityStateStatus = 'new' | 'accepted' | 'dismissed' | 'promoted'
+export type SemstormPromotionStatus = 'active' | 'archived'
+export type SemstormPlanStateStatus = 'planned' | 'in_progress' | 'done' | 'archived'
+export type SemstormPlanTargetPageType =
+  | 'new_page'
+  | 'expand_existing'
+  | 'refresh_existing'
+  | 'cluster_support'
+export type SemstormBriefStateStatus = 'draft' | 'ready' | 'in_execution' | 'completed' | 'archived'
+export type SemstormBriefType = 'new_page' | 'expand_existing' | 'refresh_existing' | 'cluster_support'
+export type SemstormBriefSearchIntent =
+  | 'informational'
+  | 'commercial'
+  | 'transactional'
+  | 'navigational'
+  | 'mixed'
+export type SemstormImplementationStatus = 'too_early' | 'implemented' | 'evaluated' | 'archived'
+export type SemstormOutcomeStatus = 'too_early' | 'no_signal' | 'weak_signal' | 'positive_signal'
+export type SemstormBriefEnrichmentStatus = 'completed' | 'failed'
+export type SemstormBriefEnrichmentEngineMode = 'mock' | 'llm'
 export type CompetitiveGapSortBy =
   | 'priority_score'
   | 'consensus_score'
@@ -997,6 +1023,568 @@ export interface CompetitiveGapExplanationResponse {
   llm_provider: string | null
   llm_model: string | null
   prompt_version: string
+}
+
+export interface SemstormDiscoveryRunCreateInput {
+  max_competitors: number
+  max_keywords_per_competitor: number
+  result_type: SemstormResultType
+  include_basic_stats: boolean
+  competitors_type?: SemstormCompetitorsType
+}
+
+export interface SemstormKeywordBasicStats {
+  keywords: number
+  keywords_top: number
+  traffic: number
+  traffic_potential: number
+  search_volume: number
+  search_volume_top: number
+}
+
+export interface SemstormTopQuery {
+  keyword: string
+  position: number | null
+  position_change: number | null
+  url: string | null
+  traffic: number | null
+  traffic_change: number | null
+  volume: number | null
+  competitors: number | null
+  cpc: number | null
+  trends: number[]
+}
+
+export interface SemstormCompetitorDiscovery {
+  rank: number | null
+  domain: string
+  common_keywords: number
+  traffic: number
+  queries_count: number
+  basic_stats: SemstormKeywordBasicStats | null
+  top_queries: SemstormTopQuery[]
+}
+
+export interface SemstormDiscoveryRunParams {
+  max_competitors: number
+  max_keywords_per_competitor: number
+  result_type: SemstormResultType
+  include_basic_stats: boolean
+  competitors_type: SemstormCompetitorsType
+}
+
+export interface SemstormDiscoveryRunSummary {
+  total_competitors: number
+  total_queries: number
+  unique_keywords: number
+  created_at: string
+}
+
+export interface SemstormDiscoveryRunListItem {
+  id: number
+  site_id: number
+  run_id: number
+  status: 'running' | 'completed' | 'failed'
+  stage: 'discovering' | 'completed' | 'failed'
+  source_domain: string
+  params: SemstormDiscoveryRunParams
+  summary: SemstormDiscoveryRunSummary
+  error_code: string | null
+  error_message_safe: string | null
+  started_at: string | null
+  finished_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SemstormDiscoveryRun extends SemstormDiscoveryRunListItem {
+  competitors: SemstormCompetitorDiscovery[]
+}
+
+export interface SemstormMatchedPage {
+  page_id: number
+  url: string
+  title: string | null
+  match_signals: string[]
+}
+
+export interface SemstormGscSummary {
+  clicks: number
+  impressions: number
+  ctr: number | null
+  avg_position: number | null
+}
+
+export interface SemstormOpportunityItem {
+  keyword: string
+  competitor_count: number
+  best_position: number | null
+  max_traffic: number
+  max_volume: number
+  avg_cpc: number | null
+  bucket: SemstormOpportunityBucket
+  decision_type: SemstormDecisionType
+  opportunity_score_v1: number
+  opportunity_score_v2: number
+  coverage_status: SemstormCoverageStatus
+  coverage_score_v1: number
+  matched_pages_count: number
+  best_match_page: SemstormMatchedPage | null
+  gsc_signal_status: SemstormGscSignalStatus
+  gsc_summary: SemstormGscSummary | null
+  state_status: SemstormOpportunityStateStatus
+  state_note: string | null
+  can_promote: boolean
+  can_dismiss: boolean
+  can_accept: boolean
+  sample_competitors: string[]
+}
+
+export interface SemstormOpportunitiesSummary {
+  total_items: number
+  bucket_counts: Partial<Record<SemstormOpportunityBucket, number>>
+  decision_type_counts: Partial<Record<SemstormDecisionType, number>>
+  coverage_status_counts: Partial<Record<SemstormCoverageStatus, number>>
+  state_counts: Partial<Record<SemstormOpportunityStateStatus, number>>
+  total_competitors: number
+  total_queries: number
+  unique_keywords: number
+  created_at: string
+}
+
+export interface SemstormOpportunitiesResponse {
+  site_id: number
+  run_id: number
+  source_domain: string
+  active_crawl_id: number | null
+  summary: SemstormOpportunitiesSummary
+  items: SemstormOpportunityItem[]
+}
+
+export interface SemstormOpportunitiesQueryParams {
+  run_id?: number
+  coverage_status?: SemstormCoverageStatus
+  bucket?: SemstormOpportunityBucket
+  decision_type?: SemstormDecisionType
+  state_status?: SemstormOpportunityStateStatus
+  has_gsc_signal?: boolean
+  only_actionable?: boolean
+  limit?: number
+}
+
+export interface SemstormOpportunityActionInput {
+  run_id?: number
+  keywords: string[]
+  note?: string
+}
+
+export interface SemstormOpportunityActionSkippedItem {
+  keyword: string
+  reason: string
+}
+
+export interface SemstormPromotedItem {
+  id: number
+  site_id: number
+  opportunity_key: string
+  source_run_id: number
+  keyword: string
+  normalized_keyword: string
+  bucket: SemstormOpportunityBucket
+  decision_type: SemstormDecisionType
+  opportunity_score_v2: number
+  coverage_status: SemstormCoverageStatus
+  best_match_page_url: string | null
+  gsc_signal_status: SemstormGscSignalStatus
+  promotion_status: SemstormPromotionStatus
+  has_plan: boolean
+  plan_id: number | null
+  plan_state_status: SemstormPlanStateStatus | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SemstormCreatePlanDefaultsInput {
+  target_page_type?: SemstormPlanTargetPageType
+}
+
+export interface SemstormCreatePlanInput {
+  promoted_item_ids: number[]
+  defaults?: SemstormCreatePlanDefaultsInput
+}
+
+export interface SemstormCreatePlanSkippedItem {
+  promoted_item_id: number
+  keyword: string | null
+  reason: string
+}
+
+export interface SemstormPlanItem {
+  id: number
+  site_id: number
+  promoted_item_id: number
+  keyword: string
+  normalized_keyword: string
+  source_run_id: number
+  state_status: SemstormPlanStateStatus
+  decision_type_snapshot: SemstormDecisionType
+  bucket_snapshot: SemstormOpportunityBucket
+  coverage_status_snapshot: SemstormCoverageStatus
+  opportunity_score_v2_snapshot: number
+  best_match_page_url_snapshot: string | null
+  gsc_signal_status_snapshot: SemstormGscSignalStatus
+  plan_title: string | null
+  plan_note: string | null
+  target_page_type: SemstormPlanTargetPageType
+  proposed_slug: string | null
+  proposed_primary_keyword: string | null
+  proposed_secondary_keywords: string[]
+  has_brief: boolean
+  brief_id: number | null
+  brief_state_status: SemstormBriefStateStatus | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SemstormCreatePlanResponse {
+  site_id: number
+  requested_count: number
+  created_count: number
+  updated_count: number
+  skipped_count: number
+  items: SemstormPlanItem[]
+  skipped: SemstormCreatePlanSkippedItem[]
+}
+
+export interface SemstormPlansSummary {
+  total_count: number
+  state_counts: Partial<Record<SemstormPlanStateStatus, number>>
+  target_page_type_counts: Partial<Record<SemstormPlanTargetPageType, number>>
+}
+
+export interface SemstormPlansResponse {
+  site_id: number
+  summary: SemstormPlansSummary
+  items: SemstormPlanItem[]
+}
+
+export interface SemstormPlansQueryParams {
+  state_status?: SemstormPlanStateStatus
+  target_page_type?: SemstormPlanTargetPageType
+  search?: string
+  limit?: number
+}
+
+export interface SemstormPlanStatusUpdateInput {
+  state_status: SemstormPlanStateStatus
+}
+
+export interface SemstormPlanUpdateInput {
+  state_status?: SemstormPlanStateStatus
+  plan_title?: string | null
+  plan_note?: string | null
+  target_page_type?: SemstormPlanTargetPageType
+  proposed_slug?: string | null
+  proposed_primary_keyword?: string | null
+  proposed_secondary_keywords?: string[]
+}
+
+export interface SemstormCreateBriefInput {
+  plan_item_ids: number[]
+}
+
+export interface SemstormCreateBriefSkippedItem {
+  plan_item_id: number
+  brief_title: string | null
+  reason: string
+}
+
+export interface SemstormBriefListItem {
+  id: number
+  site_id: number
+  plan_item_id: number
+  brief_title: string | null
+  primary_keyword: string
+  brief_type: SemstormBriefType
+  search_intent: SemstormBriefSearchIntent
+  state_status: SemstormBriefStateStatus
+  execution_status: SemstormBriefStateStatus
+  assignee: string | null
+  execution_note: string | null
+  ready_at: string | null
+  started_at: string | null
+  completed_at: string | null
+  archived_at: string | null
+  implementation_status: SemstormImplementationStatus | null
+  implemented_at: string | null
+  last_outcome_checked_at: string | null
+  recommended_page_title: string | null
+  proposed_url_slug: string | null
+  decision_type_snapshot: SemstormDecisionType | null
+  bucket_snapshot: SemstormOpportunityBucket | null
+  coverage_status_snapshot: SemstormCoverageStatus | null
+  gsc_signal_status_snapshot: SemstormGscSignalStatus | null
+  opportunity_score_v2_snapshot: number
+  created_at: string
+  updated_at: string
+}
+
+export interface SemstormBriefItem extends SemstormBriefListItem {
+  secondary_keywords: string[]
+  target_url_existing: string | null
+  implementation_url_override: string | null
+  evaluation_note: string | null
+  recommended_h1: string | null
+  content_goal: string | null
+  angle_summary: string | null
+  sections: string[]
+  internal_link_targets: string[]
+  source_notes: string[]
+}
+
+export interface SemstormCreateBriefResponse {
+  site_id: number
+  requested_count: number
+  created_count: number
+  updated_count: number
+  skipped_count: number
+  items: SemstormBriefItem[]
+  skipped: SemstormCreateBriefSkippedItem[]
+}
+
+export interface SemstormBriefsSummary {
+  total_count: number
+  state_counts: Partial<Record<SemstormBriefStateStatus, number>>
+  brief_type_counts: Partial<Record<SemstormBriefType, number>>
+  intent_counts: Partial<Record<SemstormBriefSearchIntent, number>>
+}
+
+export interface SemstormBriefsResponse {
+  site_id: number
+  summary: SemstormBriefsSummary
+  items: SemstormBriefListItem[]
+}
+
+export interface SemstormBriefsQueryParams {
+  state_status?: SemstormBriefStateStatus
+  brief_type?: SemstormBriefType
+  search_intent?: SemstormBriefSearchIntent
+  search?: string
+  limit?: number
+}
+
+export interface SemstormBriefStatusUpdateInput {
+  state_status: SemstormBriefStateStatus
+}
+
+export interface SemstormBriefExecutionStatusUpdateInput {
+  execution_status: SemstormBriefStateStatus
+}
+
+export interface SemstormBriefUpdateInput {
+  state_status?: SemstormBriefStateStatus
+  brief_title?: string | null
+  brief_type?: SemstormBriefType
+  primary_keyword?: string | null
+  secondary_keywords?: string[]
+  search_intent?: SemstormBriefSearchIntent
+  target_url_existing?: string | null
+  proposed_url_slug?: string | null
+  recommended_page_title?: string | null
+  recommended_h1?: string | null
+  content_goal?: string | null
+  angle_summary?: string | null
+  sections?: string[]
+  internal_link_targets?: string[]
+  source_notes?: string[]
+}
+
+export interface SemstormBriefExecutionUpdateInput {
+  assignee?: string | null
+  execution_note?: string | null
+}
+
+export interface SemstormBriefImplementationStatusUpdateInput {
+  implementation_status: 'implemented' | 'archived'
+  evaluation_note?: string | null
+  implementation_url_override?: string | null
+}
+
+export interface SemstormExecutionItem {
+  brief_id: number
+  plan_item_id: number
+  brief_title: string | null
+  primary_keyword: string
+  brief_type: SemstormBriefType
+  search_intent: SemstormBriefSearchIntent
+  execution_status: SemstormBriefStateStatus
+  assignee: string | null
+  execution_note: string | null
+  implementation_status: SemstormImplementationStatus | null
+  implemented_at: string | null
+  recommended_page_title: string | null
+  proposed_url_slug: string | null
+  ready_at: string | null
+  started_at: string | null
+  completed_at: string | null
+  archived_at: string | null
+  decision_type_snapshot: SemstormDecisionType | null
+  bucket_snapshot: SemstormOpportunityBucket | null
+  coverage_status_snapshot: SemstormCoverageStatus | null
+  gsc_signal_status_snapshot: SemstormGscSignalStatus | null
+  opportunity_score_v2_snapshot: number
+  updated_at: string
+}
+
+export interface SemstormExecutionSummary {
+  total_count: number
+  execution_status_counts: Partial<Record<SemstormBriefStateStatus, number>>
+  ready_count: number
+  in_execution_count: number
+  completed_count: number
+}
+
+export interface SemstormExecutionResponse {
+  site_id: number
+  summary: SemstormExecutionSummary
+  items: SemstormExecutionItem[]
+}
+
+export interface SemstormExecutionQueryParams {
+  execution_status?: SemstormBriefStateStatus
+  assignee?: string
+  brief_type?: SemstormBriefType
+  search?: string
+  limit?: number
+}
+
+export interface SemstormImplementedItem {
+  brief_id: number
+  plan_item_id: number
+  brief_title: string | null
+  primary_keyword: string
+  brief_type: SemstormBriefType
+  execution_status: SemstormBriefStateStatus
+  implementation_status: SemstormImplementationStatus
+  implemented_at: string | null
+  evaluation_note: string | null
+  implementation_url_override: string | null
+  outcome_status: SemstormOutcomeStatus
+  page_present_in_active_crawl: boolean
+  matched_page: SemstormMatchedPage | null
+  gsc_signal_status: SemstormGscSignalStatus
+  gsc_summary: SemstormGscSummary | null
+  query_match_count: number
+  notes: string[]
+  decision_type_snapshot: SemstormDecisionType | null
+  coverage_status_snapshot: SemstormCoverageStatus | null
+  opportunity_score_v2_snapshot: number
+  updated_at: string
+  last_outcome_checked_at: string | null
+}
+
+export interface SemstormImplementedSummary {
+  total_count: number
+  implementation_status_counts: Partial<Record<SemstormImplementationStatus, number>>
+  outcome_status_counts: Partial<Record<SemstormOutcomeStatus, number>>
+  too_early_count: number
+  positive_signal_count: number
+}
+
+export interface SemstormImplementedResponse {
+  site_id: number
+  active_crawl_id: number | null
+  window_days: number
+  summary: SemstormImplementedSummary
+  items: SemstormImplementedItem[]
+}
+
+export interface SemstormImplementedQueryParams {
+  implementation_status?: SemstormImplementationStatus
+  outcome_status?: SemstormOutcomeStatus
+  brief_type?: SemstormBriefType
+  search?: string
+  window_days?: number
+  limit?: number
+}
+
+export interface SemstormBriefEnrichmentSuggestions {
+  improved_brief_title: string | null
+  improved_page_title: string | null
+  improved_h1: string | null
+  improved_angle_summary: string | null
+  improved_sections: string[]
+  improved_internal_link_targets: string[]
+  editorial_notes: string[]
+  risk_flags: string[]
+}
+
+export interface SemstormBriefEnrichmentRun {
+  id: number
+  site_id: number
+  brief_item_id: number
+  status: SemstormBriefEnrichmentStatus
+  engine_mode: SemstormBriefEnrichmentEngineMode
+  model_name: string | null
+  input_hash: string
+  suggestions: SemstormBriefEnrichmentSuggestions
+  error_code: string | null
+  error_message_safe: string | null
+  is_applied: boolean
+  applied_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SemstormBriefEnrichmentRunsSummary {
+  total_count: number
+  completed_count: number
+  failed_count: number
+  applied_count: number
+}
+
+export interface SemstormBriefEnrichmentRunsResponse {
+  site_id: number
+  brief_id: number
+  summary: SemstormBriefEnrichmentRunsSummary
+  items: SemstormBriefEnrichmentRun[]
+}
+
+export interface SemstormBriefEnrichmentApplyResponse {
+  site_id: number
+  brief_id: number
+  run_id: number
+  applied: boolean
+  skipped_reason: string | null
+  applied_fields: string[]
+  brief: SemstormBriefItem
+  enrichment_run: SemstormBriefEnrichmentRun
+}
+
+export interface SemstormOpportunityActionResponse {
+  action: 'accept' | 'dismiss' | 'promote'
+  site_id: number
+  run_id: number
+  note: string | null
+  requested_count: number
+  updated_count: number
+  promoted_count: number
+  state_status: Exclude<SemstormOpportunityStateStatus, 'new'>
+  updated_keywords: string[]
+  promoted_items: SemstormPromotedItem[]
+  skipped_count: number
+  skipped: SemstormOpportunityActionSkippedItem[]
+}
+
+export interface SemstormPromotedItemsSummary {
+  total_items: number
+  promotion_status_counts: Partial<Record<SemstormPromotionStatus, number>>
+}
+
+export interface SemstormPromotedItemsResponse {
+  site_id: number
+  summary: SemstormPromotedItemsSummary
+  items: SemstormPromotedItem[]
 }
 
 export interface SiteCompareCrawlContext {

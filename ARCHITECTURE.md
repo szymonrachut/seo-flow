@@ -258,6 +258,21 @@ To jest wazne:
   - lightweight sync diagnostics per competitor,
   - latest snapshot diagnostyczny na `site_competitors`.
 - po udanym syncu backend odswieza competitor store, semantic foundation i zapisuje raw candidates do `site_content_gap_candidates`; nie odpala juz automatycznie review LLM.
+- Semstorm ma osobna, cienka warstwe discovery site-level:
+  - preview endpoint dalej jest lekkim debug/manual payloadem bez persistencji,
+  - persisted store `site_semstorm_discovery_runs` / `site_semstorm_competitors` / `site_semstorm_competitor_queries` trzyma historie runow, wybranych competitorow i ich top queries,
+  - `GET .../semstorm/opportunities` sklada osobny Semstorm coverage/opportunity layer nad persisted discovery, aktywnym crawlem i opcjonalnymi sygnalami GSC,
+  - lifecycle state siedzi osobno w `site_semstorm_opportunity_states`, z kluczem opartym o `site_id + normalized_keyword`, wiec ta sama fraza moze wracac miedzy runami bez gubienia stanu `new/accepted/dismissed/promoted`,
+  - promotion idzie do osobnego backlogu `site_semstorm_promoted_items`; nie reuse'uje `site_content_gap_candidates` ani `site_content_gap_items`, zeby nie mieszac Semstorm z manual competitor sync flow ani finalnym read modelem `reviewed -> raw_candidates -> legacy`,
+  - promoted backlog moze byc dalej zmaterializowany do osobnego planning store `site_semstorm_plan_items`; ten planning layer pozostaje osobny wobec `site_content_recommendation_states` i `content_recommendation_service.py`, bo Content Recommendations sa own-data only,
+  - plan items moga byc dalej zmaterializowane do osobnego execution layer `site_semstorm_brief_items`; brief scaffold pozostaje deterministycznym, recznie edytowalnym artefaktem `Plans -> Briefs`, bez Content Recommendations i bez finalnego Competitive Gap read modelu,
+  - execution lifecycle nie tworzy osobnej mini-Jiry: rozszerza ten sam brief artifact o `draft -> ready -> in_execution -> completed -> archived`, `assignee`, `execution_note` i stemple czasowe,
+  - po zakonczeniu execution ten sam brief artifact moze wejsc do osobnego feedback loopu `implemented / evaluated / archived`; outcome read model pozostaje dynamiczny i liczony nad aktywnym snapshotem, dostepnymi `pages`, `gsc_url_metrics` i `gsc_top_queries`, bez zapisu czegokolwiek do podstawowych tabel snapshotowych,
+  - optional AI enrichment siedzi jeszcze osobno w `site_semstorm_brief_enrichment_runs`; `POST .../briefs/{brief_id}/enrich` tworzy jawny run draftu sugestii, a `POST .../enrichment-runs/{run_id}/apply` aktualizuje tylko niepuste pola briefu, bez nadpisywania go pustymi wartosciami i bez tworzenia rownoleglego content flow,
+  - coverage jest heurystyczne i deterministyczne: sprawdza keyword / normalized keyword w `title`, `h1`, `meta_description` i URL wlasnych stron aktywnego snapshotu, a potem klasyfikuje `missing` / `weak_coverage` / `covered`,
+  - optional GSC enrichment pozostaje lekki: exact / normalized-exact / very-light contains nad `gsc_top_queries` plus fallback do URL metrics dla matched page,
+  - wynik Semstorm zwraca dalej osobny `decision_type`, `opportunity_score_v2` i `coverage_status`; nie zmienia kolejnosci finalnego source selection `reviewed -> raw_candidates -> legacy`,
+  - warstwa ta nie reuse'uje `site_competitor_pages`, nie miesza sie z manual competitor sync HTML flow i nie zmienia kolejnosci finalnego source selection `reviewed -> raw_candidates -> legacy`.
 - `site_content_gap_review_runs` zamraza:
   - `basis_crawl_job_id`
   - candidate scope
@@ -335,6 +350,17 @@ To jest wazne:
   - `/sites/:siteId/competitive-gap/sync` jako widok operacyjny sync / semantic / review statusow,
   - `/sites/:siteId/competitive-gap/results` jako glowny widok wynikow,
   przy zachowaniu tego samego backendowego modelu `reviewed -> raw_candidates -> legacy`.
+- `frontend/src/features/competitive-gap/SiteCompetitiveGapSemstormPage.tsx` obsluguje osobny frontendowy slice Semstorm w Competitive Gap workspace:
+  - `/sites/:siteId/competitive-gap/semstorm/discovery` jako cienki operatorski widok persisted discovery runow,
+  - `/sites/:siteId/competitive-gap/semstorm/opportunities` jako osobny Semstorm coverage/opportunity layer nad persisted discovery,
+  - `/sites/:siteId/competitive-gap/semstorm/promoted` jako lekki backlog wypromowanych seedow,
+  - `/sites/:siteId/competitive-gap/semstorm/plans` jako cienki planning workspace nad promoted backlogiem,
+  - `/sites/:siteId/competitive-gap/semstorm/briefs` jako cienki execution workspace nad plan items i deterministicznymi brief scaffoldami,
+  - `/sites/:siteId/competitive-gap/semstorm/execution` jako osobny operational read model / handoff board nad briefami,
+  - `/sites/:siteId/competitive-gap/semstorm/implemented` jako lekki outcome / feedback workspace nad wdrozonymi briefami,
+  - Semstorm selection context (`run_id`, `plan_id`, `brief_id`, `enrichment_run_id`) siedzi w query stringu i jest walidowany wzgledem aktualnej listy, zeby stale params nie prowadzily do losowego detail panelu ani zbednego 404 przy poprawnej liscie,
+  - opportunities page trzyma selection lokalnie, ale lifecycle state, promoted backlog, plan items, brief items i execution metadata sa persisted po stronie backendu,
+  bez mieszania Semstorm z glownym `/competitive-gap/results` i bez zmiany finalnego backendowego source selection `reviewed -> raw_candidates -> legacy`.
 - kanoniczne site-centric compare route'y:
   - `/sites/:siteId/changes/pages`
   - `/sites/:siteId/changes/audit`
@@ -381,6 +407,14 @@ Wzorzec UI:
 - `site_competitor_semantic_candidates`: raw semantic topic candidates dla competitor pages
 - `site_competitor_semantic_runs`: operational run store semantic layer
 - `site_competitor_semantic_decisions`: cache decyzji merge/match/canonical naming
+- `site_semstorm_discovery_runs`: site-level persisted historia discovery runow Semstorm
+- `site_semstorm_competitors`: wybrani competitorzy Semstorm przypieci do pojedynczego discovery runu
+- `site_semstorm_competitor_queries`: znormalizowane top queries competitorow Semstorm przypiete do discovery runu
+- `site_semstorm_opportunity_states`: lifecycle state `new/accepted/dismissed/promoted` per `site_id + normalized_keyword`
+- `site_semstorm_promoted_items`: persisted Semstorm backlog / seeds do dalszej pracy SEO, bez mieszania z finalnym Content Gap review flow
+- `site_semstorm_plan_items`: cienki persisted planning layer nad Semstorm promoted backlogiem, bez mieszania z Content Recommendations own-data only
+- `site_semstorm_brief_items`: cienki persisted execution packet / brief scaffold layer nad Semstorm plan items; ten sam model trzyma execution lifecycle, assignee, execution note, implemented/evaluated lifecycle i stemple statusow
+- `site_semstorm_brief_enrichment_runs`: opcjonalny run store AI enrichmentu dla brief scaffoldow, z outputem structured/apply zamiast wersjonowania pelnego dokumentu
 - `site_content_gap_candidates`: snapshot-aware raw candidates po competitor sync
 - `site_content_gap_review_runs`: explicit review run lifecycle
 - `site_content_gap_items`: snapshot-aware reviewed items materialized per review run
@@ -390,6 +424,8 @@ ETAP 7, ETAP 8, ETAP 10.1, ETAP 10.2 i ETAP 10.3 nie dodaja nowych tabel:
 
 ## Konfiguracja
 - Backend env: `app/core/config.py`, `.env.example`
+- Semstorm env: `SEMSTORM_ENABLED`, `SEMSTORM_BASE_URL`, `SEMSTORM_SERVICES_TOKEN`, `SEMSTORM_TIMEOUT_SECONDS`, `SEMSTORM_MAX_RETRIES`, `SEMSTORM_RETRY_BACKOFF_SECONDS`
+- Brief AI enrichment env: `SEMSTORM_BRIEF_LLM_ENABLED`, `SEMSTORM_BRIEF_LLM_MODEL`, `SEMSTORM_BRIEF_LLM_TIMEOUT_SECONDS`, `SEMSTORM_BRIEF_ENGINE_MODE`
 - Frontend env: `frontend/.env.example`
 - DB migrations: `alembic/env.py`, `alembic/versions/`
 - Lokalny orchestration script: `scripts/dev.ps1`

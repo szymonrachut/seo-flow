@@ -113,6 +113,59 @@ export function buildSiteCompetitiveGapResultsPath(siteId: number, context: Site
   return `/sites/${siteId}/competitive-gap/results${buildSiteWorkspaceSearch(context)}`
 }
 
+export function buildSiteCompetitiveGapSemstormPath(siteId: number, context: SiteWorkspaceRouteContext = {}) {
+  return `/sites/${siteId}/competitive-gap/semstorm${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormDiscoveryPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/discovery${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormOpportunitiesPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/opportunities${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormPromotedPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/promoted${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormPlansPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/plans${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormBriefsPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/briefs${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormExecutionPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/execution${buildSiteWorkspaceSearch(context)}`
+}
+
+export function buildSiteCompetitiveGapSemstormImplementedPath(
+  siteId: number,
+  context: SiteWorkspaceRouteContext = {},
+) {
+  return `/sites/${siteId}/competitive-gap/semstorm/implemented${buildSiteWorkspaceSearch(context)}`
+}
+
 export function buildSiteAuditPath(siteId: number, context: SiteWorkspaceRouteContext = {}) {
   return `/sites/${siteId}/audit${buildSiteWorkspaceSearch(context)}`
 }

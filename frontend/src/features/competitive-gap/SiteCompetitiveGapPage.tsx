@@ -40,6 +40,8 @@ import { useSiteWorkspaceContext } from '../sites/context'
 import {
   buildSiteCompetitiveGapCompetitorsPath,
   buildSiteCompetitiveGapResultsPath,
+  buildSiteCompetitiveGapSemstormDiscoveryPath,
+  buildSiteCompetitiveGapSemstormOpportunitiesPath,
   buildSiteCompetitiveGapStrategyPath,
   buildSiteCompetitiveGapSyncPath,
   buildSitePagesRecordsPath,
@@ -2159,6 +2161,28 @@ export function SiteCompetitiveGapPage({ mode = 'full' }: { mode?: CompetitiveGa
               </p>
               <p className="mt-2 text-sm font-medium text-stone-900 dark:text-slate-50">
                 {t('competitiveGap.summary.totalGaps')}: {payload.summary.total_gaps}
+              </p>
+            </Link>
+            <Link
+              to={buildSiteCompetitiveGapSemstormDiscoveryPath(site.id, { activeCrawlId, baselineCrawlId })}
+              className={panelClass}
+            >
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500 dark:text-slate-400">
+                {t('competitiveGap.nav.semstormDiscovery')}
+              </p>
+              <p className="mt-2 text-sm font-medium text-stone-900 dark:text-slate-50">
+                {t('competitiveGap.semstorm.overview.discoveryShortcut')}
+              </p>
+            </Link>
+            <Link
+              to={buildSiteCompetitiveGapSemstormOpportunitiesPath(site.id, { activeCrawlId, baselineCrawlId })}
+              className={panelClass}
+            >
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500 dark:text-slate-400">
+                {t('competitiveGap.nav.semstormOpportunities')}
+              </p>
+              <p className="mt-2 text-sm font-medium text-stone-900 dark:text-slate-50">
+                {t('competitiveGap.semstorm.overview.opportunitiesShortcut')}
               </p>
             </Link>
           </div>
