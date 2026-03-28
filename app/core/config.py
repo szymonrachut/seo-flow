@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     gsc_default_top_queries_limit: int = 20
     gsc_metrics_row_limit: int = 25_000
 
+    semstorm_enabled: bool = False
+    semstorm_base_url: str = "https://api.semstorm.com/api-v3"
+    semstorm_services_token: str | None = None
+    semstorm_timeout_seconds: float = 20.0
+    semstorm_max_retries: int = 2
+    semstorm_retry_backoff_seconds: float = 1.0
+    semstorm_brief_llm_enabled: bool = False
+    semstorm_brief_llm_model: str = "gpt-5-mini"
+    semstorm_brief_llm_timeout_seconds: float = 20.0
+    semstorm_brief_engine_mode: Literal["auto", "mock", "llm"] = "auto"
+
     openai_api_key: str | None = None
     openai_llm_enabled: bool = False
     openai_model_competitor_extraction: str = "gpt-5-mini"

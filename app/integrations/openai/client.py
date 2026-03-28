@@ -37,12 +37,14 @@ class OpenAiLlmClient:
         max_completion_tokens: int,
         reasoning_effort: str | None = None,
         verbosity: str = "low",
+        timeout_seconds: float | None = None,
     ) -> StructuredOutputT:
         settings = get_settings()
         if not settings.openai_llm_enabled:
             raise OpenAiConfigurationError("OpenAI LLM integration is disabled.", code="llm_disabled")
         if not settings.openai_api_key:
             raise OpenAiConfigurationError("OPENAI_API_KEY is not configured.", code="missing_api_key")
+        request_timeout = float(timeout_seconds or settings.openai_timeout_seconds)
 
         try:
             from openai import OpenAI
@@ -53,7 +55,7 @@ class OpenAiLlmClient:
         client = OpenAI(
             api_key=settings.openai_api_key,
             max_retries=settings.openai_max_retries,
-            timeout=settings.openai_timeout_seconds,
+            timeout=request_timeout,
         )
         try:
             request_kwargs: dict[str, object] = {
@@ -65,7 +67,7 @@ class OpenAiLlmClient:
                 "response_format": response_format,
                 "max_completion_tokens": max_completion_tokens,
                 "verbosity": verbosity,
-                "timeout": settings.openai_timeout_seconds,
+                "timeout": request_timeout,
             }
             if reasoning_effort:
                 request_kwargs["reasoning_effort"] = reasoning_effort

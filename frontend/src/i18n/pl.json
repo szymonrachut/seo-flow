@@ -114,6 +114,9 @@
     "siteCompetitiveGapCompetitors": "Konkurenci brakow wzgledem konkurencji witryny {{domain}}",
     "siteCompetitiveGapSync": "Synchronizacja brakow wzgledem konkurencji witryny {{domain}}",
     "siteCompetitiveGapResults": "Wyniki brakow wzgledem konkurencji witryny {{domain}}",
+    "siteCompetitiveGapSemstormDiscovery": "Semstorm discovery witryny {{domain}}",
+    "siteCompetitiveGapSemstormOpportunities": "Szanse Semstorm witryny {{domain}}",
+    "siteCompetitiveGapSemstormPromoted": "Backlog Semstorm witryny {{domain}}",
     "siteOpportunities": "Szanse SEO witryny {{domain}}",
     "siteOpportunitiesRecords": "Rekordy szans witryny {{domain}}",
     "siteInternalLinking": "Linkowanie wewnetrzne witryny {{domain}}",
@@ -1227,10 +1230,14 @@
   },
   "competitiveGap": {
     "nav": {
+      "overview": "Przeglad",
       "sync": "Synchronizacja",
       "strategy": "Brief Strategii",
       "competitors": "Wybor Konkurentow",
-      "results": "Wyniki"
+      "results": "Wyniki",
+      "semstormDiscovery": "Semstorm Discovery",
+      "semstormOpportunities": "Szanse Semstorm",
+      "semstormPromoted": "Backlog Semstorm"
     },
     "views": {
       "overview": {
@@ -1311,6 +1318,199 @@
       "openResults": "Otworz wszystkie wyniki",
       "shortcutsTitle": "Skroty workspace",
       "shortcutsDescription": "Przejdz od razu do podwidoku pasujacego do kolejnego kroku: strategii, konkurentow, synchronizacji albo wynikow."
+    },
+    "semstorm": {
+      "overview": {
+        "discoveryShortcut": "Uruchom i sprawdz zapisane discovery runy.",
+        "opportunitiesShortcut": "Przejdz do szans Semstorm z coverage checkiem."
+      },
+      "runStatus": {
+        "running": "W trakcie",
+        "completed": "Zakonczone",
+        "failed": "Nieudane"
+      },
+      "resultType": {
+        "organic": "Organic",
+        "paid": "Paid"
+      },
+      "bucket": {
+        "quick_win": "Quick win",
+        "core_opportunity": "Core opportunity",
+        "watchlist": "Watchlist"
+      },
+      "coverage": {
+        "missing": "Brak pokrycia",
+        "weak_coverage": "Slabe pokrycie",
+        "covered": "Pokryte"
+      },
+      "decisionType": {
+        "create_new_page": "Nowa strona",
+        "expand_existing_page": "Rozszerz strone",
+        "monitor_only": "Tylko monitoruj"
+      },
+      "gscSignal": {
+        "none": "Brak sygnalu GSC",
+        "weak": "Slaby sygnal GSC",
+        "present": "Sygnal GSC obecny"
+      },
+      "state": {
+        "new": "Nowe",
+        "accepted": "Zaakceptowane",
+        "dismissed": "Odrzucone",
+        "promoted": "Wypromowane"
+      },
+      "actions": {
+        "accept": "Akceptuj",
+        "dismiss": "Odrzuc",
+        "promote": "Promuj"
+      },
+      "discovery": {
+        "eyebrow": "Workspace Semstorm",
+        "title": "Semstorm discovery",
+        "description": "Uruchamiaj cienkie discovery runy, sprawdzaj zapisanych konkurentow i preview top queries przed przejsciem do opportunities.",
+        "actions": {
+          "run": "Uruchom discovery",
+          "running": "Uruchamianie discovery...",
+          "openOpportunities": "Otworz opportunities"
+        },
+        "summary": {
+          "lastRunStatus": "Status ostatniego runu",
+          "sourceDomain": "Domena zrodla",
+          "competitors": "Konkurenci",
+          "totalQueries": "Liczba fraz",
+          "uniqueKeywords": "Unikalne frazy",
+          "noRunsHint": "Brak discovery runow."
+        },
+        "form": {
+          "title": "Parametry runu",
+          "description": "Ten etap ma pozostac lekki. Run jest synchroniczny i zapisuje cienki snapshot Semstorm do dalszego read modelu.",
+          "maxCompetitors": "Maks. konkurentow",
+          "maxKeywordsPerCompetitor": "Maks. fraz na konkurenta",
+          "resultType": "Typ wyniku",
+          "includeBasicStats": "Dolacz basic stats"
+        },
+        "createErrorTitle": "Run discovery Semstorm nie powiodl sie",
+        "loadingRuns": "Ladowanie discovery runow Semstorm...",
+        "loadingDetail": "Ladowanie szczegolow discovery runu...",
+        "errorTitle": "Nie udalo sie pobrac discovery runow Semstorm",
+        "detailErrorTitle": "Nie udalo sie pobrac szczegolow discovery runu",
+        "emptyTitle": "Brak discovery runow Semstorm",
+        "emptyDescription": "Uruchom discovery, aby zapisac konkurentow Semstorm i ich top queries dla tego workspace'u.",
+        "detailEmptyTitle": "Nie wybrano discovery runu",
+        "detailEmptyDescription": "Wybierz zapisany run, aby podejrzec konkurentow i preview top queries.",
+        "runs": {
+          "title": "Ostatnie discovery runy",
+          "description": "Wybierz zapisany run, aby obejrzec przechwycony payload Semstorm."
+        },
+        "detail": {
+          "title": "Run #{{runId}}",
+          "description": "Cienki zapisany snapshot runu z konkurentami i preview top queries.",
+          "competitorSummary": "Common keywords {{commonKeywords}} | Traffic {{traffic}} | Queries {{queries}}",
+          "rankLabel": "Pozycja {{rank}}"
+        }
+      },
+      "opportunities": {
+        "eyebrow": "Workspace Semstorm",
+        "title": "Szanse Semstorm",
+        "description": "Przegladaj szanse Semstorm jako osobna warstwe site-level z coverage checkiem i opcjonalnym sygnalem GSC.",
+        "actions": {
+          "openDiscovery": "Otworz discovery",
+          "openPromoted": "Otworz backlog"
+        },
+        "quickFilters": {
+          "bucketTitle": "Bucket",
+          "coverageTitle": "Coverage",
+          "decisionTitle": "Decision type",
+          "stateTitle": "Stan lifecycle",
+          "gscTitle": "Sygnal GSC",
+          "hasGscSignal": "Ma sygnal GSC",
+          "withoutGscSignal": "Bez sygnalu GSC",
+          "onlyActionable": "Tylko actionable"
+        },
+        "filterPanelTitle": "Filtry opportunities",
+        "filterPanelDescription": "Backend utrzymuje filtrowanie cienkie, a query string pozwala odtwarzac konkretny widok Semstorm.",
+        "filters": {
+          "runId": "Run",
+          "limit": "Limit"
+        },
+        "loading": "Ladowanie opportunities Semstorm...",
+        "errorTitle": "Nie udalo sie pobrac opportunities Semstorm",
+        "noCompletedRunTitle": "Brak zakonczonego runu Semstorm",
+        "noCompletedRunDescription": "Najpierw uruchom discovery Semstorm, a potem wroc tutaj do opportunities.",
+        "noActiveCrawlTitle": "Brak kontekstu coverage",
+        "noActiveCrawlDescription": "Witryna nie ma aktywnego crawla, wiec coverage i GSC enrichment wracaja jako puste sygnaly.",
+        "emptyTitle": "Brak opportunities Semstorm dla biezacych filtrow",
+        "emptyDescription": "Zresetuj filtry albo wybierz inny zapisany run Semstorm.",
+        "summary": {
+          "totalItems": "Wszystkie elementy",
+          "bucketCounts": "Buckety",
+          "decisionCounts": "Decision types",
+          "coverageCounts": "Coverage",
+          "stateCounts": "Stany lifecycle"
+        },
+        "bulkActions": {
+          "title": "Selekcja i akcje",
+          "description": "Wybrano {{count}} opportunity seeds gotowych do akcji lifecycle."
+        },
+        "table": {
+          "title": "Lista opportunities",
+          "description": "Read model dla runu #{{runId}} i domeny {{sourceDomain}}.",
+          "selectAll": "Zaznacz wszystkie opportunities Semstorm",
+          "selectKeyword": "Zaznacz {{keyword}}",
+          "keyword": "Fraza",
+          "stateStatus": "Stan",
+          "competitorCount": "Konkurenci",
+          "bestPosition": "Najlepsza pozycja",
+          "maxVolume": "Max volume",
+          "maxTraffic": "Max traffic",
+          "avgCpc": "Sredni CPC",
+          "bucket": "Bucket",
+          "decisionType": "Decision",
+          "coverageStatus": "Coverage",
+          "gscSignalStatus": "GSC",
+          "score": "Score v2",
+          "details": "Szczegoly",
+          "showDetails": "Szczegoly"
+        },
+        "details": {
+          "coverageScore": "Coverage score v1: {{score}}",
+          "matchedPagesCount": "Dopasowane strony: {{count}}",
+          "bestMatchPage": "Najlepsza strona dopasowana",
+          "noBestMatchPage": "Brak dopasowanej strony",
+          "gscSummary": "GSC: klikniecia {{clicks}}, wyswietlenia {{impressions}}, CTR {{ctr}}, srednia pozycja {{avgPosition}}",
+          "sampleCompetitorsLabel": "Przykladowi konkurenci"
+        }
+      },
+      "promoted": {
+        "eyebrow": "Workspace Semstorm",
+        "title": "Backlog Semstorm",
+        "description": "Przegladaj cienki, trwaly backlog zbudowany z wypromowanych opportunities Semstorm.",
+        "actions": {
+          "openOpportunities": "Otworz opportunities"
+        },
+        "loading": "Ladowanie backlogu Semstorm...",
+        "errorTitle": "Nie udalo sie pobrac backlogu Semstorm",
+        "emptyTitle": "Brak wypromowanych seedow Semstorm",
+        "emptyDescription": "Wypromuj zaakceptowane opportunities, aby zbudowac trwaly backlog do kolejnego etapu pracy SEO.",
+        "summary": {
+          "totalItems": "Wypromowane elementy",
+          "activeItems": "Aktywny backlog",
+          "archivedItems": "Zarchiwizowane",
+          "latestCreatedAt": "Ostatnia promocja"
+        },
+        "table": {
+          "title": "Promoted backlog",
+          "description": "Cienka, trwala lista seedow do kolejnych etapow workflow.",
+          "keyword": "Fraza",
+          "bucket": "Bucket",
+          "decisionType": "Decision",
+          "coverageStatus": "Coverage",
+          "gscSignalStatus": "GSC",
+          "score": "Score v2",
+          "sourceRunId": "Run zrodlowy",
+          "createdAt": "Wypromowano"
+        }
+      }
     },
     "semantic": {
       "resume": "Wznów semantic matching",

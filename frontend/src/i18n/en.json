@@ -114,6 +114,9 @@
     "siteCompetitiveGapCompetitors": "Site {{domain}} competitive gap competitors",
     "siteCompetitiveGapSync": "Site {{domain}} competitive gap synchronization",
     "siteCompetitiveGapResults": "Site {{domain}} competitive gap results",
+    "siteCompetitiveGapSemstormDiscovery": "Site {{domain}} Semstorm discovery",
+    "siteCompetitiveGapSemstormOpportunities": "Site {{domain}} Semstorm opportunities",
+    "siteCompetitiveGapSemstormPromoted": "Site {{domain}} Semstorm promoted backlog",
     "siteOpportunities": "Site {{domain}} SEO opportunities",
     "siteOpportunitiesRecords": "Site {{domain}} opportunity records",
     "siteInternalLinking": "Site {{domain}} internal linking",
@@ -1227,10 +1230,14 @@
   },
   "competitiveGap": {
     "nav": {
+      "overview": "Overview",
       "sync": "Synchronization",
       "strategy": "Strategy Brief",
       "competitors": "Competitor Selection",
-      "results": "Results"
+      "results": "Results",
+      "semstormDiscovery": "Semstorm Discovery",
+      "semstormOpportunities": "Semstorm Opportunities",
+      "semstormPromoted": "Semstorm Promoted"
     },
     "views": {
       "overview": {
@@ -1311,6 +1318,199 @@
       "openResults": "Open all results",
       "shortcutsTitle": "Workspace shortcuts",
       "shortcutsDescription": "Jump straight to the subview that matches the next step: strategy, competitors, sync, or results."
+    },
+    "semstorm": {
+      "overview": {
+        "discoveryShortcut": "Run and inspect persisted discovery runs.",
+        "opportunitiesShortcut": "Work through Semstorm-backed opportunities with coverage."
+      },
+      "runStatus": {
+        "running": "Running",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "resultType": {
+        "organic": "Organic",
+        "paid": "Paid"
+      },
+      "bucket": {
+        "quick_win": "Quick win",
+        "core_opportunity": "Core opportunity",
+        "watchlist": "Watchlist"
+      },
+      "coverage": {
+        "missing": "Missing",
+        "weak_coverage": "Weak coverage",
+        "covered": "Covered"
+      },
+      "decisionType": {
+        "create_new_page": "Create new page",
+        "expand_existing_page": "Expand existing page",
+        "monitor_only": "Monitor only"
+      },
+      "gscSignal": {
+        "none": "No GSC signal",
+        "weak": "Weak GSC signal",
+        "present": "GSC signal present"
+      },
+      "state": {
+        "new": "New",
+        "accepted": "Accepted",
+        "dismissed": "Dismissed",
+        "promoted": "Promoted"
+      },
+      "actions": {
+        "accept": "Accept",
+        "dismiss": "Dismiss",
+        "promote": "Promote"
+      },
+      "discovery": {
+        "eyebrow": "Semstorm workspace",
+        "title": "Semstorm discovery",
+        "description": "Run thin discovery jobs, review persisted competitors, and inspect top query previews before moving into opportunities.",
+        "actions": {
+          "run": "Run discovery",
+          "running": "Running discovery...",
+          "openOpportunities": "Open opportunities"
+        },
+        "summary": {
+          "lastRunStatus": "Last run status",
+          "sourceDomain": "Source domain",
+          "competitors": "Competitors",
+          "totalQueries": "Total queries",
+          "uniqueKeywords": "Unique keywords",
+          "noRunsHint": "No discovery runs yet."
+        },
+        "form": {
+          "title": "Run parameters",
+          "description": "Keep this lightweight. The run is synchronous and stores a thin Semstorm snapshot for later read models.",
+          "maxCompetitors": "Max competitors",
+          "maxKeywordsPerCompetitor": "Max keywords per competitor",
+          "resultType": "Result type",
+          "includeBasicStats": "Include basic stats"
+        },
+        "createErrorTitle": "Semstorm discovery run failed",
+        "loadingRuns": "Loading Semstorm discovery runs...",
+        "loadingDetail": "Loading Semstorm discovery run detail...",
+        "errorTitle": "Failed to load Semstorm discovery runs",
+        "detailErrorTitle": "Failed to load Semstorm discovery detail",
+        "emptyTitle": "No Semstorm discovery runs yet",
+        "emptyDescription": "Run discovery to persist Semstorm competitors and their top queries for this site workspace.",
+        "detailEmptyTitle": "No discovery run selected",
+        "detailEmptyDescription": "Choose a persisted run to inspect its competitors and top queries.",
+        "runs": {
+          "title": "Recent discovery runs",
+          "description": "Select a persisted run to inspect the captured Semstorm payload."
+        },
+        "detail": {
+          "title": "Run #{{runId}}",
+          "description": "Thin persisted run snapshot with competitors and top query preview.",
+          "competitorSummary": "Common keywords {{commonKeywords}} | Traffic {{traffic}} | Queries {{queries}}",
+          "rankLabel": "Rank {{rank}}"
+        }
+      },
+      "opportunities": {
+        "eyebrow": "Semstorm workspace",
+        "title": "Semstorm opportunities",
+        "description": "Review Semstorm opportunities as a separate site-level layer with coverage and optional GSC signals.",
+        "actions": {
+          "openDiscovery": "Open discovery",
+          "openPromoted": "Open promoted"
+        },
+        "quickFilters": {
+          "bucketTitle": "Bucket",
+          "coverageTitle": "Coverage",
+          "decisionTitle": "Decision type",
+          "stateTitle": "Lifecycle state",
+          "gscTitle": "GSC signal",
+          "hasGscSignal": "Has GSC signal",
+          "withoutGscSignal": "Without GSC signal",
+          "onlyActionable": "Only actionable"
+        },
+        "filterPanelTitle": "Opportunity filters",
+        "filterPanelDescription": "The backend keeps filtering thin. Query string state lets you share a specific Semstorm view.",
+        "filters": {
+          "runId": "Run",
+          "limit": "Limit"
+        },
+        "loading": "Loading Semstorm opportunities...",
+        "errorTitle": "Failed to load Semstorm opportunities",
+        "noCompletedRunTitle": "No completed Semstorm run yet",
+        "noCompletedRunDescription": "Run Semstorm discovery first, then return here to inspect opportunities.",
+        "noActiveCrawlTitle": "Coverage context is unavailable",
+        "noActiveCrawlDescription": "The site has no active crawl, so coverage and GSC enrichment fall back to empty signals.",
+        "emptyTitle": "No Semstorm opportunities matched the current filters",
+        "emptyDescription": "Reset filters or run a different Semstorm discovery snapshot.",
+        "summary": {
+          "totalItems": "Total items",
+          "bucketCounts": "Bucket counts",
+          "decisionCounts": "Decision counts",
+          "coverageCounts": "Coverage counts",
+          "stateCounts": "Lifecycle states"
+        },
+        "bulkActions": {
+          "title": "Selection and actions",
+          "description": "{{count}} selected opportunity seeds ready for lifecycle actions."
+        },
+        "table": {
+          "title": "Opportunity list",
+          "description": "Read model from run #{{runId}} for {{sourceDomain}}.",
+          "selectAll": "Select all Semstorm opportunities",
+          "selectKeyword": "Select {{keyword}}",
+          "keyword": "Keyword",
+          "stateStatus": "State",
+          "competitorCount": "Competitors",
+          "bestPosition": "Best position",
+          "maxVolume": "Max volume",
+          "maxTraffic": "Max traffic",
+          "avgCpc": "Avg CPC",
+          "bucket": "Bucket",
+          "decisionType": "Decision",
+          "coverageStatus": "Coverage",
+          "gscSignalStatus": "GSC",
+          "score": "Score v2",
+          "details": "Details",
+          "showDetails": "Details"
+        },
+        "details": {
+          "coverageScore": "Coverage score v1: {{score}}",
+          "matchedPagesCount": "Matched pages: {{count}}",
+          "bestMatchPage": "Best match page",
+          "noBestMatchPage": "No page match",
+          "gscSummary": "GSC: clicks {{clicks}}, impressions {{impressions}}, CTR {{ctr}}, avg position {{avgPosition}}",
+          "sampleCompetitorsLabel": "Sample competitors"
+        }
+      },
+      "promoted": {
+        "eyebrow": "Semstorm workspace",
+        "title": "Semstorm promoted backlog",
+        "description": "Review the thin persisted backlog created from promoted Semstorm opportunities.",
+        "actions": {
+          "openOpportunities": "Open opportunities"
+        },
+        "loading": "Loading promoted Semstorm seeds...",
+        "errorTitle": "Failed to load promoted Semstorm seeds",
+        "emptyTitle": "No promoted Semstorm seeds yet",
+        "emptyDescription": "Promote accepted opportunities to create a durable backlog for the next SEO workflow step.",
+        "summary": {
+          "totalItems": "Promoted items",
+          "activeItems": "Active backlog",
+          "archivedItems": "Archived backlog",
+          "latestCreatedAt": "Latest promotion"
+        },
+        "table": {
+          "title": "Promoted backlog",
+          "description": "Thin persisted seed list for later workflow stages.",
+          "keyword": "Keyword",
+          "bucket": "Bucket",
+          "decisionType": "Decision",
+          "coverageStatus": "Coverage",
+          "gscSignalStatus": "GSC",
+          "score": "Score v2",
+          "sourceRunId": "Source run",
+          "createdAt": "Promoted at"
+        }
+      }
     },
     "semantic": {
       "resume": "Resume semantic matching",

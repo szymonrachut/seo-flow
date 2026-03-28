@@ -23,6 +23,37 @@ from app.schemas.competitive_gap import (
     SiteCompetitorUpdateRequest,
 )
 from app.schemas.gsc import GscDateRangeLabel
+from app.schemas.semstorm import (
+    SemstormBriefEnrichmentApplyResponse,
+    SemstormBriefEnrichmentRunResponse,
+    SemstormBriefEnrichmentRunsResponse,
+    SemstormBriefExecutionStatusUpdateRequest,
+    SemstormBriefImplementationStatusUpdateRequest,
+    SemstormBriefExecutionUpdateRequest,
+    SemstormBriefItemResponse,
+    SemstormBriefItemsResponse,
+    SemstormBriefStatusUpdateRequest,
+    SemstormBriefUpdateRequest,
+    SemstormCreateBriefRequest,
+    SemstormCreateBriefResponse,
+    SemstormCreatePlanRequest,
+    SemstormCreatePlanResponse,
+    SemstormDiscoveryPreviewRequest,
+    SemstormDiscoveryPreviewResponse,
+    SemstormDiscoveryRunCreateRequest,
+    SemstormDiscoveryRunListItemResponse,
+    SemstormDiscoveryRunResponse,
+    SemstormExecutionItemsResponse,
+    SemstormImplementedItemsResponse,
+    SemstormOpportunityActionRequest,
+    SemstormOpportunityActionResponse,
+    SemstormOpportunitySeedsResponse,
+    SemstormPlanItemResponse,
+    SemstormPlanItemsResponse,
+    SemstormPlanStatusUpdateRequest,
+    SemstormPlanUpdateRequest,
+    SemstormPromotedItemsResponse,
+)
 from app.services import (
     content_gap_review_llm_service,
     content_gap_review_run_service,
@@ -33,6 +64,10 @@ from app.services import (
     competitive_gap_sync_run_service,
     competitive_gap_service,
     export_service,
+    semstorm_brief_service,
+    semstorm_brief_llm_service,
+    semstorm_plan_service,
+    semstorm_service,
     site_competitor_service,
     site_content_strategy_service,
 )
@@ -42,6 +77,9 @@ router = APIRouter(prefix="/sites", tags=["site-competitive-gap"])
 
 def _raise_http_error(exc: Exception) -> None:
     detail = str(exc)
+    explicit_status = getattr(exc, "status_code", None)
+    if isinstance(explicit_status, int) and 400 <= explicit_status <= 599:
+        raise HTTPException(status_code=explicit_status, detail=detail) from exc
     error_code = getattr(exc, "code", None)
     if error_code == "not_found" or "not found" in detail.lower():
         status_code = status.HTTP_404_NOT_FOUND
@@ -194,6 +232,621 @@ def delete_site_competitor(
         _raise_http_error(exc)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/discovery-preview",
+    response_model=SemstormDiscoveryPreviewResponse,
+)
+def create_semstorm_discovery_preview(
+    site_id: int,
+    payload: SemstormDiscoveryPreviewRequest,
+    session: Session = Depends(get_db),
+) -> SemstormDiscoveryPreviewResponse:
+    try:
+        result = semstorm_service.build_semstorm_discovery_preview(
+            session,
+            site_id,
+            max_competitors=payload.max_competitors,
+            max_keywords_per_competitor=payload.max_keywords_per_competitor,
+            result_type=payload.result_type,
+            include_basic_stats=payload.include_basic_stats,
+            competitors_type=payload.competitors_type,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormDiscoveryPreviewResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+    response_model=SemstormDiscoveryRunResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_semstorm_discovery_run(
+    site_id: int,
+    payload: SemstormDiscoveryRunCreateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormDiscoveryRunResponse:
+    try:
+        result = semstorm_service.run_semstorm_discovery(
+            session,
+            site_id,
+            max_competitors=payload.max_competitors,
+            max_keywords_per_competitor=payload.max_keywords_per_competitor,
+            result_type=payload.result_type,
+            include_basic_stats=payload.include_basic_stats,
+            competitors_type=payload.competitors_type,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        session.commit()
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormDiscoveryRunResponse.model_validate(result)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+    response_model=list[SemstormDiscoveryRunListItemResponse],
+)
+def list_semstorm_discovery_runs(
+    site_id: int,
+    session: Session = Depends(get_db),
+) -> list[SemstormDiscoveryRunListItemResponse]:
+    try:
+        payload = semstorm_service.list_semstorm_discovery_runs(session, site_id)
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    return [SemstormDiscoveryRunListItemResponse.model_validate(item) for item in payload]
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/discovery-runs/{run_id}",
+    response_model=SemstormDiscoveryRunResponse,
+)
+def get_semstorm_discovery_run(
+    site_id: int,
+    run_id: int,
+    session: Session = Depends(get_db),
+) -> SemstormDiscoveryRunResponse:
+    try:
+        payload = semstorm_service.get_semstorm_discovery_run(session, site_id, run_id)
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormDiscoveryRunResponse.model_validate(payload)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/opportunities",
+    response_model=SemstormOpportunitySeedsResponse,
+)
+def get_semstorm_opportunities(
+    site_id: int,
+    run_id: int | None = Query(default=None, ge=1),
+    coverage_status: Literal["missing", "weak_coverage", "covered"] | None = Query(default=None),
+    bucket: Literal["quick_win", "core_opportunity", "watchlist"] | None = Query(default=None),
+    decision_type: Literal["create_new_page", "expand_existing_page", "monitor_only"] | None = Query(default=None),
+    state_status: Literal["new", "accepted", "dismissed", "promoted"] | None = Query(default=None),
+    has_gsc_signal: bool | None = Query(default=None),
+    only_actionable: bool = Query(default=False),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_db),
+) -> SemstormOpportunitySeedsResponse:
+    try:
+        payload = semstorm_service.get_semstorm_opportunities(
+            session,
+            site_id,
+            run_id=run_id,
+            coverage_status=coverage_status,
+            bucket=bucket,
+            decision_type=decision_type,
+            state_status=state_status,
+            has_gsc_signal=has_gsc_signal,
+            only_actionable=only_actionable,
+            limit=limit,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormOpportunitySeedsResponse.model_validate(payload)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/opportunities/actions/accept",
+    response_model=SemstormOpportunityActionResponse,
+)
+def accept_semstorm_opportunities(
+    site_id: int,
+    payload: SemstormOpportunityActionRequest,
+    session: Session = Depends(get_db),
+) -> SemstormOpportunityActionResponse:
+    try:
+        result = semstorm_service.accept_semstorm_opportunities(
+            session,
+            site_id,
+            run_id=payload.run_id,
+            keywords=payload.keywords,
+            note=payload.note,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormOpportunityActionResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/opportunities/actions/dismiss",
+    response_model=SemstormOpportunityActionResponse,
+)
+def dismiss_semstorm_opportunities(
+    site_id: int,
+    payload: SemstormOpportunityActionRequest,
+    session: Session = Depends(get_db),
+) -> SemstormOpportunityActionResponse:
+    try:
+        result = semstorm_service.dismiss_semstorm_opportunities(
+            session,
+            site_id,
+            run_id=payload.run_id,
+            keywords=payload.keywords,
+            note=payload.note,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormOpportunityActionResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+    response_model=SemstormOpportunityActionResponse,
+)
+def promote_semstorm_opportunities(
+    site_id: int,
+    payload: SemstormOpportunityActionRequest,
+    session: Session = Depends(get_db),
+) -> SemstormOpportunityActionResponse:
+    try:
+        result = semstorm_service.promote_semstorm_opportunities(
+            session,
+            site_id,
+            run_id=payload.run_id,
+            keywords=payload.keywords,
+            note=payload.note,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormOpportunityActionResponse.model_validate(result)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/promoted",
+    response_model=SemstormPromotedItemsResponse,
+)
+def list_semstorm_promoted_items(
+    site_id: int,
+    session: Session = Depends(get_db),
+) -> SemstormPromotedItemsResponse:
+    try:
+        payload = semstorm_service.list_semstorm_promoted_items(session, site_id)
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormPromotedItemsResponse.model_validate(payload)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+    response_model=SemstormCreatePlanResponse,
+)
+def create_semstorm_plan_items(
+    site_id: int,
+    payload: SemstormCreatePlanRequest,
+    session: Session = Depends(get_db),
+) -> SemstormCreatePlanResponse:
+    try:
+        result = semstorm_plan_service.create_semstorm_plan_items(
+            session,
+            site_id,
+            promoted_item_ids=payload.promoted_item_ids,
+            target_page_type=payload.defaults.target_page_type if payload.defaults else None,
+        )
+    except semstorm_plan_service.SemstormPlanServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormCreatePlanResponse.model_validate(result)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/plans",
+    response_model=SemstormPlanItemsResponse,
+)
+def list_semstorm_plan_items(
+    site_id: int,
+    state_status: Literal["planned", "in_progress", "done", "archived"] | None = Query(default=None),
+    target_page_type: Literal["new_page", "expand_existing", "refresh_existing", "cluster_support"] | None = Query(default=None),
+    search: str | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_db),
+) -> SemstormPlanItemsResponse:
+    try:
+        payload = semstorm_plan_service.list_semstorm_plan_items(
+            session,
+            site_id,
+            state_status=state_status,
+            target_page_type=target_page_type,
+            search=search,
+            limit=limit,
+        )
+    except semstorm_plan_service.SemstormPlanServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormPlanItemsResponse.model_validate(payload)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}",
+    response_model=SemstormPlanItemResponse,
+)
+def get_semstorm_plan_item(
+    site_id: int,
+    plan_id: int,
+    session: Session = Depends(get_db),
+) -> SemstormPlanItemResponse:
+    try:
+        payload = semstorm_plan_service.get_semstorm_plan_item(session, site_id, plan_id)
+    except semstorm_plan_service.SemstormPlanServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormPlanItemResponse.model_validate(payload)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}/status",
+    response_model=SemstormPlanItemResponse,
+)
+def update_semstorm_plan_item_status(
+    site_id: int,
+    plan_id: int,
+    payload: SemstormPlanStatusUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormPlanItemResponse:
+    try:
+        result = semstorm_plan_service.update_semstorm_plan_item_status(
+            session,
+            site_id,
+            plan_id,
+            state_status=payload.state_status,
+        )
+    except semstorm_plan_service.SemstormPlanServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormPlanItemResponse.model_validate(result)
+
+
+@router.put(
+    "/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}",
+    response_model=SemstormPlanItemResponse,
+)
+def update_semstorm_plan_item(
+    site_id: int,
+    plan_id: int,
+    payload: SemstormPlanUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormPlanItemResponse:
+    try:
+        result = semstorm_plan_service.update_semstorm_plan_item(
+            session,
+            site_id,
+            plan_id,
+            updates=payload.model_dump(exclude_unset=True),
+        )
+    except semstorm_plan_service.SemstormPlanServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormPlanItemResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+    response_model=SemstormCreateBriefResponse,
+)
+def create_semstorm_brief_items(
+    site_id: int,
+    payload: SemstormCreateBriefRequest,
+    session: Session = Depends(get_db),
+) -> SemstormCreateBriefResponse:
+    try:
+        result = semstorm_brief_service.create_semstorm_brief_items(
+            session,
+            site_id,
+            plan_item_ids=payload.plan_item_ids,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormCreateBriefResponse.model_validate(result)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/execution",
+    response_model=SemstormExecutionItemsResponse,
+)
+def list_semstorm_execution_items(
+    site_id: int,
+    execution_status: Literal["draft", "ready", "in_execution", "completed", "archived"] | None = Query(default=None),
+    assignee: str | None = Query(default=None),
+    brief_type: Literal["new_page", "expand_existing", "refresh_existing", "cluster_support"] | None = Query(default=None),
+    search: str | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_db),
+) -> SemstormExecutionItemsResponse:
+    try:
+        payload = semstorm_brief_service.list_semstorm_execution_items(
+            session,
+            site_id,
+            execution_status=execution_status,
+            assignee=assignee,
+            brief_type=brief_type,
+            search=search,
+            limit=limit,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormExecutionItemsResponse.model_validate(payload)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/implemented",
+    response_model=SemstormImplementedItemsResponse,
+)
+def list_semstorm_implemented_items(
+    site_id: int,
+    implementation_status: Literal["too_early", "implemented", "evaluated", "archived"] | None = Query(default=None),
+    outcome_status: Literal["too_early", "no_signal", "weak_signal", "positive_signal"] | None = Query(default=None),
+    brief_type: Literal["new_page", "expand_existing", "refresh_existing", "cluster_support"] | None = Query(default=None),
+    search: str | None = Query(default=None),
+    window_days: int = Query(default=30, ge=1, le=365),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_db),
+) -> SemstormImplementedItemsResponse:
+    try:
+        payload = semstorm_brief_service.list_semstorm_implemented_items(
+            session,
+            site_id,
+            implementation_status=implementation_status,
+            outcome_status=outcome_status,
+            brief_type=brief_type,
+            search=search,
+            window_days=window_days,
+            limit=limit,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormImplementedItemsResponse.model_validate(payload)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/briefs",
+    response_model=SemstormBriefItemsResponse,
+)
+def list_semstorm_brief_items(
+    site_id: int,
+    state_status: Literal["draft", "ready", "in_execution", "completed", "archived"] | None = Query(default=None),
+    brief_type: Literal["new_page", "expand_existing", "refresh_existing", "cluster_support"] | None = Query(default=None),
+    search_intent: Literal["informational", "commercial", "transactional", "navigational", "mixed"] | None = Query(default=None),
+    search: str | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemsResponse:
+    try:
+        payload = semstorm_brief_service.list_semstorm_brief_items(
+            session,
+            site_id,
+            state_status=state_status,
+            brief_type=brief_type,
+            search_intent=search_intent,
+            search=search,
+            limit=limit,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormBriefItemsResponse.model_validate(payload)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}",
+    response_model=SemstormBriefItemResponse,
+)
+def get_semstorm_brief_item(
+    site_id: int,
+    brief_id: int,
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemResponse:
+    try:
+        payload = semstorm_brief_service.get_semstorm_brief_item(session, site_id, brief_id)
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormBriefItemResponse.model_validate(payload)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/status",
+    response_model=SemstormBriefItemResponse,
+)
+def update_semstorm_brief_item_status(
+    site_id: int,
+    brief_id: int,
+    payload: SemstormBriefStatusUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemResponse:
+    try:
+        result = semstorm_brief_service.update_semstorm_brief_item_status(
+            session,
+            site_id,
+            brief_id,
+            state_status=payload.state_status,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefItemResponse.model_validate(result)
+
+
+@router.put(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution",
+    response_model=SemstormBriefItemResponse,
+)
+def update_semstorm_brief_execution(
+    site_id: int,
+    brief_id: int,
+    payload: SemstormBriefExecutionUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemResponse:
+    try:
+        result = semstorm_brief_service.update_semstorm_brief_execution(
+            session,
+            site_id,
+            brief_id,
+            updates=payload.model_dump(exclude_unset=True),
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefItemResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+    response_model=SemstormBriefItemResponse,
+)
+def update_semstorm_brief_execution_status(
+    site_id: int,
+    brief_id: int,
+    payload: SemstormBriefExecutionStatusUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemResponse:
+    try:
+        result = semstorm_brief_service.update_semstorm_brief_execution_status(
+            session,
+            site_id,
+            brief_id,
+            execution_status=payload.execution_status,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefItemResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/implementation-status",
+    response_model=SemstormBriefItemResponse,
+)
+def update_semstorm_brief_implementation_status(
+    site_id: int,
+    brief_id: int,
+    payload: SemstormBriefImplementationStatusUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemResponse:
+    try:
+        result = semstorm_brief_service.update_semstorm_brief_implementation_status(
+            session,
+            site_id,
+            brief_id,
+            implementation_status=payload.implementation_status,
+            evaluation_note=payload.evaluation_note,
+            implementation_url_override=payload.implementation_url_override,
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefItemResponse.model_validate(result)
+
+
+@router.put(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}",
+    response_model=SemstormBriefItemResponse,
+)
+def update_semstorm_brief_item(
+    site_id: int,
+    brief_id: int,
+    payload: SemstormBriefUpdateRequest,
+    session: Session = Depends(get_db),
+) -> SemstormBriefItemResponse:
+    try:
+        result = semstorm_brief_service.update_semstorm_brief_item(
+            session,
+            site_id,
+            brief_id,
+            updates=payload.model_dump(exclude_unset=True),
+        )
+    except semstorm_brief_service.SemstormBriefServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefItemResponse.model_validate(result)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrich",
+    response_model=SemstormBriefEnrichmentRunResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def enrich_semstorm_brief(
+    site_id: int,
+    brief_id: int,
+    request: Request,
+    session: Session = Depends(get_db),
+) -> SemstormBriefEnrichmentRunResponse:
+    try:
+        result = semstorm_brief_llm_service.enrich_semstorm_brief(
+            session,
+            site_id,
+            brief_id,
+            output_language=_resolve_output_language(request),
+        )
+    except semstorm_brief_llm_service.SemstormBriefLlmServiceError as exc:
+        session.commit()
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefEnrichmentRunResponse.model_validate(result)
+
+
+@router.get(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs",
+    response_model=SemstormBriefEnrichmentRunsResponse,
+)
+def list_semstorm_brief_enrichment_runs(
+    site_id: int,
+    brief_id: int,
+    session: Session = Depends(get_db),
+) -> SemstormBriefEnrichmentRunsResponse:
+    try:
+        payload = semstorm_brief_llm_service.list_semstorm_brief_enrichment_runs(session, site_id, brief_id)
+    except semstorm_brief_llm_service.SemstormBriefLlmServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormBriefEnrichmentRunsResponse.model_validate(payload)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs/{run_id}/apply",
+    response_model=SemstormBriefEnrichmentApplyResponse,
+)
+def apply_semstorm_brief_enrichment_run(
+    site_id: int,
+    brief_id: int,
+    run_id: int,
+    session: Session = Depends(get_db),
+) -> SemstormBriefEnrichmentApplyResponse:
+    try:
+        result = semstorm_brief_llm_service.apply_semstorm_brief_enrichment_run(
+            session,
+            site_id,
+            brief_id,
+            run_id,
+        )
+    except semstorm_brief_llm_service.SemstormBriefLlmServiceError as exc:
+        _raise_http_error(exc)
+    session.commit()
+    return SemstormBriefEnrichmentApplyResponse.model_validate(result)
 
 
 @router.post(

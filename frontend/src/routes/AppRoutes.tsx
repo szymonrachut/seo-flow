@@ -14,6 +14,15 @@ import {
   SiteCompetitiveGapSyncPage,
   SiteCompetitiveGapStrategyPage,
 } from '../features/competitive-gap/SiteCompetitiveGapPage'
+import {
+  SiteCompetitiveGapSemstormBriefsPage,
+  SiteCompetitiveGapSemstormDiscoveryPage,
+  SiteCompetitiveGapSemstormExecutionPage,
+  SiteCompetitiveGapSemstormImplementedPage,
+  SiteCompetitiveGapSemstormOpportunitiesPage,
+  SiteCompetitiveGapSemstormPlansPage,
+  SiteCompetitiveGapSemstormPromotedPage,
+} from '../features/competitive-gap/SiteCompetitiveGapSemstormPage'
 import { GscPage } from '../features/gsc/GscPage'
 import { SiteGscPage } from '../features/gsc/SiteGscPage'
 import { InternalLinkingPage } from '../features/internal-linking/InternalLinkingPage'
@@ -78,6 +87,14 @@ export function AppRoutes() {
             <Route path="competitors" element={<SiteCompetitiveGapCompetitorsPage />} />
             <Route path="sync" element={<SiteCompetitiveGapSyncPage />} />
             <Route path="results" element={<SiteCompetitiveGapResultsPage />} />
+            <Route path="semstorm" element={<Navigate replace to="discovery" />} />
+            <Route path="semstorm/discovery" element={<SiteCompetitiveGapSemstormDiscoveryPage />} />
+            <Route path="semstorm/opportunities" element={<SiteCompetitiveGapSemstormOpportunitiesPage />} />
+            <Route path="semstorm/promoted" element={<SiteCompetitiveGapSemstormPromotedPage />} />
+            <Route path="semstorm/plans" element={<SiteCompetitiveGapSemstormPlansPage />} />
+            <Route path="semstorm/briefs" element={<SiteCompetitiveGapSemstormBriefsPage />} />
+            <Route path="semstorm/execution" element={<SiteCompetitiveGapSemstormExecutionPage />} />
+            <Route path="semstorm/implemented" element={<SiteCompetitiveGapSemstormImplementedPage />} />
           </Route>
           <Route path="audit">
             <Route index element={<SiteAuditOverviewPage />} />

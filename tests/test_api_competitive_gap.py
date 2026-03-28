@@ -9,6 +9,8 @@ from sqlalchemy import select
 
 from app.core.config import get_settings
 from app.db.models import (
+    GscProperty,
+    GscTopQuery,
     SiteCompetitor,
     SiteCompetitorPage,
     SiteCompetitorPageExtraction,
@@ -27,6 +29,8 @@ from app.services import (
     competitive_gap_semantic_service,
     competitive_gap_sync_run_service,
     competitive_gap_sync_service,
+    semstorm_brief_service,
+    semstorm_service,
 )
 from app.services.competitive_gap_keys import build_competitive_gap_signature
 from app.services.competitive_gap_llm_service import (
@@ -38,7 +42,7 @@ from app.services.competitive_gap_extraction_service import CompetitorExtraction
 from app.services.competitive_gap_page_diagnostics import build_fetch_diagnostics_payload
 from app.services.competitive_gap_semantic_card_service import build_semantic_card
 from app.schemas.competitive_gap import NormalizedCompetitiveGapStrategy
-from tests.competitive_gap_test_utils import seed_competitive_gap_site
+from tests.competitive_gap_test_utils import FIXED_TIME, seed_competitive_gap_site
 from tests.test_content_gap_review_run_service import _add_candidate, _seed_site_with_two_crawls
 
 
@@ -139,6 +143,1415 @@ def test_competitor_crud_endpoint_blocks_duplicates(api_client, sqlite_session_f
         f"/sites/{site_id}/competitive-content-gap/competitors/{competitor_id}"
     )
     assert delete_response.status_code == 204
+
+
+def test_semstorm_discovery_preview_endpoint_returns_preview_payload(api_client, sqlite_session_factory, monkeypatch) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+    captured_kwargs: dict[str, object] = {}
+
+    def _fake_preview(session, requested_site_id, **kwargs):
+        captured_kwargs["site_id"] = requested_site_id
+        captured_kwargs.update(kwargs)
+        return {
+            "site_id": requested_site_id,
+            "source_domain": "example.com",
+            "semstorm_enabled": True,
+            "result_type": "organic",
+            "competitors_type": "all",
+            "include_basic_stats": True,
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 2,
+            "competitors": [
+                {
+                    "domain": "competitor-a.com",
+                    "common_keywords": 41,
+                    "traffic": 210,
+                    "basic_stats": {
+                        "keywords": 120,
+                        "keywords_top": 22,
+                        "traffic": 210,
+                        "traffic_potential": 380,
+                        "search_volume": 1800,
+                        "search_volume_top": 650,
+                    },
+                    "top_queries": [
+                        {
+                            "keyword": "seo audit checklist",
+                            "position": 2,
+                            "position_change": 1,
+                            "url": "https://competitor-a.com/seo-audit-checklist",
+                            "traffic": 91,
+                            "traffic_change": 11,
+                            "volume": 1300,
+                            "competitors": 8,
+                            "cpc": 3.4,
+                            "trends": [1, 2, 11],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    monkeypatch.setattr(semstorm_service, "build_semstorm_discovery_preview", _fake_preview)
+
+    response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-preview",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 2,
+            "result_type": "organic",
+            "include_basic_stats": True,
+            "competitors_type": "all",
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert captured_kwargs == {
+        "site_id": site_id,
+        "max_competitors": 2,
+        "max_keywords_per_competitor": 2,
+        "result_type": "organic",
+        "include_basic_stats": True,
+        "competitors_type": "all",
+    }
+    assert payload["site_id"] == site_id
+    assert payload["source_domain"] == "example.com"
+    assert payload["semstorm_enabled"] is True
+    assert payload["competitors"][0]["domain"] == "competitor-a.com"
+    assert payload["competitors"][0]["top_queries"][0]["trends"] == [1, 2, 11]
+
+
+def test_semstorm_discovery_preview_endpoint_propagates_service_status_code(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    def _raise_preview_error(session, requested_site_id, **kwargs):
+        raise semstorm_service.SemstormServiceError(
+            "Semstorm request timed out.",
+            code="timeout",
+            status_code=504,
+        )
+
+    monkeypatch.setattr(semstorm_service, "build_semstorm_discovery_preview", _raise_preview_error)
+
+    response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-preview",
+        json={},
+    )
+    assert response.status_code == 504
+    assert response.json() == {"detail": "Semstorm request timed out."}
+
+
+def _add_semstorm_gsc_top_query(
+    session_factory,
+    *,
+    site_id: int,
+    crawl_job_id: int,
+    page_id: int,
+    url: str,
+    query: str,
+    clicks: int,
+    impressions: int,
+    ctr: float,
+    position: float,
+) -> None:
+    with session_factory() as session:
+        gsc_property_id = session.scalar(select(GscProperty.id).where(GscProperty.site_id == site_id))
+        assert gsc_property_id is not None
+        session.add(
+            GscTopQuery(
+                gsc_property_id=int(gsc_property_id),
+                crawl_job_id=crawl_job_id,
+                page_id=page_id,
+                url=url,
+                normalized_url=url,
+                date_range_label="last_28_days",
+                query=query,
+                clicks=clicks,
+                impressions=impressions,
+                ctr=ctr,
+                position=position,
+                fetched_at=FIXED_TIME,
+                created_at=FIXED_TIME,
+            )
+        )
+        session.commit()
+
+
+class ApiPersistedSemstormClient:
+    def get_competitors(self, *, domains, result_type="organic", competitors_type="all", max_items=10):
+        assert list(domains) == ["example.com"]
+        assert result_type == "organic"
+        assert competitors_type == "all"
+        assert max_items == 2
+        return [
+            {"competitor": "example.com", "common_keywords": 900, "traffic": 900},
+            {"competitor": "competitor-a.com", "common_keywords": 40, "traffic": 110},
+            {"competitor": "competitor-b.com", "common_keywords": 18, "traffic": 60},
+        ]
+
+    def get_keywords_basic_stats(self, *, domains, result_type="organic"):
+        assert result_type == "organic"
+        return {
+            "competitor-a.com": {
+                "keywords": 120,
+                "keywords_top": 25,
+                "traffic": 480,
+                "traffic_potential": 700,
+                "search_volume": 3200,
+                "search_volume_top": 900,
+            },
+            "competitor-b.com": {
+                "keywords": 75,
+                "keywords_top": 15,
+                "traffic": 220,
+                "traffic_potential": 350,
+                "search_volume": 1800,
+                "search_volume_top": 420,
+            },
+        }
+
+    def get_keywords(self, *, domains, result_type="organic", max_items=10, sorting=None):
+        assert result_type == "organic"
+        assert max_items == 3
+        assert sorting == {"field": "traffic:0", "sort": "desc"}
+        domain = domains[0]
+        if domain == "competitor-a.com":
+            return [
+                {
+                    "keyword": "seo audit",
+                    "position": {"competitor-a.com": 2},
+                    "position_c": {"competitor-a.com": 3},
+                    "url": {"competitor-a.com": "https://competitor-a.com/seo-audit"},
+                    "traffic": {"competitor-a.com": 91},
+                    "traffic_c": {"competitor-a.com": 12},
+                    "volume": 1300,
+                    "competitors": 8,
+                    "cpc": 3.4,
+                    "trends": "1,2,11",
+                },
+                {
+                    "keyword": "content strategy template",
+                    "position": {"competitor-a.com": 7},
+                    "position_c": {"competitor-a.com": 1},
+                    "url": {"competitor-a.com": "https://competitor-a.com/content-strategy-template"},
+                    "traffic": {"competitor-a.com": 24},
+                    "traffic_c": {"competitor-a.com": 4},
+                    "volume": 180,
+                    "competitors": 4,
+                    "cpc": 1.8,
+                    "trends": [2, 2, 3],
+                },
+                {
+                    "keyword": "local seo pricing",
+                    "position": {"competitor-a.com": 16},
+                    "position_c": {"competitor-a.com": -1},
+                    "url": {"competitor-a.com": "https://competitor-a.com/local-seo-pricing"},
+                    "traffic": {"competitor-a.com": 45},
+                    "traffic_c": {"competitor-a.com": -4},
+                    "volume": 700,
+                    "competitors": 6,
+                    "cpc": 4.9,
+                    "trends": [],
+                },
+            ]
+        if domain == "competitor-b.com":
+            return [
+                {
+                    "keyword": "seo audit",
+                    "position": {"competitor-b.com": 5},
+                    "position_c": {"competitor-b.com": 1},
+                    "url": {"competitor-b.com": "https://competitor-b.com/seo-audit"},
+                    "traffic": {"competitor-b.com": 60},
+                    "traffic_c": {"competitor-b.com": 2},
+                    "volume": 1250,
+                    "competitors": 7,
+                    "cpc": 2.6,
+                    "trends": [4, 5],
+                },
+                {
+                    "keyword": "content strategy template",
+                    "position": {"competitor-b.com": 9},
+                    "position_c": {"competitor-b.com": 0},
+                    "url": {"competitor-b.com": "https://competitor-b.com/content-strategy-template"},
+                    "traffic": {"competitor-b.com": 18},
+                    "traffic_c": {"competitor-b.com": 1},
+                    "volume": 160,
+                    "competitors": 5,
+                    "cpc": 1.2,
+                    "trends": [1, 3],
+                },
+                {
+                    "keyword": "local seo pricing",
+                    "position": {"competitor-b.com": 14},
+                    "position_c": {"competitor-b.com": 1},
+                    "url": {"competitor-b.com": "https://competitor-b.com/local-seo-pricing"},
+                    "traffic": {"competitor-b.com": 33},
+                    "traffic_c": {"competitor-b.com": 2},
+                    "volume": 700,
+                    "competitors": 7,
+                    "cpc": 4.9,
+                    "trends": [3, 4],
+                },
+            ]
+        raise AssertionError(f"Unexpected domains call: {domains!r}")
+
+
+def _create_completed_semstorm_brief_via_api(api_client, *, site_id: int) -> int:
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_id = int(create_plan_response.json()["items"][0]["id"])
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={"plan_item_ids": [plan_id]},
+    )
+    assert create_brief_response.status_code == 200
+    brief_id = int(create_brief_response.json()["items"][0]["id"])
+
+    for next_status in ("ready", "in_execution", "completed"):
+        transition_response = api_client.post(
+            f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+            json={"execution_status": next_status},
+        )
+        assert transition_response.status_code == 200
+
+    return brief_id
+
+
+def test_semstorm_discovery_run_endpoints_create_list_detail_and_opportunities(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+    fake_client = ApiPersistedSemstormClient()
+    _add_semstorm_gsc_top_query(
+        sqlite_session_factory,
+        site_id=site_id,
+        crawl_job_id=ids["crawl_job_id"],
+        page_id=ids["audit_page_id"],
+        url="https://example.com/seo-audit",
+        query="seo audit",
+        clicks=19,
+        impressions=210,
+        ctr=0.09,
+        position=4.2,
+    )
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: fake_client)
+
+    create_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "result_type": "organic",
+            "include_basic_stats": True,
+            "competitors_type": "all",
+        },
+    )
+    assert create_response.status_code == 201
+    create_payload = create_response.json()
+    assert create_payload["run_id"] == 1
+    assert create_payload["status"] == "completed"
+    assert create_payload["source_domain"] == "example.com"
+    assert create_payload["params"] == {
+        "max_competitors": 2,
+        "max_keywords_per_competitor": 3,
+        "result_type": "organic",
+        "include_basic_stats": True,
+        "competitors_type": "all",
+    }
+    assert create_payload["summary"]["total_competitors"] == 2
+    assert create_payload["summary"]["total_queries"] == 6
+    assert create_payload["summary"]["unique_keywords"] == 3
+    assert [item["domain"] for item in create_payload["competitors"]] == ["competitor-a.com", "competitor-b.com"]
+
+    list_response = api_client.get(f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs")
+    assert list_response.status_code == 200
+    list_payload = list_response.json()
+    assert len(list_payload) == 1
+    assert list_payload[0]["run_id"] == 1
+    assert list_payload[0]["summary"]["total_queries"] == 6
+
+    detail_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs/1"
+    )
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["run_id"] == 1
+    assert detail_payload["competitors"][0]["top_queries"][0]["keyword"] == "seo audit"
+
+    opportunities_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities"
+    )
+    assert opportunities_response.status_code == 200
+    opportunities_payload = opportunities_response.json()
+    assert opportunities_payload["run_id"] == 1
+    assert opportunities_payload["active_crawl_id"] == ids["crawl_job_id"]
+    assert opportunities_payload["summary"]["bucket_counts"] == {
+        "quick_win": 1,
+        "core_opportunity": 1,
+        "watchlist": 1,
+    }
+    assert opportunities_payload["summary"]["decision_type_counts"] == {
+        "create_new_page": 1,
+        "expand_existing_page": 1,
+        "monitor_only": 1,
+    }
+    assert opportunities_payload["summary"]["coverage_status_counts"] == {
+        "missing": 1,
+        "weak_coverage": 1,
+        "covered": 1,
+    }
+    assert opportunities_payload["summary"]["state_counts"] == {
+        "new": 3,
+        "accepted": 0,
+        "dismissed": 0,
+        "promoted": 0,
+    }
+
+    by_keyword = {item["keyword"]: item for item in opportunities_payload["items"]}
+    assert by_keyword["seo audit"]["bucket"] == "core_opportunity"
+    assert by_keyword["seo audit"]["coverage_status"] == "covered"
+    assert by_keyword["seo audit"]["decision_type"] == "monitor_only"
+    assert by_keyword["seo audit"]["gsc_signal_status"] == "present"
+    assert by_keyword["seo audit"]["state_status"] == "new"
+    assert by_keyword["content strategy template"]["coverage_status"] == "weak_coverage"
+    assert by_keyword["content strategy template"]["decision_type"] == "expand_existing_page"
+    assert by_keyword["content strategy template"]["gsc_signal_status"] == "weak"
+    assert by_keyword["local seo pricing"]["coverage_status"] == "missing"
+    assert by_keyword["local seo pricing"]["decision_type"] == "create_new_page"
+    assert by_keyword["local seo pricing"]["gsc_signal_status"] == "none"
+
+
+def test_semstorm_opportunities_endpoint_filters_by_coverage_status_and_decision_type(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_response.status_code == 201
+
+    missing_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities",
+        params={"coverage_status": "missing"},
+    )
+    assert missing_response.status_code == 200
+    missing_items = missing_response.json()["items"]
+    assert [item["keyword"] for item in missing_items] == ["local seo pricing"]
+
+    expand_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities",
+        params={"decision_type": "expand_existing_page"},
+    )
+    assert expand_response.status_code == 200
+    expand_items = expand_response.json()["items"]
+    assert [item["keyword"] for item in expand_items] == ["content strategy template"]
+
+
+def test_semstorm_opportunity_actions_and_promoted_endpoints_support_bulk_and_mixed_success(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_response.status_code == 201
+
+    accept_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/accept",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit", "missing keyword"],
+            "note": "Review next sprint",
+        },
+    )
+    assert accept_response.status_code == 200
+    accept_payload = accept_response.json()
+    assert accept_payload["updated_count"] == 1
+    assert accept_payload["updated_keywords"] == ["seo audit"]
+    assert accept_payload["skipped"] == [{"keyword": "missing keyword", "reason": "keyword_not_in_run"}]
+
+    dismiss_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/dismiss",
+        json={
+            "run_id": 1,
+            "keywords": ["local seo pricing"],
+            "note": "Not a fit",
+        },
+    )
+    assert dismiss_response.status_code == 200
+    assert dismiss_response.json()["updated_keywords"] == ["local seo pricing"]
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit", "local seo pricing"],
+            "note": "Backlog seed",
+        },
+    )
+    assert promote_response.status_code == 200
+    promote_payload = promote_response.json()
+    assert promote_payload["promoted_count"] == 1
+    assert promote_payload["promoted_items"][0]["keyword"] == "seo audit"
+    assert promote_payload["skipped"] == [
+        {"keyword": "local seo pricing", "reason": "dismissed_requires_accept"}
+    ]
+
+    duplicate_promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit"],
+        },
+    )
+    assert duplicate_promote_response.status_code == 200
+    assert duplicate_promote_response.json()["skipped"] == [
+        {"keyword": "seo audit", "reason": "already_promoted"}
+    ]
+
+    opportunities_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities",
+        params={"state_status": "promoted"},
+    )
+    assert opportunities_response.status_code == 200
+    opportunities_payload = opportunities_response.json()
+    assert opportunities_payload["summary"]["state_counts"]["promoted"] == 1
+    assert [item["keyword"] for item in opportunities_payload["items"]] == ["seo audit"]
+
+    actionable_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities",
+        params={"only_actionable": True},
+    )
+    assert actionable_response.status_code == 200
+    assert {item["keyword"] for item in actionable_response.json()["items"]} == {"content strategy template"}
+
+    promoted_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted"
+    )
+    assert promoted_response.status_code == 200
+    promoted_payload = promoted_response.json()
+    assert promoted_payload["summary"] == {
+        "total_items": 1,
+        "promotion_status_counts": {"active": 1, "archived": 0},
+    }
+    assert promoted_payload["items"][0]["keyword"] == "seo audit"
+    assert promoted_payload["items"][0]["source_run_id"] == 1
+
+
+def test_semstorm_opportunity_action_endpoint_returns_404_without_completed_run(
+    api_client,
+    sqlite_session_factory,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/accept",
+        json={
+            "keywords": ["seo audit"],
+        },
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "No completed Semstorm discovery run found for this site."
+
+
+def test_semstorm_plan_endpoints_support_create_list_detail_update_and_filters(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit", "content strategy template"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    promoted_response = api_client.get(f"/sites/{site_id}/competitive-content-gap/semstorm/promoted")
+    assert promoted_response.status_code == 200
+    promoted_items = promoted_response.json()["items"]
+    promoted_ids = {item["keyword"]: int(item["id"]) for item in promoted_items}
+    assert promoted_items[0]["has_plan"] is False
+
+    from app.db.models import Site, SiteSemstormPromotedItem
+
+    with sqlite_session_factory() as session:
+        foreign_site = Site(root_url="https://other-example.com", domain="other-example.com", created_at=FIXED_TIME)
+        session.add(foreign_site)
+        session.flush()
+        foreign_item = SiteSemstormPromotedItem(
+            site_id=foreign_site.id,
+            opportunity_key="semstorm:foreign123",
+            source_run_id=1,
+            keyword="foreign keyword",
+            normalized_keyword="foreign keyword",
+            bucket="watchlist",
+            decision_type="monitor_only",
+            opportunity_score_v2=10,
+            coverage_status="missing",
+            best_match_page_url=None,
+            gsc_signal_status="none",
+            source_payload_json={},
+            promotion_status="active",
+            created_at=FIXED_TIME,
+            updated_at=FIXED_TIME,
+        )
+        session.add(foreign_item)
+        session.commit()
+        foreign_promoted_id = int(foreign_item.id)
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [
+                promoted_ids["seo audit"],
+                foreign_promoted_id,
+                9999,
+            ],
+            "defaults": {
+                "target_page_type": "new_page",
+            },
+        },
+    )
+    assert create_plan_response.status_code == 200
+    create_plan_payload = create_plan_response.json()
+    assert create_plan_payload["created_count"] == 1
+    assert create_plan_payload["updated_count"] == 0
+    assert create_plan_payload["skipped_count"] == 2
+    assert create_plan_payload["items"][0]["keyword"] == "seo audit"
+    assert {item["reason"] for item in create_plan_payload["skipped"]} == {"promoted_item_not_found"}
+
+    duplicate_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [promoted_ids["seo audit"]],
+        },
+    )
+    assert duplicate_plan_response.status_code == 200
+    assert duplicate_plan_response.json()["skipped"] == [
+        {
+            "promoted_item_id": promoted_ids["seo audit"],
+            "keyword": "seo audit",
+            "reason": "already_exists",
+        }
+    ]
+
+    promoted_after_plan_response = api_client.get(f"/sites/{site_id}/competitive-content-gap/semstorm/promoted")
+    assert promoted_after_plan_response.status_code == 200
+    promoted_after_plan = promoted_after_plan_response.json()
+    seo_audit_promoted = next(item for item in promoted_after_plan["items"] if item["keyword"] == "seo audit")
+    assert seo_audit_promoted["has_plan"] is True
+    assert seo_audit_promoted["plan_id"] is not None
+
+    plans_response = api_client.get(f"/sites/{site_id}/competitive-content-gap/semstorm/plans")
+    assert plans_response.status_code == 200
+    plans_payload = plans_response.json()
+    assert plans_payload["summary"]["total_count"] == 1
+    assert plans_payload["summary"]["state_counts"]["planned"] == 1
+    plan_id = int(plans_payload["items"][0]["id"])
+
+    detail_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}"
+    )
+    assert detail_response.status_code == 200
+    assert detail_response.json()["keyword"] == "seo audit"
+
+    status_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}/status",
+        json={"state_status": "in_progress"},
+    )
+    assert status_response.status_code == 200
+    assert status_response.json()["state_status"] == "in_progress"
+
+    update_response = api_client.put(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}",
+        json={
+            "plan_title": "SEO audit working plan",
+            "plan_note": "Draft content plan for next sprint.",
+            "target_page_type": "cluster_support",
+            "proposed_slug": "seo-audit-plan",
+            "proposed_primary_keyword": "seo audit plan",
+            "proposed_secondary_keywords": ["technical seo audit", "audit checklist"],
+        },
+    )
+    assert update_response.status_code == 200
+    update_payload = update_response.json()
+    assert update_payload["plan_title"] == "SEO audit working plan"
+    assert update_payload["target_page_type"] == "cluster_support"
+    assert update_payload["proposed_secondary_keywords"] == [
+        "technical seo audit",
+        "audit checklist",
+    ]
+
+    filtered_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans",
+        params={
+            "state_status": "in_progress",
+            "target_page_type": "cluster_support",
+            "search": "working",
+        },
+    )
+    assert filtered_response.status_code == 200
+    filtered_payload = filtered_response.json()
+    assert filtered_payload["summary"]["total_count"] == 1
+    assert filtered_payload["summary"]["state_counts"]["in_progress"] == 1
+    assert filtered_payload["summary"]["target_page_type_counts"]["cluster_support"] == 1
+    assert filtered_payload["items"][0]["id"] == plan_id
+
+
+def test_semstorm_brief_endpoints_support_create_list_detail_update_and_filters(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit", "local seo pricing"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_ids = {item["keyword"]: int(item["id"]) for item in create_plan_response.json()["items"]}
+    assert all(item["has_brief"] is False for item in create_plan_response.json()["items"])
+
+    from app.db.models import Site, SiteSemstormPlanItem, SiteSemstormPromotedItem
+
+    with sqlite_session_factory() as session:
+        foreign_site = Site(root_url="https://foreign.example.com", domain="foreign.example.com", created_at=FIXED_TIME)
+        session.add(foreign_site)
+        session.flush()
+        foreign_promoted_item = SiteSemstormPromotedItem(
+            site_id=foreign_site.id,
+            opportunity_key="semstorm:foreign-brief",
+            source_run_id=1,
+            keyword="foreign keyword",
+            normalized_keyword="foreign keyword",
+            bucket="watchlist",
+            decision_type="monitor_only",
+            opportunity_score_v2=10,
+            coverage_status="missing",
+            best_match_page_url=None,
+            gsc_signal_status="none",
+            source_payload_json={},
+            promotion_status="active",
+            created_at=FIXED_TIME,
+            updated_at=FIXED_TIME,
+        )
+        session.add(foreign_promoted_item)
+        session.flush()
+        foreign_plan_item = SiteSemstormPlanItem(
+            site_id=foreign_site.id,
+            promoted_item_id=foreign_promoted_item.id,
+            keyword="foreign keyword",
+            normalized_keyword="foreign keyword",
+            source_run_id=1,
+            state_status="planned",
+            decision_type_snapshot="monitor_only",
+            bucket_snapshot="watchlist",
+            coverage_status_snapshot="missing",
+            opportunity_score_v2_snapshot=10,
+            best_match_page_url_snapshot=None,
+            gsc_signal_status_snapshot="none",
+            plan_title="Foreign plan",
+            plan_note=None,
+            target_page_type="new_page",
+            proposed_slug="foreign-keyword",
+            proposed_primary_keyword="foreign keyword",
+            proposed_secondary_keywords_json=[],
+            created_at=FIXED_TIME,
+            updated_at=FIXED_TIME,
+        )
+        session.add(foreign_plan_item)
+        session.commit()
+        foreign_plan_id = int(foreign_plan_item.id)
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={
+            "plan_item_ids": [
+                plan_ids["local seo pricing"],
+                foreign_plan_id,
+                9999,
+            ],
+        },
+    )
+    assert create_brief_response.status_code == 200
+    create_brief_payload = create_brief_response.json()
+    assert create_brief_payload["created_count"] == 1
+    assert create_brief_payload["updated_count"] == 0
+    assert create_brief_payload["skipped_count"] == 2
+    assert create_brief_payload["items"][0]["primary_keyword"] == "local seo pricing"
+    assert create_brief_payload["items"][0]["brief_type"] == "new_page"
+    assert create_brief_payload["items"][0]["target_url_existing"] is None
+    assert {item["reason"] for item in create_brief_payload["skipped"]} == {"wrong_site", "plan_not_found"}
+
+    duplicate_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={
+            "plan_item_ids": [plan_ids["local seo pricing"]],
+        },
+    )
+    assert duplicate_brief_response.status_code == 200
+    assert duplicate_brief_response.json()["skipped"] == [
+        {
+            "plan_item_id": plan_ids["local seo pricing"],
+            "brief_title": "New page brief: Local SEO Pricing",
+            "reason": "already_exists",
+        }
+    ]
+
+    plans_after_brief_response = api_client.get(f"/sites/{site_id}/competitive-content-gap/semstorm/plans")
+    assert plans_after_brief_response.status_code == 200
+    plans_after_brief = plans_after_brief_response.json()["items"]
+    local_pricing_plan = next(item for item in plans_after_brief if item["keyword"] == "local seo pricing")
+    assert local_pricing_plan["has_brief"] is True
+    assert local_pricing_plan["brief_id"] is not None
+    brief_id = int(local_pricing_plan["brief_id"])
+
+    list_response = api_client.get(f"/sites/{site_id}/competitive-content-gap/semstorm/briefs")
+    assert list_response.status_code == 200
+    list_payload = list_response.json()
+    assert list_payload["summary"]["total_count"] == 1
+    assert list_payload["summary"]["state_counts"]["draft"] == 1
+    assert list_payload["items"][0]["id"] == brief_id
+
+    detail_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}"
+    )
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()
+    assert detail_payload["sections"][0] == "Introduction to Local SEO Pricing"
+    assert detail_payload["internal_link_targets"] == ["https://example.com/seo-audit"]
+
+    status_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/status",
+        json={"state_status": "ready"},
+    )
+    assert status_response.status_code == 200
+    assert status_response.json()["state_status"] == "ready"
+
+    update_response = api_client.put(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}",
+        json={
+            "brief_title": "Local SEO pricing execution brief",
+            "brief_type": "cluster_support",
+            "primary_keyword": "local seo pricing guide",
+            "secondary_keywords": ["local seo pricing", "seo pricing guide"],
+            "search_intent": "commercial",
+            "target_url_existing": "https://example.com/content-strategy",
+            "proposed_url_slug": "local-seo-pricing-guide",
+            "recommended_page_title": "Local SEO Pricing Guide | Services and Next Steps",
+            "recommended_h1": "Local SEO Pricing Guide",
+            "content_goal": "Turn the pricing seed into a practical execution packet.",
+            "angle_summary": "Use this as a lightweight cluster brief around local SEO pricing.",
+            "sections": ["Pricing context", "Packages", "FAQs"],
+            "internal_link_targets": ["https://example.com/content-strategy"],
+            "source_notes": ["Source run: #1", "Coverage status: missing"],
+        },
+    )
+    assert update_response.status_code == 200
+    update_payload = update_response.json()
+    assert update_payload["brief_title"] == "Local SEO pricing execution brief"
+    assert update_payload["brief_type"] == "cluster_support"
+    assert update_payload["search_intent"] == "commercial"
+
+    filtered_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs",
+        params={
+            "state_status": "ready",
+            "brief_type": "cluster_support",
+            "search_intent": "commercial",
+            "search": "execution",
+        },
+    )
+    assert filtered_response.status_code == 200
+    filtered_payload = filtered_response.json()
+    assert filtered_payload["summary"]["total_count"] == 1
+    assert filtered_payload["summary"]["state_counts"]["ready"] == 1
+    assert filtered_payload["summary"]["brief_type_counts"]["cluster_support"] == 1
+    assert filtered_payload["summary"]["intent_counts"]["commercial"] == 1
+    assert filtered_payload["items"][0]["id"] == brief_id
+
+
+def test_semstorm_brief_execution_endpoints_support_transitions_metadata_and_filters(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_id = int(create_plan_response.json()["items"][0]["id"])
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={"plan_item_ids": [plan_id]},
+    )
+    assert create_brief_response.status_code == 200
+    brief_id = int(create_brief_response.json()["items"][0]["id"])
+
+    execution_metadata_response = api_client.put(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution",
+        json={
+            "assignee": "Alice",
+            "execution_note": "Ready for editorial handoff",
+        },
+    )
+    assert execution_metadata_response.status_code == 200
+    execution_metadata_payload = execution_metadata_response.json()
+    assert execution_metadata_payload["assignee"] == "Alice"
+    assert execution_metadata_payload["execution_note"] == "Ready for editorial handoff"
+    assert execution_metadata_payload["execution_status"] == "draft"
+
+    ready_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+        json={"execution_status": "ready"},
+    )
+    assert ready_response.status_code == 200
+    assert ready_response.json()["execution_status"] == "ready"
+    assert ready_response.json()["ready_at"] is not None
+
+    start_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+        json={"execution_status": "in_execution"},
+    )
+    assert start_response.status_code == 200
+    assert start_response.json()["execution_status"] == "in_execution"
+    assert start_response.json()["started_at"] is not None
+
+    complete_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+        json={"execution_status": "completed"},
+    )
+    assert complete_response.status_code == 200
+    complete_payload = complete_response.json()
+    assert complete_payload["execution_status"] == "completed"
+    assert complete_payload["completed_at"] is not None
+    assert complete_payload["decision_type_snapshot"] == "monitor_only"
+    assert complete_payload["coverage_status_snapshot"] == "covered"
+
+    execution_list_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/execution",
+        params={
+            "execution_status": "completed",
+            "assignee": "ali",
+            "brief_type": "refresh_existing",
+            "search": "seo audit",
+        },
+    )
+    assert execution_list_response.status_code == 200
+    execution_list_payload = execution_list_response.json()
+    assert execution_list_payload["summary"]["total_count"] == 1
+    assert execution_list_payload["summary"]["execution_status_counts"]["completed"] == 1
+    assert execution_list_payload["summary"]["completed_count"] == 1
+    assert execution_list_payload["items"][0]["brief_id"] == brief_id
+    assert execution_list_payload["items"][0]["assignee"] == "Alice"
+
+
+def test_semstorm_brief_execution_status_endpoint_rejects_invalid_transition(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["seo audit"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_id = int(create_plan_response.json()["items"][0]["id"])
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={"plan_item_ids": [plan_id]},
+    )
+    assert create_brief_response.status_code == 200
+    brief_id = int(create_brief_response.json()["items"][0]["id"])
+
+    invalid_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+        json={"execution_status": "completed"},
+    )
+    assert invalid_response.status_code == 409
+    assert "invalid semstorm brief execution transition" in invalid_response.json()["detail"].lower()
+
+
+def test_semstorm_implemented_endpoints_mark_completed_briefs_and_return_outcome_payload(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+    monkeypatch.setattr(semstorm_brief_service, "utcnow", lambda: FIXED_TIME + timedelta(days=5))
+
+    _add_semstorm_gsc_top_query(
+        sqlite_session_factory,
+        site_id=site_id,
+        crawl_job_id=ids["crawl_job_id"],
+        page_id=ids["audit_page_id"],
+        url="https://example.com/seo-audit",
+        query="seo audit",
+        clicks=19,
+        impressions=210,
+        ctr=0.09,
+        position=4.2,
+    )
+
+    brief_id = _create_completed_semstorm_brief_via_api(api_client, site_id=site_id)
+
+    implemented_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/implementation-status",
+        json={
+            "implementation_status": "implemented",
+            "evaluation_note": "Published and ready for lightweight feedback.",
+        },
+    )
+    assert implemented_response.status_code == 200
+    implemented_payload = implemented_response.json()
+    assert implemented_payload["implementation_status"] == "implemented"
+    assert implemented_payload["implemented_at"] is not None
+
+    monkeypatch.setattr(semstorm_brief_service, "utcnow", lambda: FIXED_TIME + timedelta(days=45))
+
+    list_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/implemented",
+        params={
+            "implementation_status": "evaluated",
+            "outcome_status": "positive_signal",
+            "search": "seo audit",
+            "window_days": 30,
+        },
+    )
+    assert list_response.status_code == 200
+    list_payload = list_response.json()
+    assert list_payload["active_crawl_id"] == ids["crawl_job_id"]
+    assert list_payload["window_days"] == 30
+    assert list_payload["summary"]["total_count"] == 1
+    assert list_payload["summary"]["implementation_status_counts"]["evaluated"] == 1
+    assert list_payload["summary"]["outcome_status_counts"]["positive_signal"] == 1
+    assert list_payload["summary"]["positive_signal_count"] == 1
+    item = list_payload["items"][0]
+    assert item["brief_id"] == brief_id
+    assert item["implementation_status"] == "evaluated"
+    assert item["outcome_status"] == "positive_signal"
+    assert item["page_present_in_active_crawl"] is True
+    assert item["matched_page"]["url"] == "https://example.com/seo-audit"
+    assert item["gsc_signal_status"] == "present"
+    assert item["gsc_summary"]["clicks"] == 19
+    assert item["query_match_count"] >= 1
+
+
+def test_semstorm_implementation_status_endpoint_rejects_non_completed_briefs_and_missing_brief(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+    monkeypatch.setattr(semstorm_brief_service, "utcnow", lambda: FIXED_TIME + timedelta(days=5))
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["local seo pricing"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_id = int(create_plan_response.json()["items"][0]["id"])
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={"plan_item_ids": [plan_id]},
+    )
+    assert create_brief_response.status_code == 200
+    brief_id = int(create_brief_response.json()["items"][0]["id"])
+
+    invalid_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/implementation-status",
+        json={"implementation_status": "implemented"},
+    )
+    assert invalid_response.status_code == 409
+    assert "only completed semstorm briefs" in invalid_response.json()["detail"].lower()
+
+    missing_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/999999/implementation-status",
+        json={"implementation_status": "implemented"},
+    )
+    assert missing_response.status_code == 404
+
+    for next_status in ("ready", "in_execution", "completed"):
+        transition_response = api_client.post(
+            f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status",
+            json={"execution_status": next_status},
+        )
+        assert transition_response.status_code == 200
+
+    implemented_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/implementation-status",
+        json={
+            "implementation_status": "implemented",
+            "implementation_url_override": "https://example.com/local-seo-pricing",
+        },
+    )
+    assert implemented_response.status_code == 200
+
+    too_early_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/implemented",
+        params={
+            "implementation_status": "too_early",
+            "outcome_status": "too_early",
+            "window_days": 30,
+        },
+    )
+    assert too_early_response.status_code == 200
+    too_early_payload = too_early_response.json()
+    assert too_early_payload["summary"]["total_count"] == 1
+    assert too_early_payload["summary"]["too_early_count"] == 1
+    assert too_early_payload["items"][0]["brief_id"] == brief_id
+    assert too_early_payload["items"][0]["page_present_in_active_crawl"] is False
+    assert too_early_payload["items"][0]["gsc_signal_status"] == "none"
+
+
+def test_semstorm_brief_enrichment_endpoints_support_enrich_list_and_apply(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setenv("SEMSTORM_BRIEF_ENGINE_MODE", "mock")
+    monkeypatch.setenv("SEMSTORM_BRIEF_LLM_ENABLED", "false")
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["local seo pricing"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_id = int(create_plan_response.json()["items"][0]["id"])
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={"plan_item_ids": [plan_id]},
+    )
+    assert create_brief_response.status_code == 200
+    brief_id = int(create_brief_response.json()["items"][0]["id"])
+
+    enrich_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrich"
+    )
+    assert enrich_response.status_code == 201
+    enrich_payload = enrich_response.json()
+    assert enrich_payload["status"] == "completed"
+    assert enrich_payload["engine_mode"] == "mock"
+    assert enrich_payload["suggestions"]["improved_brief_title"] == "Execution brief: Local SEO Pricing"
+    enrichment_run_id = int(enrich_payload["id"])
+
+    list_runs_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs"
+    )
+    assert list_runs_response.status_code == 200
+    list_runs_payload = list_runs_response.json()
+    assert list_runs_payload["summary"] == {
+        "total_count": 1,
+        "completed_count": 1,
+        "failed_count": 0,
+        "applied_count": 0,
+    }
+    assert list_runs_payload["items"][0]["id"] == enrichment_run_id
+
+    apply_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs/{enrichment_run_id}/apply"
+    )
+    assert apply_response.status_code == 200
+    apply_payload = apply_response.json()
+    assert apply_payload["applied"] is True
+    assert "brief_title" in apply_payload["applied_fields"]
+    assert "recommended_page_title" in apply_payload["applied_fields"]
+    assert apply_payload["brief"]["brief_title"] == "Execution brief: Local SEO Pricing"
+    assert apply_payload["enrichment_run"]["is_applied"] is True
+
+    second_apply_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs/{enrichment_run_id}/apply"
+    )
+    assert second_apply_response.status_code == 200
+    assert second_apply_response.json()["applied"] is False
+    assert second_apply_response.json()["skipped_reason"] == "already_applied"
+
+
+def test_semstorm_brief_enrich_endpoint_persists_failed_run_when_llm_mode_is_unavailable(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    monkeypatch.setenv("SEMSTORM_BRIEF_ENGINE_MODE", "llm")
+    monkeypatch.setenv("SEMSTORM_BRIEF_LLM_ENABLED", "false")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr(semstorm_service, "SemstormApiClient", lambda: ApiPersistedSemstormClient())
+
+    create_run_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/discovery-runs",
+        json={
+            "max_competitors": 2,
+            "max_keywords_per_competitor": 3,
+            "include_basic_stats": True,
+        },
+    )
+    assert create_run_response.status_code == 201
+
+    promote_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote",
+        json={
+            "run_id": 1,
+            "keywords": ["local seo pricing"],
+        },
+    )
+    assert promote_response.status_code == 200
+
+    create_plan_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan",
+        json={
+            "promoted_item_ids": [item["id"] for item in promote_response.json()["promoted_items"]],
+        },
+    )
+    assert create_plan_response.status_code == 200
+    plan_id = int(create_plan_response.json()["items"][0]["id"])
+
+    create_brief_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief",
+        json={"plan_item_ids": [plan_id]},
+    )
+    assert create_brief_response.status_code == 200
+    brief_id = int(create_brief_response.json()["items"][0]["id"])
+
+    enrich_response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrich"
+    )
+    assert enrich_response.status_code == 503
+    assert enrich_response.json() == {
+        "detail": "Semstorm brief AI enrichment is disabled in backend config."
+    }
+
+    list_runs_response = api_client.get(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs"
+    )
+    assert list_runs_response.status_code == 200
+    list_runs_payload = list_runs_response.json()
+    assert list_runs_payload["summary"]["failed_count"] == 1
+    assert list_runs_payload["items"][0]["status"] == "failed"
+    assert list_runs_payload["items"][0]["error_code"] == "llm_disabled"
 
 
 def test_competitive_gap_endpoint_filters_and_returns_gap_keys(api_client, sqlite_session_factory) -> None:

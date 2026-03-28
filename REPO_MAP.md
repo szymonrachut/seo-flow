@@ -1,7 +1,7 @@
 # REPO_MAP.md
 
 ## Root
-- `README.md`: aktualny opis produktu, setup lokalny, routing, API, page taxonomy, Content Recommendations lifecycle z implemented filters / outcome windows / summary barem, Competitive Gap z dual-read `reviewed/raw/legacy` i GSC flow
+- `README.md`: aktualny opis produktu, setup lokalny, routing, API, page taxonomy, Content Recommendations lifecycle z implemented filters / outcome windows / summary barem, Competitive Gap z dual-read `reviewed/raw/legacy`, osobnym frontendowym slice'em Semstorm, optional brief AI enrichment, execution flow, implemented/outcome feedback loop i GSC flow
 - `UI_MAP.md`: mapa glownych ekranow i glownych blokow UI
 - `AGENTS.md`: szybki przewodnik dla agenta
 - `ARCHITECTURE.md`: model architektury i invariants
@@ -29,7 +29,7 @@ tests/      testy backendowe i smoke
     - `crawl_jobs.py`: create/list/detail/stop job snapshots
     - `sites.py`: site workspace list/detail/crawl history/new crawl for existing site
     - `site_content_recommendations.py`: site-centric Content Recommendations, `mark-done`, backendowy `implemented_summary`, implemented filters / outcome windows + CSV export
-    - `site_competitive_gap.py`: site-centric Competitive Gap, strategy CRUD, manual competitors, sync, sync runs, review runs, semantic rerun endpoint, readiness diagnostics, explanation i CSV export
+    - `site_competitive_gap.py`: site-centric Competitive Gap, Semstorm preview + persisted discovery runs/opportunities/lifecycle/promoted/plans/briefs/execution/implemented + brief AI enrichment runs/apply, strategy CRUD, manual competitors, sync, sync runs, review runs, semantic rerun endpoint, readiness diagnostics, explanation i CSV export
     - `pages.py`: snapshot-scoped pages list
     - `pages.py`: snapshot-scoped pages list + taxonomy summary endpoint
     - `links.py`: snapshot-scoped links list
@@ -54,12 +54,14 @@ tests/      testy backendowe i smoke
   - `rendering/detection.py`: heurystyka `js_heavy_like`
   - `normalization/urls.py`: normalizacja URL-i
 - `db/`
-- `models.py`: modele `Site`, `CrawlJob`, `Page`, `Link`, `GscProperty`, `GscUrlMetric`, `GscTopQuery`, `SiteContentRecommendationState`, `SiteContentStrategy`, `SiteCompetitor`, `SiteCompetitorPage`, `SiteCompetitorSemanticCandidate`, `SiteCompetitorSemanticRun`, `SiteCompetitorSemanticDecision`, `SiteCompetitorPageExtraction`, `SiteCompetitorSyncRun`, `SiteContentGapCandidate`, `SiteContentGapReviewRun`, `SiteContentGapItem`
+- `models.py`: modele `Site`, `CrawlJob`, `Page`, `Link`, `GscProperty`, `GscUrlMetric`, `GscTopQuery`, `SiteContentRecommendationState`, `SiteContentStrategy`, `SiteSemstormDiscoveryRun`, `SiteSemstormCompetitor`, `SiteSemstormCompetitorQuery`, `SiteSemstormOpportunityState`, `SiteSemstormPromotedItem`, `SiteSemstormPlanItem`, `SiteSemstormBriefItem`, `SiteSemstormBriefEnrichmentRun`, `SiteCompetitor`, `SiteCompetitorPage`, `SiteCompetitorSemanticCandidate`, `SiteCompetitorSemanticRun`, `SiteCompetitorSemanticDecision`, `SiteCompetitorPageExtraction`, `SiteCompetitorSyncRun`, `SiteContentGapCandidate`, `SiteContentGapReviewRun`, `SiteContentGapItem`; `SiteSemstormBriefItem` trzyma tez execution lifecycle, assignee, execution note oraz outcome/implementation state
   - `session.py`: engine i `SessionLocal`
   - `base.py`: SQLAlchemy base
 - `integrations/gsc/`
   - `auth.py`: lokalny OAuth token/state store
   - `client.py`: klient Google Search Console API
+- `integrations/semstorm/`
+  - `client.py`: cienki klient API Semstorm dla competitors / keywords / basic stats z timeoutem i retry dla 503
 - `schemas/`
   - kontrakty request/response dla API
   - `services/`
@@ -72,6 +74,12 @@ tests/      testy backendowe i smoke
     - `content_recommendation_service.py`: dynamiczne own-data Content Recommendations, implemented lifecycle, `implemented_summary`, shared status order dla summary/sortowania, outcome windows, `too_early` i backendowe filtrowanie implemented dla site workspace
     - `competitive_gap_service.py`: finalny Competitive Gap read model z source selection `reviewed -> raw_candidates -> legacy`, readiness / empty-state diagnostics i latency-safe fallback dla ciezkiej semantic sciezki
     - `competitive_gap_sync_service.py`: manual competitor sync, lightweight diagnostics i persistence do competitor store; po syncu zapisuje raw candidates, ale nie odpala juz automatycznie review LLM
+    - `semstorm_service.py`: site-level Semstorm discovery preview + persisted discovery run store + Semstorm opportunities nad `Site.root_url`, aktywnym crawlem i opcjonalnym GSC, bez wpinania jeszcze do finalnego Competitive Gap read modelu
+    - `semstorm_coverage_service.py`: deterministyczny heurystyczny coverage check Semstorm keywordow wzgledem aktywnego snapshotu i lekki GSC enrichment
+    - `semstorm_opportunity_state_service.py`: lifecycle state `new/accepted/dismissed/promoted`, promotion do persisted backlogu i mapowanie state na opportunities payload
+    - `semstorm_plan_service.py`: cienki planning store nad promoted backlogiem, create-plan action, list/detail/update/status dla Semstorm plan items
+    - `semstorm_brief_service.py`: deterministyczny execution layer `Plans -> Briefs`, create-brief action, scaffold v1, execution lifecycle, implemented/outcome feedback loop, execution read model i lekki CRUD brief items
+    - `semstorm_brief_llm_service.py`: optional AI enrichment layer nad istniejacym brief scaffoldem, persisted enrichment runs i bezpieczne apply suggestions do briefu
     - `competitive_gap_sync_run_service.py`: operational sync run store, lease/heartbeat, stale detection, retry/reset runtime
     - `competitive_gap_semantic_rules.py`: deterministic exclusion rules / semantic eligibility dla competitor pages
     - `competitive_gap_semantic_service.py`: semantic foundation, raw candidates, reusable own-site match index i top-K candidate generation bez all-to-all
@@ -114,7 +122,8 @@ tests/      testy backendowe i smoke
     - `SiteNewCrawlPage.tsx`: dedykowany create-flow nowego snapshotu dla istniejacej witryny
     - `api.ts`, `routes.ts`, `context.ts`
   - `content-recommendations/`: site-level own-data Recommendations workspace z podwidokami `overview` / `active` / `implemented`, API client i testami
-  - `competitive-gap/`: site-level Competitive Gap workspace z podwidokami `overview` / `strategy` / `competitors` / `sync` / `results`, reuse'ujacy ten sam backendowy sync, semantic, review i results flow
+  - `competitive-gap/`: site-level Competitive Gap workspace z podwidokami `overview` / `strategy` / `competitors` / `sync` / `results` oraz osobnym frontendowym Semstorm slice'em `semstorm/discovery` / `semstorm/opportunities` / `semstorm/promoted` / `semstorm/plans` / `semstorm/briefs` / `semstorm/execution` / `semstorm/implemented`, reuse'ujacy ten sam backendowy sync, semantic, review, results i Semstorm discovery/opportunity flow; opportunities maja selection, bulk actions i persisted lifecycle state, promoted backlog moze byc materializowany do plan items, plans do deterministicznych brief scaffoldow, a briefs do optional AI enrichment/apply workflow, execution lifecycle i implemented/outcome feedback loop
+    - Semstorm subview selection (`run_id`, `plan_id`, `brief_id`, `enrichment_run_id`) siedzi w query stringu i jest korygowana do aktualnie widocznej listy, zeby stale params nie rozjezdzaly detail panelu
   - `jobs/`: lista snapshotow, create flow, detail snapshotu, legacy entry point
   - `pages/`: snapshotowa tabela pages, page taxonomy badges/summary, filtry, eksport + site current-state views (`SitePagesOverviewPage.tsx`, `SitePagesRecordsPage.tsx`) i `SitePagesComparePage.tsx`
   - `links/`: tabela links
@@ -186,6 +195,13 @@ Frontend testy siedza obok feature'ow w `frontend/src/**/*.test.tsx`.
 - `0019_content_gap_candidates_v1.py`: persisted raw content gap candidates
 - `0020_content_gap_review_runs_v1.py`: explicit review run lifecycle
 - `0021_content_gap_items_v1.py`: persisted reviewed items
+- `0022_semstorm_discovery_v1.py`: site-level persisted Semstorm discovery runs, competitors i queries
+- `0023_semstorm_lifecycle_v1.py`: site-level Semstorm opportunity state store i promoted backlog
+- `0024_semstorm_planning_v1.py`: site-level Semstorm planning store dla promoted backlog items
+- `0025_semstorm_briefs_v1.py`: site-level Semstorm brief / execution packet store nad plan items
+- `0026_semstorm_brief_enrichment_v1.py`: optional AI enrichment run store dla Semstorm brief scaffoldow
+- `0027_semstorm_brief_execution_v1.py`: execution lifecycle, assignee i note fields na `site_semstorm_brief_items`
+- `0028_semstorm_brief_outcome_v1.py`: implemented/evaluated feedback loop fields i outcome indexes na `site_semstorm_brief_items`
 - `0007_stage11_page_taxonomy.py`: trwałe pola page taxonomy w `pages`
 
 ETAP 7, ETAP 8, ETAP 10.1, ETAP 10.2 i ETAP 10.3 nie dodaja nowej migracji:

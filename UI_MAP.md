@@ -9,6 +9,7 @@ Uwagi:
 - site workspace trzyma kontekst w query params: `active_crawl_id`, `baseline_crawl_id`
 - wiekszosc ekranow ma standardowe stany: `loading`, `error`, `empty`
 - Competitive Gap ma juz dual-read backend (`reviewed -> raw_candidates -> legacy`), semantic debug/status panel i reczny rerun semantic matchingu
+- Semstorm ma osobny frontendowy slice w Competitive Gap workspace; nie miesza sie z `/sites/:siteId/competitive-gap/results`
 - site-level data screens dla `Stron`, `Audytu`, `Szans SEO`, `Linkowania wewnetrznego` i compare pod `Zmianami` reuse'uja wspolny wzorzec:
   - compact header
   - action bar `Primary action` / `Operacje` / `Eksport` tam, gdzie ma to sens
@@ -24,6 +25,12 @@ Uwagi:
   - mozna wlaczyc wiele naraz
   - zawsze jest `Reset`
   - stan jest odtwarzalny z query stringa
+- Semstorm slice trzyma tez selection context w query stringu:
+  - `run_id`
+  - `plan_id`
+  - `brief_id`
+  - `enrichment_run_id`
+  - stale params sa korygowane do aktualnie widocznej listy, zeby detail panel nie rozjezdzal sie z filtrowanym widokiem
 - ponizej skupiam sie na realnych widokach i glownych blokach UI, nie na kazdym helperze technicznym
 
 ## Drzewo UI
@@ -74,6 +81,14 @@ Uwagi:
         - `/sites/:siteId/competitive-gap/competitors`
         - `/sites/:siteId/competitive-gap/sync`
         - `/sites/:siteId/competitive-gap/results`
+        - `/sites/:siteId/competitive-gap/semstorm`
+        - `/sites/:siteId/competitive-gap/semstorm/discovery`
+        - `/sites/:siteId/competitive-gap/semstorm/opportunities`
+        - `/sites/:siteId/competitive-gap/semstorm/promoted`
+        - `/sites/:siteId/competitive-gap/semstorm/plans`
+        - `/sites/:siteId/competitive-gap/semstorm/briefs`
+        - `/sites/:siteId/competitive-gap/semstorm/execution`
+        - `/sites/:siteId/competitive-gap/semstorm/implemented`
       - `/sites/:siteId/gsc`
         - `/sites/:siteId/gsc`
         - `/sites/:siteId/gsc/settings`
@@ -587,6 +602,286 @@ Uwagi:
         - strategy fit
         - explanation panel lazy-loaded on click
       - Pagination
+
+    - `/sites/:siteId/competitive-gap/semstorm/discovery` -> Competitive Gap / Semstorm / Discovery
+      - Compact header
+        - primary action `Uruchom discovery`
+        - secondary link do `Opportunities`
+      - Secondary nav wewnatrz Competitive Gap area
+        - `Przeglad`
+        - `Wyniki`
+        - `Semstorm Discovery`
+        - `Semstorm Opportunities`
+        - `Semstorm Promoted`
+        - `Semstorm Plans`
+        - `Semstorm Briefs`
+        - `Semstorm Execution`
+        - `Semstorm Implemented`
+      - Summary cards
+        - status ostatniego runu
+        - source domain
+        - competitors count
+        - total queries
+        - unique keywords
+      - Prosty formularz runu
+        - `max_competitors`
+        - `max_keywords_per_competitor`
+        - `result_type`
+        - `include_basic_stats`
+      - Lista ostatnich runow
+      - Panel detail wybranego runu
+        - summary
+        - competitors
+        - top query preview
+      - Empty / loading / error states
+
+    - `/sites/:siteId/competitive-gap/semstorm/opportunities` -> Competitive Gap / Semstorm / Opportunities
+      - Compact header
+        - secondary link do `Discovery`
+        - secondary link do `Promoted`
+      - Secondary nav wewnatrz Competitive Gap area
+      - Summary cards
+        - total items
+        - bucket counts
+        - decision counts
+        - coverage counts
+        - state counts
+      - Quick filters
+        - bucket
+        - coverage status
+        - decision type
+        - state status
+        - has / no GSC signal
+        - only actionable
+        - reset
+      - Filter panel
+        - run id
+        - limit
+      - Selection + bulk actions
+        - checkbox per row
+        - select all dla aktualnej listy
+        - `Accept`
+        - `Dismiss`
+        - `Promote`
+      - Tabela opportunities
+        - keyword
+        - state status
+        - competitor count
+        - best position
+        - max volume
+        - max traffic
+        - avg CPC
+        - bucket
+        - decision type
+        - coverage status
+        - GSC signal
+        - opportunity score v2
+      - Details drawer / expandable details
+        - coverage score
+        - matched pages count
+        - best match page
+        - GSC summary
+        - sample competitors
+      - Empty / loading / error states
+
+    - `/sites/:siteId/competitive-gap/semstorm/promoted` -> Competitive Gap / Semstorm / Promoted
+      - Compact header
+        - secondary link do `Opportunities`
+        - primary bulk action `Create plan`
+      - Secondary nav wewnatrz Competitive Gap area
+      - Summary cards
+        - total items
+        - active items
+        - archived items
+        - latest created at
+      - Tabela backlogu
+        - checkbox selection
+        - keyword
+        - bucket
+        - decision type
+        - coverage status
+        - GSC signal
+        - opportunity score v2
+        - source run id
+        - created at
+        - badge `In plans`, gdy promoted item ma juz plan
+      - Bulk action bar
+        - `Create plan`
+        - target page type defaults
+        - badge `In plans`, gdy promoted item ma juz plan
+      - Empty / loading / error states
+
+    - `/sites/:siteId/competitive-gap/semstorm/plans` -> Competitive Gap / Semstorm / Plans
+      - Compact header
+        - secondary link do `Promoted`
+        - secondary link do `Briefs`
+      - Secondary nav wewnatrz Competitive Gap area
+      - Summary cards
+        - total items
+        - state counts
+        - target page type counts
+      - Quick filters
+        - state status
+        - target page type
+        - reset
+      - Filter panel
+        - search
+        - limit
+      - Bulk action bar
+        - checkbox selection
+        - `Create brief`
+      - Tabela / lista plan items
+        - checkbox selection
+        - keyword
+        - plan title
+        - state status
+        - target page type
+        - brief badge / existing brief status
+        - decision type snapshot
+        - coverage status snapshot
+        - opportunity score v2 snapshot
+        - proposed primary keyword
+        - proposed slug
+      - Details panel
+        - status update
+        - title
+        - note
+        - target page type
+        - slug
+        - primary keyword
+        - secondary keywords
+        - link do powiazanego briefu, jesli istnieje
+      - Empty / loading / error states
+
+    - `/sites/:siteId/competitive-gap/semstorm/briefs` -> Competitive Gap / Semstorm / Briefs
+      - Compact header
+        - secondary link do `Plans`
+        - secondary link do `Execution`
+      - Secondary nav wewnatrz Competitive Gap area
+      - Summary cards
+        - total items
+        - state counts
+        - brief type counts
+        - intent counts
+      - Quick filters
+        - state status
+        - brief type
+        - search intent
+        - reset
+      - Filter panel
+        - search
+        - limit
+      - Tabela / lista brief items
+        - brief title
+        - primary keyword
+        - brief type
+        - search intent
+        - execution status badge
+        - recommended page title
+        - proposed slug
+      - Details panel
+        - execution handoff
+          - action `Mark ready`
+          - action `Start execution`
+          - action `Mark completed`
+          - action `Archive`
+          - `assignee`
+          - `execution_note`
+          - `ready_at` / `started_at` / `completed_at`
+        - optional section `AI enrichment`
+          - action `Enrich with AI`
+          - enrichment run history
+          - current scaffold vs suggested changes
+          - editorial notes / risk flags
+          - action `Apply suggestions`
+        - status update
+        - brief title
+        - brief type
+        - search intent
+        - primary / secondary keywords
+        - existing target URL
+        - recommended page title / H1
+        - content goal
+        - angle summary
+        - sections
+        - internal link targets
+        - source notes
+      - Empty / loading / error states
+
+    - `/sites/:siteId/competitive-gap/semstorm/execution` -> Competitive Gap / Semstorm / Execution
+      - Compact header
+        - secondary link do `Briefs`
+        - secondary link do `Plans`
+      - Secondary nav wewnatrz Competitive Gap area
+      - Summary cards
+        - total briefs
+        - execution state counts
+        - ready count
+        - in execution count
+        - completed count
+      - Quick filters
+        - execution status
+        - brief type
+        - assignee
+        - reset
+      - Filter panel
+        - assignee
+        - search
+        - limit
+      - Tabela / lista execution items
+        - brief title
+        - primary keyword
+        - brief type
+        - execution status
+        - assignee
+        - recommended page title
+        - proposed slug
+        - updated at
+      - Details panel
+        - brief summary
+        - source context
+        - execution lifecycle actions
+        - execution note
+        - assignee
+        - execution timestamps
+        - link do `Briefs` jako pelnego edytora packetu
+      - Empty / loading / error states
+
+    - `/sites/:siteId/competitive-gap/semstorm/implemented` -> Competitive Gap / Semstorm / Implemented
+      - Compact header
+        - secondary link do `Execution`
+        - secondary link do `Briefs`
+      - Secondary nav wewnatrz Competitive Gap area
+      - Summary cards
+        - total tracked briefs
+        - implementation status counts
+        - outcome status counts
+        - too early count
+        - positive signal count
+      - Quick filters
+        - implementation status
+        - outcome status
+        - brief type
+        - reset
+      - Filter panel
+        - search
+        - outcome window days
+        - limit
+      - Tabela / lista implemented items
+        - brief title
+        - primary keyword
+        - implementation status
+        - outcome status
+        - page present
+        - gsc signal
+        - implemented at
+      - Details panel
+        - brief summary
+        - matched page
+        - GSC summary
+        - notes
+        - implementation / archive actions
+      - Empty / loading / error states
 
     - `/sites/:siteId/changes/audit` -> Site Audit Compare
       - kanoniczny compare route sekcji `Zmiany`

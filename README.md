@@ -77,6 +77,15 @@ To jest najwazniejszy invariant repo:
 - ETAP 11.2: site-centric Content Recommendations liczone dynamicznie z own data only
 - ETAP 12A: site-centric Competitive Gap liczone nad manual competitors i aktywnym snapshotem witryny
 - ETAP 12A.4+: semantic foundation / arbiter / cache / statusy pozostaja competitorowym enrichmentem i fallbackiem
+- Semstorm ma osobny site-level discovery store:
+  - preview `POST /sites/{site_id}/competitive-content-gap/semstorm/discovery-preview` zostaje lekkim debug/manual payloadem bez persistencji
+  - persisted discovery runs `POST/GET /sites/{site_id}/competitive-content-gap/semstorm/discovery-runs*` zapisuje historie runow, competitorow i top queries
+  - `GET /sites/{site_id}/competitive-content-gap/semstorm/opportunities` sklada cienki Semstorm opportunity layer nad persisted discovery, aktywnym crawlem i opcjonalnym GSC; ocenia `coverage_status`, `decision_type` i `opportunity_score_v2`, ale nadal nie wpina sie do finalnego read modelu `reviewed -> raw_candidates -> legacy`
+  - Semstorm ma tez osobny lifecycle state i promoted backlog: `site_semstorm_opportunity_states` trzyma `new/accepted/dismissed/promoted`, a `site_semstorm_promoted_items` zapisuje wypromowane seed backlog items do dalszej pracy SEO
+  - promoted backlog moze byc dalej materializowany do cienkiego planning store `site_semstorm_plan_items`, a nastepnie do osobnych brief scaffoldow w `site_semstorm_brief_items`; to nadal nie jest Content Recommendation ani finalny Competitive Gap result
+  - brief scaffold moze dostac opcjonalny AI enrichment run store `site_semstorm_brief_enrichment_runs`; enrich/apply pozostaja jawna, synchroniczna warstwa nad istniejacym briefem, a nie osobnym content flow
+  - brief scaffold ma tez cienki execution lifecycle nad tym samym brief itemem: `draft -> ready -> in_execution -> completed -> archived`, z prostym `assignee`, `execution_note` i osobnym read modelem `GET /sites/{site_id}/competitive-content-gap/semstorm/execution`
+  - po zakonczeniu execution ten sam brief artifact moze wejsc do lekkiego feedback loopu `implemented / evaluated`: `POST /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/implementation-status` ustawia stan wdrozenia, a `GET /sites/{site_id}/competitive-content-gap/semstorm/implemented` liczy dynamiczny outcome summary nad aktywnym snapshotem i dostepnym GSC bez mieszania Semstorm z Content Recommendations ani finalnym `competitive-gap/results`
 - Content Gap Review flow:
   - competitor sync zapisuje raw candidates,
   - review run uruchamiany jawnie zamraza snapshot-aware context,
@@ -392,6 +401,13 @@ Wazne:
 - `/sites/:siteId/competitive-gap/competitors` -> zarzadzanie lista konkurentow
 - `/sites/:siteId/competitive-gap/sync` -> operacyjny widok synchronizacji i runtime
 - `/sites/:siteId/competitive-gap/results` -> glowny widok wynikow Competitive Gap
+- `/sites/:siteId/competitive-gap/semstorm/discovery` -> operatorski widok Semstorm discovery runow
+- `/sites/:siteId/competitive-gap/semstorm/opportunities` -> osobny frontendowy widok Semstorm opportunities
+- `/sites/:siteId/competitive-gap/semstorm/promoted` -> cienki backlog wypromowanych Semstorm seeds
+- `/sites/:siteId/competitive-gap/semstorm/plans` -> cienki planning workspace dla wypromowanych Semstorm items
+- `/sites/:siteId/competitive-gap/semstorm/briefs` -> cienki execution workspace dla deterministicznych brief scaffoldow
+- `/sites/:siteId/competitive-gap/semstorm/execution` -> cienki board realizacji / handoffu dla briefow Semstorm
+- `/sites/:siteId/competitive-gap/semstorm/implemented` -> cienki outcome / feedback workspace dla wdrozonych briefow Semstorm
 - `/sites/:siteId/gsc` -> site-level GSC overview
 - `/sites/:siteId/gsc/settings` -> site-level konfiguracja property GSC
 - `/sites/:siteId/gsc/import` -> import GSC do aktywnego crawla
@@ -446,6 +462,18 @@ Snapshotowe route'y nadal dzialaja:
 - `Braki wzgledem konkurencji` sa rozdzielone na `Przeglad`, `Strategie`, `Konkurentow`, `Synchronizacje` i `Wyniki`,
 - `/sites/:siteId/competitive-gap/sync` skupia operacyjne flow sync / retry / semantic / review runs bez zmiany semantyki backendu,
 - `/sites/:siteId/competitive-gap/results` pozostaje glownym ekranem roboczym dla wynikow i filtrow Competitive Gap, z tym samym source mode `reviewed/raw/legacy`,
+- Semstorm ma osobny frontendowy slice w Competitive Gap workspace:
+  - `/sites/:siteId/competitive-gap/semstorm/discovery` dla persisted discovery runow,
+  - `/sites/:siteId/competitive-gap/semstorm/opportunities` dla cienkiego coverage/opportunity layer nad persisted discovery,
+  - `/sites/:siteId/competitive-gap/semstorm/promoted` dla trwalego backlogu wypromowanych seeds,
+  - `/sites/:siteId/competitive-gap/semstorm/plans` dla cienkiego persisted planning layer nad promoted backlogiem,
+  - `/sites/:siteId/competitive-gap/semstorm/briefs` dla osobnych execution packets / brief scaffoldow nad plan items,
+  - `/sites/:siteId/competitive-gap/semstorm/execution` dla lekkiego execution workflow nad briefami z `assignee`, `execution_note` i statusem handoffu,
+  - `/sites/:siteId/competitive-gap/semstorm/implemented` dla lekkiego feedback loopu nad wdrozonymi briefami, z dynamicznym outcome summary liczonym nad aktywnym snapshotem i dostepnym GSC,
+  - selection Semstorm (`run_id`, `plan_id`, `brief_id`, `enrichment_run_id`) pozostaje odtwarzalna z query stringa, z korekta stalego ID do aktualnie widocznej listy,
+  - opportunities wspiera selection, bulk actions `Accept / Dismiss / Promote` i persisted `state_status`,
+  - promoted backlog wspiera bulk action `Create plan`, plan items wspieraja bulk `Create brief`, a briefs maja osobny lekki CRUD statusu i zawartosci execution packetu, jawne akcje execution lifecycle oraz outcome lifecycle `implemented / evaluated / archived`,
+  - ten frontend nie miesza Semstorm z glownym `/competitive-gap/results`,
 - `/sites/:siteId/changes/pages`, `/changes/audit`, `/changes/opportunities`, `/changes/internal-linking` nadal dokladaja delty nad aktywnym snapshotem zamiast budowac jedna historyczna tabele; compare pozostaje osobna warstwa nawigacyjna,
 - top-level `/sites/:siteId/pages`, `/audit`, `/opportunities`, `/internal-linking` odpowiadaja juz za current-state views aktywnego crawla,
 - site GSC jest rozdzielone na `Przeglad`, `Konfiguracja` i `Import`,
@@ -462,6 +490,33 @@ Snapshotowe route'y nadal dzialaja:
 - `GET /sites/{site_id}/content-recommendations`
 - `POST /sites/{site_id}/content-recommendations/mark-done`
 - `GET /sites/{site_id}/competitive-content-gap`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/discovery-preview`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/discovery-runs`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/discovery-runs`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/discovery-runs/{run_id}`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/opportunities`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/accept`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/dismiss`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/opportunities/actions/promote`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/promoted`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/promoted/actions/create-plan`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/plans`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}/status`
+- `PUT /sites/{site_id}/competitive-content-gap/semstorm/plans/{plan_id}`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/plans/actions/create-brief`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/briefs`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/status`
+- `PUT /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/execution`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution-status`
+- `PUT /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/execution`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/implemented`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/implementation-status`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrich`
+- `GET /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs`
+- `POST /sites/{site_id}/competitive-content-gap/semstorm/briefs/{brief_id}/enrichment-runs/{run_id}/apply`
 - `GET /sites/{site_id}/competitive-content-gap/strategy`
 - `PUT /sites/{site_id}/competitive-content-gap/strategy`
 - `GET /sites/{site_id}/competitive-content-gap/competitors`

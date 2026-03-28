@@ -16,6 +16,28 @@ export const queryKeys = {
   siteCompetitiveGap: (siteId: number, search: string) => ['sites', siteId, 'competitive-gap', search] as const,
   siteCompetitiveGapStrategy: (siteId: number) => ['sites', siteId, 'competitive-gap', 'strategy'] as const,
   siteCompetitiveGapCompetitors: (siteId: number) => ['sites', siteId, 'competitive-gap', 'competitors'] as const,
+  siteCompetitiveGapSemstormDiscoveryRuns: (siteId: number) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'discovery-runs'] as const,
+  siteCompetitiveGapSemstormDiscoveryRun: (siteId: number, runId: number) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'discovery-runs', runId] as const,
+  siteCompetitiveGapSemstormOpportunities: (siteId: number, search: string) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'opportunities', search] as const,
+  siteCompetitiveGapSemstormPromoted: (siteId: number) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'promoted'] as const,
+  siteCompetitiveGapSemstormPlans: (siteId: number, search: string) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'plans', search] as const,
+  siteCompetitiveGapSemstormPlan: (siteId: number, planId: number) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'plans', planId] as const,
+  siteCompetitiveGapSemstormBriefs: (siteId: number, search: string) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'briefs', search] as const,
+  siteCompetitiveGapSemstormBrief: (siteId: number, briefId: number) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'briefs', briefId] as const,
+  siteCompetitiveGapSemstormExecution: (siteId: number, search: string) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'execution', search] as const,
+  siteCompetitiveGapSemstormImplemented: (siteId: number, search: string) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'implemented', search] as const,
+  siteCompetitiveGapSemstormBriefEnrichmentRuns: (siteId: number, briefId: number) =>
+    ['sites', siteId, 'competitive-gap', 'semstorm', 'briefs', briefId, 'enrichment-runs'] as const,
   siteCompetitiveGapReviewRuns: (siteId: number, limit: number) =>
     ['sites', siteId, 'competitive-gap', 'review-runs', limit] as const,
   siteCompetitiveGapCompetitorSyncRuns: (siteId: number, competitorId: number, limit: number) =>

@@ -91,6 +91,30 @@ class Site(Base):
         back_populates="site",
         cascade="all, delete-orphan",
     )
+    semstorm_discovery_runs: Mapped[list["SiteSemstormDiscoveryRun"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    semstorm_opportunity_states: Mapped[list["SiteSemstormOpportunityState"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    semstorm_promoted_items: Mapped[list["SiteSemstormPromotedItem"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    semstorm_plan_items: Mapped[list["SiteSemstormPlanItem"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    semstorm_brief_items: Mapped[list["SiteSemstormBriefItem"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
+    semstorm_brief_enrichment_runs: Mapped[list["SiteSemstormBriefEnrichmentRun"]] = relationship(
+        back_populates="site",
+        cascade="all, delete-orphan",
+    )
     competitors: Mapped[list["SiteCompetitor"]] = relationship(back_populates="site", cascade="all, delete-orphan")
 
 
@@ -364,6 +388,464 @@ class SiteContentGeneratorAsset(Base):
 
     site: Mapped[Site] = relationship(back_populates="content_generator_asset")
     basis_crawl_job: Mapped[CrawlJob] = relationship(back_populates="content_generator_assets")
+
+
+class SiteSemstormDiscoveryRun(Base):
+    __tablename__ = "site_semstorm_discovery_runs"
+    __table_args__ = (
+        UniqueConstraint(
+            "site_id",
+            "run_id",
+            name="uq_site_semstorm_discovery_runs_site_id_run_id",
+        ),
+        Index("ix_site_semstorm_discovery_runs_site_id", "site_id"),
+        Index("ix_site_semstorm_discovery_runs_status", "status"),
+        Index(
+            "ix_site_semstorm_discovery_runs_site_id_created_at",
+            "site_id",
+            "created_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    run_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="running")
+    stage: Mapped[str] = mapped_column(String(32), nullable=False, default="discovering")
+    source_domain: Mapped[str] = mapped_column(String(255), nullable=False)
+    result_type: Mapped[str] = mapped_column(String(16), nullable=False, default="organic")
+    competitors_type: Mapped[str] = mapped_column(String(32), nullable=False, default="all")
+    include_basic_stats: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    max_competitors: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
+    max_keywords_per_competitor: Mapped[int] = mapped_column(Integer, nullable=False, default=25)
+    total_competitors: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_queries: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    unique_keywords: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message_safe: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="semstorm_discovery_runs")
+    competitors: Mapped[list["SiteSemstormCompetitor"]] = relationship(
+        back_populates="discovery_run",
+        cascade="all, delete-orphan",
+    )
+    queries: Mapped[list["SiteSemstormCompetitorQuery"]] = relationship(
+        back_populates="discovery_run",
+        cascade="all, delete-orphan",
+    )
+
+
+class SiteSemstormCompetitor(Base):
+    __tablename__ = "site_semstorm_competitors"
+    __table_args__ = (
+        UniqueConstraint(
+            "discovery_run_id",
+            "domain",
+            name="uq_site_semstorm_competitors_run_domain",
+        ),
+        Index("ix_site_semstorm_competitors_site_id", "site_id"),
+        Index("ix_site_semstorm_competitors_discovery_run_id", "discovery_run_id"),
+        Index("ix_site_semstorm_competitors_domain", "domain"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    discovery_run_id: Mapped[int] = mapped_column(
+        ForeignKey("site_semstorm_discovery_runs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    rank: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    domain: Mapped[str] = mapped_column(String(255), nullable=False)
+    common_keywords: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    traffic: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    queries_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    basic_stats_keywords: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    basic_stats_keywords_top: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    basic_stats_traffic: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    basic_stats_traffic_potential: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    basic_stats_search_volume: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    basic_stats_search_volume_top: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    discovery_run: Mapped[SiteSemstormDiscoveryRun] = relationship(back_populates="competitors")
+    queries: Mapped[list["SiteSemstormCompetitorQuery"]] = relationship(
+        back_populates="competitor",
+        cascade="all, delete-orphan",
+    )
+
+
+class SiteSemstormCompetitorQuery(Base):
+    __tablename__ = "site_semstorm_competitor_queries"
+    __table_args__ = (
+        Index("ix_site_semstorm_competitor_queries_site_id", "site_id"),
+        Index(
+            "ix_site_semstorm_competitor_queries_discovery_run_id",
+            "discovery_run_id",
+        ),
+        Index(
+            "ix_site_semstorm_competitor_queries_competitor_id",
+            "semstorm_competitor_id",
+        ),
+        Index(
+            "ix_site_semstorm_competitor_queries_run_keyword",
+            "discovery_run_id",
+            "normalized_keyword",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    discovery_run_id: Mapped[int] = mapped_column(
+        ForeignKey("site_semstorm_discovery_runs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    semstorm_competitor_id: Mapped[int] = mapped_column(
+        ForeignKey("site_semstorm_competitors.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    rank: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    normalized_keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    position_change: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    traffic: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    traffic_change: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    volume: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    competitors: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cpc: Mapped[float | None] = mapped_column(Float, nullable=True)
+    trends_json: Mapped[list[int]] = mapped_column(JSON, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    discovery_run: Mapped[SiteSemstormDiscoveryRun] = relationship(back_populates="queries")
+    competitor: Mapped[SiteSemstormCompetitor] = relationship(back_populates="queries")
+
+
+class SiteSemstormOpportunityState(Base):
+    __tablename__ = "site_semstorm_opportunity_states"
+    __table_args__ = (
+        UniqueConstraint(
+            "site_id",
+            "normalized_keyword",
+            name="uq_site_semstorm_opportunity_states_site_keyword",
+        ),
+        Index("ix_site_semstorm_opportunity_states_site_id", "site_id"),
+        Index(
+            "ix_site_semstorm_opportunity_states_site_id_status",
+            "site_id",
+            "state_status",
+        ),
+        Index(
+            "ix_site_semstorm_opportunity_states_opportunity_key",
+            "opportunity_key",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    opportunity_key: Mapped[str] = mapped_column(String(96), nullable=False)
+    source_run_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    normalized_keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    state_status: Mapped[str] = mapped_column(String(32), nullable=False, default="new")
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    promoted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    dismissed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="semstorm_opportunity_states")
+
+
+class SiteSemstormPromotedItem(Base):
+    __tablename__ = "site_semstorm_promoted_items"
+    __table_args__ = (
+        UniqueConstraint(
+            "site_id",
+            "normalized_keyword",
+            name="uq_site_semstorm_promoted_items_site_keyword",
+        ),
+        Index("ix_site_semstorm_promoted_items_site_id", "site_id"),
+        Index(
+            "ix_site_semstorm_promoted_items_site_id_status",
+            "site_id",
+            "promotion_status",
+        ),
+        Index(
+            "ix_site_semstorm_promoted_items_opportunity_key",
+            "opportunity_key",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    opportunity_key: Mapped[str] = mapped_column(String(96), nullable=False)
+    source_run_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    normalized_keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    bucket: Mapped[str] = mapped_column(String(32), nullable=False)
+    decision_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    opportunity_score_v2: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    coverage_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    best_match_page_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    gsc_signal_status: Mapped[str] = mapped_column(String(32), nullable=False, default="none")
+    source_payload_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    promotion_status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="semstorm_promoted_items")
+    plan_item: Mapped["SiteSemstormPlanItem | None"] = relationship(
+        back_populates="promoted_item",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+class SiteSemstormPlanItem(Base):
+    __tablename__ = "site_semstorm_plan_items"
+    __table_args__ = (
+        UniqueConstraint(
+            "promoted_item_id",
+            name="uq_site_semstorm_plan_items_promoted_item_id",
+        ),
+        Index("ix_site_semstorm_plan_items_site_id", "site_id"),
+        Index(
+            "ix_site_semstorm_plan_items_site_id_state_status",
+            "site_id",
+            "state_status",
+        ),
+        Index(
+            "ix_site_semstorm_plan_items_site_id_target_page_type",
+            "site_id",
+            "target_page_type",
+        ),
+        Index(
+            "ix_site_semstorm_plan_items_site_id_updated_at",
+            "site_id",
+            "updated_at",
+        ),
+        Index(
+            "ix_site_semstorm_plan_items_site_id_normalized_keyword",
+            "site_id",
+            "normalized_keyword",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    promoted_item_id: Mapped[int] = mapped_column(
+        ForeignKey("site_semstorm_promoted_items.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    normalized_keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    source_run_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    state_status: Mapped[str] = mapped_column(String(32), nullable=False, default="planned")
+    decision_type_snapshot: Mapped[str] = mapped_column(String(32), nullable=False)
+    bucket_snapshot: Mapped[str] = mapped_column(String(32), nullable=False)
+    coverage_status_snapshot: Mapped[str] = mapped_column(String(32), nullable=False)
+    opportunity_score_v2_snapshot: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    best_match_page_url_snapshot: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    gsc_signal_status_snapshot: Mapped[str] = mapped_column(String(32), nullable=False, default="none")
+    plan_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    plan_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    target_page_type: Mapped[str] = mapped_column(String(32), nullable=False, default="new_page")
+    proposed_slug: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    proposed_primary_keyword: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    proposed_secondary_keywords_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="semstorm_plan_items")
+    promoted_item: Mapped[SiteSemstormPromotedItem] = relationship(back_populates="plan_item")
+    brief_item: Mapped["SiteSemstormBriefItem | None"] = relationship(
+        back_populates="plan_item",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+class SiteSemstormBriefItem(Base):
+    __tablename__ = "site_semstorm_brief_items"
+    __table_args__ = (
+        UniqueConstraint(
+            "plan_item_id",
+            name="uq_site_semstorm_brief_items_plan_item_id",
+        ),
+        Index("ix_site_semstorm_brief_items_site_id", "site_id"),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_state_status",
+            "site_id",
+            "state_status",
+        ),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_brief_type",
+            "site_id",
+            "brief_type",
+        ),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_search_intent",
+            "site_id",
+            "search_intent",
+        ),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_updated_at",
+            "site_id",
+            "updated_at",
+        ),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_assignee",
+            "site_id",
+            "assignee",
+        ),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_impl_status",
+            "site_id",
+            "implementation_status",
+        ),
+        Index(
+            "ix_site_semstorm_brief_items_site_id_implemented_at",
+            "site_id",
+            "implemented_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    plan_item_id: Mapped[int] = mapped_column(
+        ForeignKey("site_semstorm_plan_items.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    state_status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
+    brief_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    brief_type: Mapped[str] = mapped_column(String(32), nullable=False, default="new_page")
+    primary_keyword: Mapped[str] = mapped_column(String(512), nullable=False)
+    secondary_keywords_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    search_intent: Mapped[str] = mapped_column(String(32), nullable=False, default="mixed")
+    assignee: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    execution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ready_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    implementation_status: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    implemented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    evaluation_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_outcome_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    implementation_url_override: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    target_url_existing: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    proposed_url_slug: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    recommended_page_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    recommended_h1: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_goal: Mapped[str | None] = mapped_column(Text, nullable=True)
+    angle_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sections_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    internal_link_targets_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    source_notes_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="semstorm_brief_items")
+    plan_item: Mapped[SiteSemstormPlanItem] = relationship(back_populates="brief_item")
+    enrichment_runs: Mapped[list["SiteSemstormBriefEnrichmentRun"]] = relationship(
+        back_populates="brief_item",
+        cascade="all, delete-orphan",
+    )
+
+
+class SiteSemstormBriefEnrichmentRun(Base):
+    __tablename__ = "site_semstorm_brief_enrichment_runs"
+    __table_args__ = (
+        Index("ix_site_semstorm_brief_enrichment_runs_site_id", "site_id"),
+        Index(
+            "ix_site_semstorm_brief_enrichment_runs_brief_item_id",
+            "brief_item_id",
+        ),
+        Index(
+            "ix_site_semstorm_brief_enrichment_runs_site_id_status",
+            "site_id",
+            "status",
+        ),
+        Index(
+            "ix_site_semstorm_brief_enrichment_runs_site_id_created_at",
+            "site_id",
+            "created_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    site_id: Mapped[int] = mapped_column(ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
+    brief_item_id: Mapped[int] = mapped_column(
+        ForeignKey("site_semstorm_brief_items.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="completed")
+    engine_mode: Mapped[str] = mapped_column(String(16), nullable=False, default="mock")
+    model_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    output_summary_json: Mapped[dict[str, Any] | None] = mapped_column(
+        MutableDict.as_mutable(JSON),
+        nullable=True,
+    )
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    error_message_safe: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_applied: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    site: Mapped[Site] = relationship(back_populates="semstorm_brief_enrichment_runs")
+    brief_item: Mapped[SiteSemstormBriefItem] = relationship(back_populates="enrichment_runs")
 
 
 class SiteCompetitor(Base):
