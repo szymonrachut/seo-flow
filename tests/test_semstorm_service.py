@@ -311,6 +311,72 @@ class FailIfCalledClient:
         raise AssertionError("Semstorm client should not be called when integration is disabled.")
 
 
+class DebugSemstormClient:
+    provider_name = "semstorm"
+    base_url = "https://api.semstorm.com/api-v3"
+    services_token = "token-123"
+    timeout_seconds = 60.0
+    max_retries = 2
+    retry_backoff_seconds = 1.0
+
+    def __init__(self, *, should_fail: bool = False) -> None:
+        self.should_fail = should_fail
+        self.calls: list[dict[str, object]] = []
+
+    def get_competitors(self, *, domains, result_type="organic", competitors_type="all", max_items=10):
+        self.calls.append(
+            {
+                "domains": list(domains),
+                "result_type": result_type,
+                "competitors_type": competitors_type,
+                "max_items": max_items,
+            }
+        )
+        if self.should_fail:
+            raise semstorm_service.SemstormIntegrationError(
+                "Unauthorized access.",
+                code="provider_error",
+                status_code=502,
+            )
+        return [{"competitor": "competitor-a.com", "common_keywords": 12, "traffic": 34}]
+
+
+class OverflowSemstormClient:
+    def get_competitors(self, *, domains, result_type="organic", competitors_type="all", max_items=10):
+        assert list(domains) == ["example.com"]
+        return [
+            {"competitor": "facebook.com", "common_keywords": 151, "traffic": 285549609},
+        ]
+
+    def get_keywords_basic_stats(self, *, domains, result_type="organic"):
+        return {
+            "facebook.com": {
+                "keywords": 16588695,
+                "keywords_top": 6995488,
+                "traffic": 285549609,
+                "traffic_potential": 1018240524,
+                "search_volume": 3259412690,
+                "search_volume_top": 4294967295,
+            }
+        }
+
+    def get_keywords(self, *, domains, result_type="organic", max_items=10, sorting=None):
+        return [
+            {
+                "keyword": "facebook",
+                "position": {"facebook.com": 1},
+                "position_c": {"facebook.com": 0},
+                "url": {"facebook.com": "https://facebook.com/?locale=pl_PL"},
+                "traffic": {"facebook.com": 24897680},
+                "traffic_c": {"facebook.com": 7528240},
+                "volume": 55600000,
+                "competitors": 7,
+                "cpc": 0.16,
+                "trends": "55600000,45500000,55600000",
+            }
+        ]
+
+
 def test_build_semstorm_discovery_preview_normalizes_competitors_and_queries(
     sqlite_session_factory,
     monkeypatch,
@@ -392,6 +458,81 @@ def test_build_semstorm_discovery_preview_returns_empty_payload_when_disabled(
     }
 
 
+def test_debug_semstorm_connection_returns_request_details_and_provider_success(
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    site_id = _seed_site(sqlite_session_factory)
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+    fake_client = DebugSemstormClient()
+
+    with sqlite_session_factory() as session:
+        payload = semstorm_service.debug_semstorm_connection(
+            session,
+            site_id,
+            result_type="organic",
+            competitors_type="all",
+            client=fake_client,
+        )
+
+    assert payload["site_id"] == site_id
+    assert payload["source_domain"] == "example.com"
+    assert payload["semstorm_enabled"] is True
+    assert payload["request"]["auth"] == {
+        "mode": "query_param",
+        "parameter_name": "services_token",
+        "username_required": False,
+    }
+    assert payload["request"]["endpoint_path"] == "/explorer/explorer-competitors/get-data.json"
+    assert payload["request"]["request_url"] == "https://api.semstorm.com/api-v3/explorer/explorer-competitors/get-data.json"
+    assert payload["request"]["services_token_configured"] is True
+    assert payload["request"]["request_payload_preview"] == {
+        "domains": ["example.com"],
+        "result_type": "organic",
+        "pager": {"items_per_page": 10, "page": 0},
+        "competitors_type": "all",
+    }
+    assert payload["provider_check"]["attempted"] is True
+    assert payload["provider_check"]["ok"] is True
+    assert payload["provider_check"]["result_count"] == 1
+    assert payload["provider_check"]["response_shape"] == "list"
+    assert isinstance(payload["provider_check"]["elapsed_ms"], int)
+    assert fake_client.calls == [
+        {
+            "domains": ["example.com"],
+            "result_type": "organic",
+            "competitors_type": "all",
+            "max_items": 1,
+        }
+    ]
+
+
+def test_debug_semstorm_connection_captures_provider_error_without_raising(
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    site_id = _seed_site(sqlite_session_factory)
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+
+    with sqlite_session_factory() as session:
+        payload = semstorm_service.debug_semstorm_connection(
+            session,
+            site_id,
+            client=DebugSemstormClient(should_fail=True),
+        )
+
+    assert payload["provider_check"] == {
+        "attempted": True,
+        "ok": False,
+        "elapsed_ms": payload["provider_check"]["elapsed_ms"],
+        "result_count": None,
+        "response_shape": None,
+        "error_code": "provider_error",
+        "error_message_safe": "Unauthorized access.",
+    }
+    assert isinstance(payload["provider_check"]["elapsed_ms"], int)
+
+
 def test_run_semstorm_discovery_persists_run_competitors_and_queries(
     sqlite_session_factory,
     monkeypatch,
@@ -437,6 +578,39 @@ def test_run_semstorm_discovery_persists_run_competitors_and_queries(
     assert len(competitors) == 2
     assert [item.domain for item in competitors] == ["competitor-a.com", "competitor-b.com"]
     assert len(queries) == 6
+
+
+def test_run_semstorm_discovery_clamps_large_metrics_to_postgres_integer_range(
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    site_id = _seed_site(sqlite_session_factory)
+    monkeypatch.setenv("SEMSTORM_ENABLED", "true")
+
+    with sqlite_session_factory() as session:
+        payload = semstorm_service.run_semstorm_discovery(
+            session,
+            site_id,
+            max_competitors=1,
+            max_keywords_per_competitor=1,
+            include_basic_stats=True,
+            client=OverflowSemstormClient(),
+        )
+        session.commit()
+
+    competitor = payload["competitors"][0]
+    assert competitor["basic_stats"]["search_volume"] == 2_147_483_647
+    assert competitor["basic_stats"]["search_volume_top"] == 2_147_483_647
+
+    with sqlite_session_factory() as session:
+        stored_competitor = session.scalar(select(SiteSemstormCompetitor))
+        stored_query = session.scalar(select(SiteSemstormCompetitorQuery))
+
+    assert stored_competitor is not None
+    assert stored_competitor.basic_stats_search_volume == 2_147_483_647
+    assert stored_competitor.basic_stats_search_volume_top == 2_147_483_647
+    assert stored_query is not None
+    assert stored_query.volume == 55_600_000
 
 
 def test_run_semstorm_discovery_marks_failed_run_when_disabled(

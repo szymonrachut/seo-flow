@@ -140,6 +140,7 @@ class SemstormApiClient:
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
+        # Semstorm API v3 uses the services_token query parameter for auth.
         params = {"services_token": self.services_token}
         attempt = 0
         max_attempts = 1 + self.max_retries
@@ -234,6 +235,8 @@ def _unwrap_payload(response: httpx.Response) -> Any:
                 code="provider_error",
                 status_code=502,
             )
+        if "results" in payload:
+            return payload.get("results")
         if "result" in payload:
             return payload.get("result")
     return payload
@@ -246,8 +249,8 @@ def _error_from_response(response: httpx.Response) -> SemstormIntegrationError:
     except ValueError:
         payload = None
 
-    if isinstance(payload, dict):
-        error_payload = payload.get("error", payload)
+    if payload is not None:
+        error_payload = payload.get("error", payload) if isinstance(payload, dict) else payload
         parsed_message = _error_message_from_payload(error_payload)
         if parsed_message:
             message = parsed_message
@@ -268,6 +271,12 @@ def _error_from_response(response: httpx.Response) -> SemstormIntegrationError:
 def _error_message_from_payload(payload: Any) -> str | None:
     if isinstance(payload, str) and payload.strip():
         return payload.strip()
+    if isinstance(payload, list):
+        for item in payload:
+            parsed = _error_message_from_payload(item)
+            if parsed:
+                return parsed
+        return None
     if not isinstance(payload, dict):
         return None
 

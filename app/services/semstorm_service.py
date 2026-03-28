@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
+from time import perf_counter
 from typing import Any, Literal
 
 from sqlalchemy import func, select
@@ -17,7 +18,13 @@ from app.db.models import (
     SiteSemstormPromotedItem,
     utcnow,
 )
-from app.integrations.semstorm.client import SemstormApiClient, SemstormConfigurationError, SemstormIntegrationError
+from app.integrations.semstorm.client import (
+    SEMSTORM_COMPETITORS_PATH,
+    SEMSTORM_PAGE_SIZE_OPTIONS,
+    SemstormApiClient,
+    SemstormConfigurationError,
+    SemstormIntegrationError,
+)
 from app.services import (
     crawl_job_service,
     semstorm_coverage_service,
@@ -33,6 +40,10 @@ SemstormCoverageStatus = Literal["missing", "weak_coverage", "covered"]
 SemstormDecisionType = Literal["create_new_page", "expand_existing_page", "monitor_only"]
 SemstormGscSignalStatus = Literal["none", "weak", "present"]
 SemstormOpportunityStateStatus = Literal["new", "accepted", "dismissed", "promoted"]
+SEMSTORM_API_DOCUMENTATION_URL = "https://api-v3.semstorm.com/"
+SEMSTORM_API_SDK_README_URL = "https://github.com/semstorm/semstorm-php-sdk"
+POSTGRES_INT32_MIN = -(2**31)
+POSTGRES_INT32_MAX = 2**31 - 1
 
 
 class SemstormServiceError(RuntimeError):
@@ -88,6 +99,101 @@ def build_semstorm_discovery_preview(
         competitors_type=competitors_type,
     )
     return response_payload
+
+
+def debug_semstorm_connection(
+    session: Session,
+    site_id: int,
+    *,
+    result_type: SemstormResultType = "organic",
+    competitors_type: SemstormCompetitorsType = "all",
+    perform_provider_check: bool = True,
+    client: SemstormApiClient | None = None,
+) -> dict[str, Any]:
+    site = _get_site_or_raise(session, site_id)
+    source_domain = _resolve_source_domain(site)
+    settings = get_settings()
+    semstorm_client = client or SemstormApiClient()
+
+    base_url = str(getattr(semstorm_client, "base_url", settings.semstorm_base_url)).strip().rstrip("/")
+    endpoint_path = SEMSTORM_COMPETITORS_PATH
+    request_payload_preview = _build_semstorm_debug_request_payload(
+        source_domain=source_domain,
+        result_type=result_type,
+        competitors_type=competitors_type,
+    )
+    response_payload: dict[str, Any] = {
+        "site_id": site.id,
+        "source_domain": source_domain,
+        "semstorm_enabled": bool(settings.semstorm_enabled),
+        "request": {
+            "provider_name": str(getattr(semstorm_client, "provider_name", "semstorm")),
+            "documentation_url": SEMSTORM_API_DOCUMENTATION_URL,
+            "sdk_readme_url": SEMSTORM_API_SDK_README_URL,
+            "base_url": base_url,
+            "endpoint_path": endpoint_path,
+            "request_url": _build_semstorm_request_url(base_url, endpoint_path),
+            "request_method": "POST",
+            "content_type": "application/json",
+            "timeout_seconds": float(getattr(semstorm_client, "timeout_seconds", settings.semstorm_timeout_seconds)),
+            "max_retries": int(getattr(semstorm_client, "max_retries", settings.semstorm_max_retries)),
+            "retry_backoff_seconds": float(
+                getattr(semstorm_client, "retry_backoff_seconds", settings.semstorm_retry_backoff_seconds)
+            ),
+            "services_token_configured": bool(
+                str(getattr(semstorm_client, "services_token", settings.semstorm_services_token or "")).strip()
+            ),
+            "auth": {
+                "mode": "query_param",
+                "parameter_name": "services_token",
+                "username_required": False,
+            },
+            "request_payload_preview": request_payload_preview,
+        },
+        "provider_check": {
+            "attempted": False,
+            "ok": False,
+            "elapsed_ms": None,
+            "result_count": None,
+            "response_shape": None,
+            "error_code": None,
+            "error_message_safe": None,
+        },
+    }
+    if not perform_provider_check:
+        return response_payload
+
+    started_at = perf_counter()
+    try:
+        competitors = semstorm_client.get_competitors(
+            domains=[source_domain],
+            result_type=result_type,
+            competitors_type=competitors_type,
+            max_items=1,
+        )
+        elapsed_ms = int((perf_counter() - started_at) * 1000)
+        response_payload["provider_check"] = {
+            "attempted": True,
+            "ok": True,
+            "elapsed_ms": elapsed_ms,
+            "result_count": len(competitors),
+            "response_shape": "list",
+            "error_code": None,
+            "error_message_safe": None,
+        }
+        return response_payload
+    except (SemstormConfigurationError, SemstormIntegrationError, SemstormServiceError) as exc:
+        elapsed_ms = int((perf_counter() - started_at) * 1000)
+        response_payload["provider_check"] = {
+            "attempted": True,
+            "ok": False,
+            "elapsed_ms": elapsed_ms,
+            "result_count": None,
+            "response_shape": None,
+            "error_code": getattr(exc, "code", "semstorm_error"),
+            "error_message_safe": str(exc),
+        }
+        return response_payload
 
 
 def run_semstorm_discovery(
@@ -418,6 +524,29 @@ def _ensure_semstorm_enabled() -> None:
             code="semstorm_disabled",
             status_code=503,
         )
+
+
+def _build_semstorm_debug_request_payload(
+    *,
+    source_domain: str,
+    result_type: SemstormResultType,
+    competitors_type: SemstormCompetitorsType,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "domains": [source_domain],
+        "result_type": result_type,
+        "pager": {
+            "items_per_page": int(SEMSTORM_PAGE_SIZE_OPTIONS[0]),
+            "page": 0,
+        },
+    }
+    if competitors_type == "all":
+        payload["competitors_type"] = "all"
+    return payload
+
+
+def _build_semstorm_request_url(base_url: str, endpoint_path: str) -> str:
+    return f"{base_url.rstrip('/')}/{endpoint_path.lstrip('/')}"
 
 
 def _create_discovery_run(
@@ -1465,9 +1594,10 @@ def _int_or_none(value: Any) -> int | None:
     if value is None or value == "":
         return None
     try:
-        return int(float(value))
+        normalized = int(float(value))
     except (TypeError, ValueError):
         return None
+    return max(POSTGRES_INT32_MIN, min(POSTGRES_INT32_MAX, normalized))
 
 
 def _float_or_none(value: Any) -> float | None:

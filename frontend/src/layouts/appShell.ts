@@ -14,6 +14,13 @@ import {
   buildSiteCompetitiveGapCompetitorsPath,
   buildSiteCompetitiveGapPath,
   buildSiteCompetitiveGapResultsPath,
+  buildSiteCompetitiveGapSemstormBriefsPath,
+  buildSiteCompetitiveGapSemstormDiscoveryPath,
+  buildSiteCompetitiveGapSemstormExecutionPath,
+  buildSiteCompetitiveGapSemstormImplementedPath,
+  buildSiteCompetitiveGapSemstormOpportunitiesPath,
+  buildSiteCompetitiveGapSemstormPlansPath,
+  buildSiteCompetitiveGapSemstormPromotedPath,
   buildSiteCompetitiveGapSyncPath,
   buildSiteCompetitiveGapStrategyPath,
   buildSiteContentRecommendationsActivePath,
@@ -233,6 +240,27 @@ export function getActiveInternalLinkingSubsection(pathname: string) {
 }
 
 export function getActiveCompetitiveGapSubsection(pathname: string) {
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm', '/sites/:siteId/competitive-gap/semstorm/discovery'])) {
+    return 'semstorm-discovery'
+  }
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/opportunities'])) {
+    return 'semstorm-opportunities'
+  }
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/promoted'])) {
+    return 'semstorm-promoted'
+  }
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/plans'])) {
+    return 'semstorm-plans'
+  }
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/briefs'])) {
+    return 'semstorm-briefs'
+  }
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/execution'])) {
+    return 'semstorm-execution'
+  }
+  if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/implemented'])) {
+    return 'semstorm-implemented'
+  }
   if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/strategy'])) {
     return 'strategy'
   }
@@ -373,6 +401,34 @@ export function resolveAppSectionTitle(t: TFunction, pathname: string, site: Sit
 
     if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/results'])) {
       return t('competitiveGap.nav.results')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm', '/sites/:siteId/competitive-gap/semstorm/discovery'])) {
+      return t('competitiveGap.nav.semstormDiscovery')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/opportunities'])) {
+      return t('competitiveGap.nav.semstormOpportunities')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/promoted'])) {
+      return t('competitiveGap.nav.semstormPromoted')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/plans'])) {
+      return t('competitiveGap.nav.semstormPlans')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/briefs'])) {
+      return t('competitiveGap.nav.semstormBriefs')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/execution'])) {
+      return t('competitiveGap.nav.semstormExecution')
+    }
+
+    if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/semstorm/implemented'])) {
+      return t('competitiveGap.nav.semstormImplemented')
     }
 
     if (pathMatches(pathname, ['/sites/:siteId/competitive-gap/competitors'])) {
@@ -650,6 +706,41 @@ export function buildSiteMenuItems(t: TFunction, pathname: string, site: SiteDet
           label: t('competitiveGap.nav.results'),
           to: buildSiteCompetitiveGapResultsPath(site.id, context),
           active: activeCompetitiveGapSubsection === 'results',
+        },
+        {
+          label: t('competitiveGap.nav.semstormDiscovery'),
+          to: buildSiteCompetitiveGapSemstormDiscoveryPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-discovery',
+        },
+        {
+          label: t('competitiveGap.nav.semstormOpportunities'),
+          to: buildSiteCompetitiveGapSemstormOpportunitiesPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-opportunities',
+        },
+        {
+          label: t('competitiveGap.nav.semstormPromoted'),
+          to: buildSiteCompetitiveGapSemstormPromotedPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-promoted',
+        },
+        {
+          label: t('competitiveGap.nav.semstormPlans'),
+          to: buildSiteCompetitiveGapSemstormPlansPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-plans',
+        },
+        {
+          label: t('competitiveGap.nav.semstormBriefs'),
+          to: buildSiteCompetitiveGapSemstormBriefsPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-briefs',
+        },
+        {
+          label: t('competitiveGap.nav.semstormExecution'),
+          to: buildSiteCompetitiveGapSemstormExecutionPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-execution',
+        },
+        {
+          label: t('competitiveGap.nav.semstormImplemented'),
+          to: buildSiteCompetitiveGapSemstormImplementedPath(site.id, context),
+          active: activeCompetitiveGapSubsection === 'semstorm-implemented',
         },
       ],
     },

@@ -124,6 +124,8 @@ function Invoke-DevCommand {
     }
 }
 
+Invoke-DevCommand -Command "sync-main-local-env"
+
 function Show-DatabaseAuthHint {
     Write-Host ""
     Write-Host "PostgreSQL rejected the credentials from .env." -ForegroundColor Red

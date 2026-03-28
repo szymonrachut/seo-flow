@@ -1556,7 +1556,11 @@
       "results": "Wyniki",
       "semstormDiscovery": "Semstorm Discovery",
       "semstormOpportunities": "Szanse Semstorm",
-      "semstormPromoted": "Backlog Semstorm"
+      "semstormPromoted": "Backlog Semstorm",
+      "semstormPlans": "Plany Semstorm",
+      "semstormBriefs": "Briefy Semstorm",
+      "semstormExecution": "Realizacja Semstorm",
+      "semstormImplemented": "Wdrozone Semstorm"
     },
     "views": {
       "overview": {

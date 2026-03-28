@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     semstorm_enabled: bool = False
     semstorm_base_url: str = "https://api.semstorm.com/api-v3"
     semstorm_services_token: str | None = None
-    semstorm_timeout_seconds: float = 20.0
+    semstorm_timeout_seconds: float = 60.0
     semstorm_max_retries: int = 2
     semstorm_retry_backoff_seconds: float = 1.0
     semstorm_brief_llm_enabled: bool = False

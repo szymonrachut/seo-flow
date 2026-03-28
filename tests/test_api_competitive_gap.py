@@ -248,6 +248,82 @@ def test_semstorm_discovery_preview_endpoint_propagates_service_status_code(
     assert response.json() == {"detail": "Semstorm request timed out."}
 
 
+def test_semstorm_connection_check_endpoint_returns_debug_payload(
+    api_client,
+    sqlite_session_factory,
+    monkeypatch,
+) -> None:
+    ids = seed_competitive_gap_site(sqlite_session_factory)
+    site_id = ids["site_id"]
+    captured_kwargs: dict[str, object] = {}
+
+    def _fake_debug(session, requested_site_id, **kwargs):
+        captured_kwargs["site_id"] = requested_site_id
+        captured_kwargs.update(kwargs)
+        return {
+            "site_id": requested_site_id,
+            "source_domain": "example.com",
+            "semstorm_enabled": True,
+            "request": {
+                "provider_name": "semstorm",
+                "documentation_url": "https://api-v3.semstorm.com/",
+                "sdk_readme_url": "https://github.com/semstorm/semstorm-php-sdk",
+                "base_url": "https://api.semstorm.com/api-v3",
+                "endpoint_path": "/explorer/explorer-competitors/get-data.json",
+                "request_url": "https://api.semstorm.com/api-v3/explorer/explorer-competitors/get-data.json",
+                "request_method": "POST",
+                "content_type": "application/json",
+                "timeout_seconds": 60.0,
+                "max_retries": 2,
+                "retry_backoff_seconds": 1.0,
+                "services_token_configured": True,
+                "auth": {
+                    "mode": "query_param",
+                    "parameter_name": "services_token",
+                    "username_required": False,
+                },
+                "request_payload_preview": {
+                    "domains": ["example.com"],
+                    "result_type": "organic",
+                    "pager": {"items_per_page": 10, "page": 0},
+                    "competitors_type": "all",
+                },
+            },
+            "provider_check": {
+                "attempted": True,
+                "ok": False,
+                "elapsed_ms": 30123,
+                "result_count": None,
+                "response_shape": None,
+                "error_code": "provider_error",
+                "error_message_safe": "Unauthorized access.",
+            },
+        }
+
+    monkeypatch.setattr(semstorm_service, "debug_semstorm_connection", _fake_debug)
+
+    response = api_client.post(
+        f"/sites/{site_id}/competitive-content-gap/semstorm/debug/connection-check",
+        json={
+            "result_type": "organic",
+            "competitors_type": "all",
+            "perform_provider_check": True,
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert captured_kwargs == {
+        "site_id": site_id,
+        "result_type": "organic",
+        "competitors_type": "all",
+        "perform_provider_check": True,
+    }
+    assert payload["request"]["auth"]["parameter_name"] == "services_token"
+    assert payload["request"]["auth"]["username_required"] is False
+    assert payload["provider_check"]["error_message_safe"] == "Unauthorized access."
+
+
 def _add_semstorm_gsc_top_query(
     session_factory,
     *,

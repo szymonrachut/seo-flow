@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16
+    container_name: ${DB_CONTAINER_NAME:-seo-crawler-db}
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

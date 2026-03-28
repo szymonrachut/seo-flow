@@ -82,6 +82,26 @@ def read_env_file(path: Path) -> dict[str, str]:
     return values
 
 
+def initialize_git_main_repo(path: Path) -> None:
+    git_executable = shutil.which("git")
+    if git_executable is None:
+        pytest.skip("git is not available in PATH.", allow_module_level=False)
+    subprocess.run(
+        [git_executable, "init"],
+        cwd=path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    subprocess.run(
+        [git_executable, "symbolic-ref", "HEAD", "refs/heads/main"],
+        cwd=path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+
 def test_db_sync_env_restores_credentials_from_trusted_lock(tmp_path: Path) -> None:
     env_path = tmp_path / ".env"
     write_env_file(
@@ -162,6 +182,64 @@ def test_db_refresh_lock_adopts_current_env_credentials(tmp_path: Path) -> None:
     assert refreshed_lock["POSTGRES_DB"] == "seo_next"
 
 
+def test_sync_main_local_env_restores_canonical_main_ports_and_database(tmp_path: Path) -> None:
+    env_path = tmp_path / ".env"
+    frontend_env_path = tmp_path / "frontend" / ".env.local"
+    frontend_env_path.parent.mkdir(parents=True, exist_ok=True)
+    initialize_git_main_repo(tmp_path)
+
+    write_env_file(
+        env_path,
+        password="stable-pass",
+        database="seo_wrong",
+        host="127.0.0.1",
+        port="6076",
+        database_url="postgresql+psycopg://postgres:stable-pass@127.0.0.1:6076/seo_wrong",
+    )
+    env_path.write_text(
+        env_path.read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "WORKTREE_INSTANCE_ID=seo-crawler-copy",
+                "WORKTREE_STATE_DIR=.local/worktree",
+                "COMPOSE_PROJECT_NAME=seo-flow-copy",
+                "API_PORT=9076",
+                "FRONTEND_APP_URL=http://127.0.0.1:5576",
+                "GSC_OAUTH_REDIRECT_URI=http://127.0.0.1:9076/gsc/oauth/callback",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    frontend_env_path.write_text("VITE_API_BASE_URL=http://127.0.0.1:9076\n", encoding="utf-8")
+
+    run_dev_script("sync-main-local-env", tmp_path)
+
+    env_values = read_env_file(env_path)
+    frontend_values = read_env_file(frontend_env_path)
+    assert env_values["WORKTREE_INSTANCE_ID"] == "main"
+    assert env_values["COMPOSE_PROJECT_NAME"] == "seo_crawler"
+    assert env_values["DB_CONTAINER_NAME"] == "seo-crawler-db"
+    assert env_values["POSTGRES_HOST"] == "127.0.0.1"
+    assert env_values["POSTGRES_PORT"] == "5432"
+    assert env_values["POSTGRES_DB"] == "seo_crawler"
+    assert env_values["DATABASE_URL"] == "postgresql+psycopg://postgres:stable-pass@127.0.0.1:5432/seo_crawler"
+    assert env_values["API_PORT"] == "8000"
+    assert env_values["FRONTEND_APP_URL"] == "http://127.0.0.1:5173"
+    assert env_values["GSC_OAUTH_REDIRECT_URI"] == "http://127.0.0.1:8000/gsc/oauth/callback"
+    assert frontend_values["VITE_API_BASE_URL"] == "http://127.0.0.1:8000"
+
+
+def test_start_local_invokes_sync_main_local_env_after_helper_definition() -> None:
+    script_path = Path(__file__).resolve().parents[1] / "scripts" / "start-local.ps1"
+    script_text = script_path.read_text(encoding="utf-8")
+
+    function_index = script_text.index("function Invoke-DevCommand")
+    invocation_index = script_text.index('Invoke-DevCommand -Command "sync-main-local-env"')
+
+    assert function_index < invocation_index
+
+
 def test_trusted_lock_changes_only_on_explicit_refresh(tmp_path: Path) -> None:
     env_path = tmp_path / ".env"
     lock_path = tmp_path / ".local" / "postgres" / "credentials.env"
@@ -204,6 +282,7 @@ def test_init_worktree_env_generates_isolated_ports_and_paths(tmp_path: Path) ->
 
     assert env_values["WORKTREE_INSTANCE_ID"]
     assert env_values["COMPOSE_PROJECT_NAME"].startswith("seo-flow-")
+    assert env_values["DB_CONTAINER_NAME"].startswith("seo-crawler-db-")
     assert env_values["WORKTREE_STATE_DIR"] == ".local/worktree"
     assert env_values["POSTGRES_PORT"] != "5432"
     assert env_values["API_PORT"] != "8000"

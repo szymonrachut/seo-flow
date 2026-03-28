@@ -1556,7 +1556,11 @@
       "results": "Results",
       "semstormDiscovery": "Semstorm Discovery",
       "semstormOpportunities": "Semstorm Opportunities",
-      "semstormPromoted": "Semstorm Promoted"
+      "semstormPromoted": "Semstorm Promoted",
+      "semstormPlans": "Semstorm Plans",
+      "semstormBriefs": "Semstorm Briefs",
+      "semstormExecution": "Semstorm Execution",
+      "semstormImplemented": "Semstorm Implemented"
     },
     "views": {
       "overview": {

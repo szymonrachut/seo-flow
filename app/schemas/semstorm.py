@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -68,6 +68,55 @@ class SemstormDiscoveryPreviewResponse(BaseModel):
     max_competitors: int
     max_keywords_per_competitor: int
     competitors: list[SemstormCompetitorDiscoveryResponse] = Field(default_factory=list)
+
+
+class SemstormConnectionCheckRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    result_type: Literal["organic", "paid"] = "organic"
+    competitors_type: Literal["all", "similar"] = "all"
+    perform_provider_check: bool = True
+
+
+class SemstormConnectionCheckAuthResponse(BaseModel):
+    mode: Literal["query_param"] = "query_param"
+    parameter_name: str = "services_token"
+    username_required: bool = False
+
+
+class SemstormConnectionCheckRequestDetailsResponse(BaseModel):
+    provider_name: str
+    documentation_url: str
+    sdk_readme_url: str
+    base_url: str
+    endpoint_path: str
+    request_url: str
+    request_method: Literal["POST"] = "POST"
+    content_type: str = "application/json"
+    timeout_seconds: float
+    max_retries: int
+    retry_backoff_seconds: float
+    services_token_configured: bool
+    auth: SemstormConnectionCheckAuthResponse
+    request_payload_preview: dict[str, Any] = Field(default_factory=dict)
+
+
+class SemstormConnectionCheckProviderResponse(BaseModel):
+    attempted: bool
+    ok: bool
+    elapsed_ms: int | None = None
+    result_count: int | None = None
+    response_shape: str | None = None
+    error_code: str | None = None
+    error_message_safe: str | None = None
+
+
+class SemstormConnectionCheckResponse(BaseModel):
+    site_id: int
+    source_domain: str
+    semstorm_enabled: bool
+    request: SemstormConnectionCheckRequestDetailsResponse
+    provider_check: SemstormConnectionCheckProviderResponse
 
 
 class SemstormDiscoveryRunParamsResponse(BaseModel):

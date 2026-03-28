@@ -8,6 +8,7 @@ import {
   buildSiteMenuItems,
   getActiveChangesSubsection,
   getActiveContentRecommendationsSubsection,
+  getActiveCompetitiveGapSubsection,
   getActiveGscSubsection,
   getActiveInternalLinkingSubsection,
   getActiveOpportunitiesSubsection,
@@ -193,7 +194,7 @@ describe('appShell changes navigation', () => {
     expect(item?.subItems?.find((subItem) => subItem.label === 'Implemented')?.active).toBe(true)
   })
 
-  test('treats competitive gap overview, strategy, competitors, sync and results as site-level subsections', async () => {
+  test('treats competitive gap and semstorm routes as site-level subsections', async () => {
     await i18n.changeLanguage('en')
 
     expect(getActiveSiteSection('/sites/5/competitive-gap')).toBe('competitive-gap')
@@ -213,8 +214,15 @@ describe('appShell changes navigation', () => {
     expect(resolveAppSectionTitle(i18n.t.bind(i18n), '/sites/5/competitive-gap/results', site)).toBe(
       'Results - example.com',
     )
+    expect(getActiveCompetitiveGapSubsection('/sites/5/competitive-gap/semstorm/discovery')).toBe('semstorm-discovery')
+    expect(resolveAppSectionTitle(i18n.t.bind(i18n), '/sites/5/competitive-gap/semstorm/discovery', site)).toBe(
+      'Semstorm Discovery - example.com',
+    )
+    expect(resolveAppSectionTitle(i18n.t.bind(i18n), '/sites/5/competitive-gap/semstorm/execution', site)).toBe(
+      'Semstorm Execution - example.com',
+    )
 
-    const menuItems = buildSiteMenuItems(i18n.t.bind(i18n), '/sites/5/competitive-gap/sync', site)
+    const menuItems = buildSiteMenuItems(i18n.t.bind(i18n), '/sites/5/competitive-gap/semstorm/plans', site)
     const item = menuItems.find((menuItem) => menuItem.key === 'competitive-gap')
 
     expect(item?.subItems?.map((subItem) => subItem.to)).toEqual([
@@ -223,7 +231,14 @@ describe('appShell changes navigation', () => {
       '/sites/5/competitive-gap/competitors?active_crawl_id=11&baseline_crawl_id=10',
       '/sites/5/competitive-gap/sync?active_crawl_id=11&baseline_crawl_id=10',
       '/sites/5/competitive-gap/results?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/discovery?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/opportunities?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/promoted?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/plans?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/briefs?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/execution?active_crawl_id=11&baseline_crawl_id=10',
+      '/sites/5/competitive-gap/semstorm/implemented?active_crawl_id=11&baseline_crawl_id=10',
     ])
-    expect(item?.subItems?.find((subItem) => subItem.label === 'Synchronization')?.active).toBe(true)
+    expect(item?.subItems?.find((subItem) => subItem.label === 'Semstorm Plans')?.active).toBe(true)
   })
 })

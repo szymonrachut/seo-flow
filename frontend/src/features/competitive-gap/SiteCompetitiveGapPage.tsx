@@ -2056,6 +2056,14 @@ export function SiteCompetitiveGapPage({ mode = 'full' }: { mode?: CompetitiveGa
               {t('competitiveGap.nav.results')}
             </Link>
           ) : null}
+          {mode === 'overview' ? (
+            <Link
+              to={buildSiteCompetitiveGapSemstormDiscoveryPath(site.id, { activeCrawlId, baselineCrawlId })}
+              className={actionClass}
+            >
+              {t('competitiveGap.nav.semstormDiscovery')}
+            </Link>
+          ) : null}
           {mode !== 'results' ? (
             <Link to={buildSitePagesRecordsPath(site.id, { activeCrawlId, baselineCrawlId })} className={actionClass}>
               {t('competitiveGap.page.openPages')}

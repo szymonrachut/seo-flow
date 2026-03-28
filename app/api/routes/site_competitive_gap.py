@@ -34,6 +34,8 @@ from app.schemas.semstorm import (
     SemstormBriefItemsResponse,
     SemstormBriefStatusUpdateRequest,
     SemstormBriefUpdateRequest,
+    SemstormConnectionCheckRequest,
+    SemstormConnectionCheckResponse,
     SemstormCreateBriefRequest,
     SemstormCreateBriefResponse,
     SemstormCreatePlanRequest,
@@ -232,6 +234,28 @@ def delete_site_competitor(
         _raise_http_error(exc)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/{site_id}/competitive-content-gap/semstorm/debug/connection-check",
+    response_model=SemstormConnectionCheckResponse,
+)
+def debug_semstorm_connection(
+    site_id: int,
+    payload: SemstormConnectionCheckRequest,
+    session: Session = Depends(get_db),
+) -> SemstormConnectionCheckResponse:
+    try:
+        result = semstorm_service.debug_semstorm_connection(
+            session,
+            site_id,
+            result_type=payload.result_type,
+            competitors_type=payload.competitors_type,
+            perform_provider_check=payload.perform_provider_check,
+        )
+    except semstorm_service.SemstormServiceError as exc:
+        _raise_http_error(exc)
+    return SemstormConnectionCheckResponse.model_validate(result)
 
 
 @router.post(

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("bootstrap", "playwright-install", "init-worktree-env", "clone-worktree-db", "start-worktree", "stop-worktree", "info-worktree", "db-up", "db-down", "db-reset", "db-logs", "db-wait", "db-sync-env", "db-refresh-lock", "db-align-password", "migrate", "crawl", "test", "test-quick", "test-backend-full", "test-crawler", "smoke-postgres", "api", "flow")]
+    [ValidateSet("bootstrap", "playwright-install", "init-worktree-env", "clone-worktree-db", "start-worktree", "stop-worktree", "info-worktree", "sync-main-local-env", "db-up", "db-down", "db-reset", "db-logs", "db-wait", "db-sync-env", "db-refresh-lock", "db-align-password", "migrate", "crawl", "test", "test-quick", "test-backend-full", "test-crawler", "smoke-postgres", "api", "flow")]
     [string]$Command = "flow",
     [string]$StartUrl = "https://example.com",
     [int]$MaxUrls = 300,
@@ -717,6 +717,100 @@ function Ensure-FrontendEnvFile {
     }
 }
 
+function Get-CurrentGitBranchRef {
+    $gitExe = Get-Command git -ErrorAction SilentlyContinue
+    if (-not $gitExe) {
+        return ""
+    }
+
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $output = & git symbolic-ref -q HEAD 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($exitCode -ne 0) {
+        return ""
+    }
+
+    return (($output | ForEach-Object { $_.ToString() }) -join "`n").Trim()
+}
+
+function Test-IsPrimaryMainWorktree {
+    $gitMetadataPath = Join-Path (Get-ProjectRootPath) ".git"
+    if (-not (Test-Path $gitMetadataPath -PathType Container)) {
+        return $false
+    }
+
+    $branchRef = Get-CurrentGitBranchRef
+    return $branchRef -in @("refs/heads/main", "refs/heads/master")
+}
+
+function Sync-MainLocalEnv {
+    Ensure-EnvFile
+    Ensure-FrontendEnvFile
+
+    if (-not (Test-IsPrimaryMainWorktree)) {
+        return $false
+    }
+
+    $envValues = Read-EnvFileValues -Path ".env"
+    $lockInfo = Get-PostgresCredentialLockInfo
+    $credentialValues = if ($lockInfo["IsTrusted"]) {
+        Get-PostgresCredentialValues -Values $lockInfo["Values"]
+    }
+    else {
+        Get-PostgresCredentialValues -Values $envValues
+    }
+
+    $canonicalEnvValues = @{
+        "WORKTREE_INSTANCE_ID" = "main"
+        "WORKTREE_STATE_DIR" = ".local/worktree"
+        "COMPOSE_PROJECT_NAME" = "seo_crawler"
+        "DB_CONTAINER_NAME" = "seo-crawler-db"
+        "POSTGRES_USER" = $credentialValues["POSTGRES_USER"]
+        "POSTGRES_PASSWORD" = $credentialValues["POSTGRES_PASSWORD"]
+        "POSTGRES_DB" = "seo_crawler"
+        "POSTGRES_HOST" = "127.0.0.1"
+        "POSTGRES_PORT" = "5432"
+        "DATABASE_URL" = Build-PostgresDatabaseUrl `
+            -User $credentialValues["POSTGRES_USER"] `
+            -Password $credentialValues["POSTGRES_PASSWORD"] `
+            -DbHost "127.0.0.1" `
+            -Port "5432" `
+            -Database "seo_crawler"
+        "API_PORT" = "8000"
+        "FRONTEND_APP_URL" = "http://127.0.0.1:5173"
+        "GSC_OAUTH_REDIRECT_URI" = "http://127.0.0.1:8000/gsc/oauth/callback"
+    }
+    $envUpdated = Update-EnvFileValues -Path ".env" -Values $canonicalEnvValues -Keys @(
+        "WORKTREE_INSTANCE_ID",
+        "WORKTREE_STATE_DIR",
+        "COMPOSE_PROJECT_NAME",
+        "DB_CONTAINER_NAME",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_DB",
+        "POSTGRES_HOST",
+        "POSTGRES_PORT",
+        "DATABASE_URL",
+        "API_PORT",
+        "FRONTEND_APP_URL",
+        "GSC_OAUTH_REDIRECT_URI"
+    )
+    $frontendUpdated = Update-EnvFileValues -Path "frontend\.env.local" -Values @{
+        "VITE_API_BASE_URL" = "http://127.0.0.1:8000"
+    } -Keys @("VITE_API_BASE_URL")
+
+    if ($envUpdated -or $frontendUpdated) {
+        Write-Host "Normalized main worktree local env to the canonical 5432 / 8000 / 5173 runtime." -ForegroundColor Yellow
+    }
+    return ($envUpdated -or $frontendUpdated)
+}
+
 function Get-GitWorktreeEntries {
     $gitExe = Get-Command git -ErrorAction SilentlyContinue
     if (-not $gitExe) {
@@ -846,6 +940,7 @@ function Initialize-WorktreeEnv {
         "WORKTREE_INSTANCE_ID" = $metadata["InstanceId"]
         "WORKTREE_STATE_DIR" = $metadata["StateDir"]
         "COMPOSE_PROJECT_NAME" = $metadata["ComposeProjectName"]
+        "DB_CONTAINER_NAME" = "seo-crawler-db-$($metadata["InstanceId"])"
         "POSTGRES_USER" = $credentialValues["POSTGRES_USER"]
         "POSTGRES_PASSWORD" = $credentialValues["POSTGRES_PASSWORD"]
         "POSTGRES_DB" = $credentialValues["POSTGRES_DB"]
@@ -869,6 +964,7 @@ function Initialize-WorktreeEnv {
         "WORKTREE_INSTANCE_ID",
         "WORKTREE_STATE_DIR",
         "COMPOSE_PROJECT_NAME",
+        "DB_CONTAINER_NAME",
         "POSTGRES_USER",
         "POSTGRES_PASSWORD",
         "POSTGRES_DB",
@@ -1422,6 +1518,10 @@ switch ($Command) {
     "start-worktree" { Start-Worktree }
     "stop-worktree" { Stop-Worktree }
     "info-worktree" { Show-WorktreeInfo }
+    "sync-main-local-env" {
+        Sync-MainLocalEnv | Out-Null
+        Import-EnvFile
+    }
     "db-up" { Db-Up }
     "db-down" { Db-Down }
     "db-reset" { Db-Reset }

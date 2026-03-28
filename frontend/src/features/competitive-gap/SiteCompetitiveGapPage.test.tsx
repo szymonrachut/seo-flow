@@ -1842,6 +1842,10 @@ describe('SiteCompetitiveGapPage', () => {
       'href',
       '/sites/5/competitive-gap/results?active_crawl_id=11&baseline_crawl_id=10',
     )
+    expect(screen.getByRole('link', { name: 'Semstorm Discovery' })).toHaveAttribute(
+      'href',
+      '/sites/5/competitive-gap/semstorm/discovery?active_crawl_id=11&baseline_crawl_id=10',
+    )
     expect(screen.queryByLabelText('Recommended page type')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Competitor root URL')).not.toBeInTheDocument()
     await waitFor(() =>
